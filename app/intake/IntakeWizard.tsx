@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -11,7 +11,7 @@ import { CompanyProfileUpload, type ExtractedCompanyProfile } from "@/components
 import { RfpDocumentUpload, type ExtractedBidFields } from "@/components/ui/RfpDocumentUpload";
 import { CheckboxGroup } from "@/components/ui/CheckboxGroup";
 import { COMMON_NAICS_CODES } from "@/lib/business-options";
-import { isEmail, normalizePhone } from "@/lib/phone";
+import { isEmail } from "@/lib/phone";
 import { RETAINER_PLACEHOLDER_AGENCY, type FitCheckResult } from "@/lib/submissions";
 import { computeProfileCompleteness } from "@/lib/compliance/profile-completeness";
 import { uploadRfpDocument } from "@/lib/storage";
@@ -275,11 +275,29 @@ export function IntakeWizard() {
 
     if (!user) {
       const contact = form.contact.trim();
-      const usingEmail = isEmail(contact);
 
-      const { data: signUpData, error: signUpError } = usingEmail
-        ? await supabase.auth.signUp({ email: contact, password: form.password })
-        : await supabase.auth.signUp({ phone: normalizePhone(contact), password: form.password });
+      // Email only -- this used to also accept a phone number and call
+      // supabase.auth.signUp({ phone: ... }) instead, but production's
+      // Auth config has external_phone_enabled: false (confirmed directly
+      // against bidpulse-production's Management API, 2026-09-19), so that
+      // branch never actually worked: Supabase rejects the signUp call
+      // outright, and the anyone who picked "phone" saw a raw, confusing
+      // API error instead of even reaching the (also broken -- phone OTP
+      // was never implemented client-side either) "we texted you a code"
+      // message this used to show. Enabling phone auth for real would need
+      // a configured SMS provider (Twilio/Vonage/MessageBird) in that same
+      // Auth config, which doesn't exist yet -- until it does, don't
+      // advertise an option that can't complete.
+      if (!isEmail(contact)) {
+        setError("Please enter your email address.");
+        setSaving(false);
+        return;
+      }
+
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: contact,
+        password: form.password,
+      });
 
       if (signUpError || !signUpData.user) {
         setError(signUpError?.message ?? "Couldn't create your account.");
@@ -287,17 +305,38 @@ export function IntakeWizard() {
         return;
       }
 
-      // No session yet means the project requires confirming this contact
-      // method before the account is usable (a code/link was just sent) — a
-      // phone signup in particular almost always lands here. Without a
-      // session, auth.uid() is null and the clients insert right below would
-      // just fail RLS, so this has to stop here instead of pushing forward.
+      // Fire-and-forget, before checking for a session: the confirmed-
+      // session path below inserts `clients` through the browser's own
+      // RLS-scoped client, which requires auth.uid() to resolve -- but
+      // production requires email confirmation, so someone who never
+      // clicks the confirmation link would otherwise never get a `clients`
+      // row at all, making them invisible to both the admin inbox and the
+      // daily-digest ghost-signup detector (found 2026-09-19). This calls
+      // a service-role route instead specifically so the row exists even
+      // before confirmation. Never blocks or fails the visitor's own
+      // signup -- a dropped request here just means this one visitor stays
+      // invisible the way every signup already was before this existed,
+      // not a regression, so errors are swallowed rather than surfaced.
+      fetch("/api/create-pending-client", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          authUserId: signUpData.user.id,
+          email: contact,
+          companyName: form.companyName,
+          contactName: form.contactName,
+          requestedPackage: packageParam,
+        }),
+      }).catch((err) => console.error("[intake] create-pending-client failed", err));
+
+      // No session yet means the project requires confirming this email
+      // before the account is usable (production has mailer_autoconfirm:
+      // false, confirmed the same way as above) -- a real link just went
+      // out. Without a session, auth.uid() is null and the clients insert
+      // further below would just fail RLS, so this has to stop here
+      // instead of pushing forward.
       if (!signUpData.session) {
-        setError(
-          usingEmail
-            ? "Check your email to confirm your account, then come back and sign in to finish."
-            : "We texted a code to confirm that number. Phone verification isn't supported in this signup step yet: please use an email instead, or contact us for help."
-        );
+        setError("Check your email to confirm your account, then come back and sign in to finish.");
         setSaving(false);
         return;
       }
@@ -340,7 +379,6 @@ export function IntakeWizard() {
     }
 
     const contact = form.contact.trim();
-    const usingEmail = isEmail(contact);
     const authUserId = user.id;
 
     // Checks for an existing row before every insert attempt (including
@@ -360,8 +398,8 @@ export function IntakeWizard() {
           auth_user_id: authUserId,
           company_name: form.companyName,
           contact_name: form.contactName,
-          email: usingEmail ? contact : null,
-          phone: usingEmail ? null : normalizePhone(contact),
+          email: contact,
+          phone: null,
           // Captured here (signup itself), not only via the
           // requested_${package}_package audit_log write in
           // handleAboutBidNext below -- that write only fires once a
@@ -797,7 +835,12 @@ export function IntakeWizard() {
             <Input label="Company name" value={form.companyName} onChange={(v) => update("companyName", v)} required />
             <Input label="Your name" value={form.contactName} onChange={(v) => update("contactName", v)} required />
             <div className="flex flex-col gap-space-2xs">
-              <Input label="Email or phone" value={form.contact} onChange={(v) => update("contact", v)} required />
+              {/* Email only -- was "Email or phone" with a phone-signup
+                  path, but production's Auth config never actually
+                  supported phone signup (external_phone_enabled: false,
+                  confirmed 2026-09-19); see handleAboutYouNext's own
+                  comment for the full story. */}
+              <Input label="Email" type="email" value={form.contact} onChange={(v) => update("contact", v)} required />
               <p className="text-body-sm text-on-surface-variant">
                 We'll use this to send updates on your bid.
               </p>
@@ -1073,8 +1116,6 @@ export function IntakeWizard() {
   );
 }
 
-let inputIdCounter = 0;
-
 function Input({
   label,
   value,
@@ -1091,9 +1132,17 @@ function Input({
   // Label and input weren't programmatically associated -- visually
   // adjacent but not linked via htmlFor/id, so screen readers couldn't
   // announce the label and clicking the label text didn't focus the
-  // field. useState keeps this stable across re-renders without needing
-  // a prop threaded in from every one of this component's ~20 call sites.
-  const [id] = useState(() => `intake-input-${++inputIdCounter}`);
+  // field. This used to be a module-level mutable counter
+  // (`intake-input-${++inputIdCounter}`) read inside useState's lazy
+  // initializer -- found (2026-09-19) to be a real hydration-mismatch
+  // bug, not just a style nit: the counter's value depends on how many
+  // times each Input's initializer has run and in what order, which
+  // React's Strict Mode double-invoking render functions in development
+  // (and any other case where client/server render counts diverge) can
+  // desync from the server-rendered ids. useId() is React's own built-in
+  // answer to exactly this -- stable, SSR-safe, hydration-safe -- with no
+  // shared mutable state to desync in the first place.
+  const id = useId();
   return (
     <div className="flex flex-col gap-space-2xs">
       <label htmlFor={id} className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">{label}</label>
