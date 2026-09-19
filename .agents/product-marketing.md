@@ -1,7 +1,7 @@
 # Product Marketing Context
 
-**Document version:** v4
-**Last updated:** 2026-09-18
+**Document version:** v5
+**Last updated:** 2026-09-19
 
 ## Product Overview
 **One-liner:** Done-for-you compliance paperwork for small trade contractors bidding on local/state government contracts.
@@ -106,6 +106,7 @@ No verified metrics, named customers, or testimonials exist yet — this is a pr
 
 ## Changelog
 *Newest first. One line per revision: what changed and why.*
+- v5 (2026-09-19) — Acquired the new brand domain firstcoastbids.com. Updated app/layout.tsx's metadataBase and lib/email/send.ts's sender address to it in code only — DNS, Vercel domain assignment, Resend sending-domain verification, and Supabase Auth redirect URLs are all still pending, so these two changes must not be deployed until that infrastructure work lands (deploying now would break OG-image social previews and bounce every outgoing email). The live site, the app-wide "Start an intake at..." CTA copy below, and bidpulse.co-specific incident history in CLAUDE.md/PROJECT-STATUS.md are all left describing bidpulse.co as-is since it's still the real, currently-serving domain.
 - v4 (2026-09-18) — Rebranded from "BidPulse" to "First Coast Bids" across the live product (marketing pages, admin/dashboard UI, nav/login/hero wordmark SVGs, PDF packet footer, email sender name, OG image, PWA manifest) and this doc. The domain (bidpulse.co) and the two already-rendered launch videos were deliberately left as-is per explicit decision — revisit both once the rename has settled everywhere else.
 - v3 (2026-09-16) — Reversed the "pricing deliberately hidden" decision: a persona-based research pass (a skeptical first-time-bidder test walking the real intake flow) found total pricing opacity was the single biggest trust gap in an otherwise well-built flow. Published real starting-at figures (One-off $399, Retainer $649/mo) on the public pricing page, homepage preview, and both FAQ copies; updated the "How much does this cost?" objection response to match. Also capped Pilot's free offer to the first 10 clients (was an unlimited standing offer) to bound real labor/API-cost liability, and removed the fabricated "Most popular" badge from One-off (no real usage data exists on a pre-revenue product to support that claim) — moved to Pilot as an honest "Start here" recommendation instead, matching this doc's own stated primary goal of funneling new prospects through Pilot first.
 - v2 (2026-09-16) — Updated every "preview in full" / "complete package before deciding" claim (Differentiation, Objections, Switching Dynamics, Proof Points) to "real excerpt/sample" — the pre-payment Preview now shows a sample of each deliverable, not the full content, so the old wording became literally false. Matching site copy fixed at the same time (app/(marketing)/page.tsx's pricing section).
