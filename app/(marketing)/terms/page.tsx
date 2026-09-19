@@ -52,7 +52,7 @@ export default function TermsPage() {
       <Reveal delay={0.24} className="flex flex-col gap-3">
         <h2 className="text-headline-md text-primary">No guarantee of winning</h2>
         <p className="text-body-md text-on-surface-variant">
-          No one can guarantee an award — that decision is up to the agency. What we aim for is a complete,
+          No one can guarantee an award; that decision is up to the agency. What we aim for is a complete,
           compliant submission prepared by people who&apos;ve done this before.
         </p>
       </Reveal>
@@ -61,7 +61,7 @@ export default function TermsPage() {
         <h2 className="text-headline-md text-primary">Pricing and billing</h2>
         <p className="text-body-md text-on-surface-variant">
           No card is required to get started, and every deliverable is free to preview before anything&apos;s due.
-          We confirm exact pricing with you directly before any work starts — see the{" "}
+          We confirm exact pricing with you directly before any work starts. See the{" "}
           <Link href="/pricing" className="text-primary font-bold hover:underline">Pricing page</Link> for the
           current one-off, retainer, and pilot options. We invoice you after the work is done.
         </p>
@@ -70,7 +70,7 @@ export default function TermsPage() {
       <Reveal delay={0.36} className="flex flex-col gap-3">
         <h2 className="text-headline-md text-primary">Your responsibilities</h2>
         <p className="text-body-md text-on-surface-variant">
-          Keep the company and credential information you give us accurate — we use it as real facts in the
+          Keep the company and credential information you give us accurate: we use it as real facts in the
           documents we prepare. You&apos;re responsible for reviewing every deliverable before you sign and submit
           it, and for your own agency portal account and submission.
         </p>

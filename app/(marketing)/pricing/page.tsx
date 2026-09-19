@@ -45,7 +45,7 @@ const RETAINER_STARTING_PRICE = "Starting at $649/mo";
 const PILOT_FREE_COHORT_OPEN = true;
 const PILOT_COHORT_SIZE = 10;
 const PILOT_PRICE_LINE = PILOT_FREE_COHORT_OPEN
-  ? `Free — first ${PILOT_COHORT_SIZE} clients`
+  ? `Free for the first ${PILOT_COHORT_SIZE} clients`
   : "Pricing confirmed with you directly";
 
 const PACKAGES = [
@@ -112,7 +112,7 @@ export default function PricingPage() {
         </Reveal>
         <Reveal mode="mount" delay={0.08}>
           <p className="text-body-md text-on-surface-variant">
-            Starting prices below — we confirm the exact number with you directly before any
+            Starting prices below. We confirm the exact number with you directly before any
             work starts. No card required today.
           </p>
         </Reveal>

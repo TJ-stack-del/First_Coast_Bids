@@ -47,7 +47,7 @@ export default function PrivacyPage() {
         <h2 className="text-headline-md text-primary">How it&apos;s stored and who can see it</h2>
         <p className="text-body-md text-on-surface-variant">
           Your data lives in a secured cloud database and file storage (Supabase). Access is restricted so only
-          your own account and the First Coast Bids team members preparing your submissions can see it — access rules are
+          your own account and the First Coast Bids team members preparing your submissions can see it: access rules are
           enforced at the database level, not just hidden by the interface. Documents are kept in a private
           storage bucket and served through short-lived links (about an hour) rather than public URLs.
         </p>
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
       <Reveal delay={0.3} className="flex flex-col gap-3">
         <h2 className="text-headline-md text-primary">Payment information</h2>
         <p className="text-body-md text-on-surface-variant">
-          We invoice you directly for work we&apos;ve done — this app itself doesn&apos;t collect or store your
+          We invoice you directly for work we&apos;ve done. This app itself doesn&apos;t collect or store your
           credit card number.
         </p>
       </Reveal>

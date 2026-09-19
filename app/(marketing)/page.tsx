@@ -139,7 +139,7 @@ assertNoMissingTradeCards(
 const PILOT_FREE_COHORT_OPEN = true;
 const PILOT_COHORT_SIZE = 10;
 const PILOT_PRICE_LINE = PILOT_FREE_COHORT_OPEN
-  ? `Free — first ${PILOT_COHORT_SIZE} clients`
+  ? `Free for the first ${PILOT_COHORT_SIZE} clients`
   : "Pricing confirmed with you directly";
 
 const PRICING_PREVIEW = [
@@ -195,7 +195,7 @@ const FAQ_PREVIEW = [
   },
   {
     q: "How does pricing work?",
-    a: "One-off starts at $399, Retainer starts at $649/mo, and Pilot is free for our first 10 clients — see the Pricing page for the full breakdown. We confirm the exact number with you directly before any work starts. No card is required to get started, and every deliverable is free to preview before anything's due.",
+    a: "One-off starts at $399, Retainer starts at $649/mo, and Pilot is free for our first 10 clients. See the Pricing page for the full breakdown. We confirm the exact number with you directly before any work starts. No card is required to get started, and every deliverable is free to preview before anything's due.",
   },
 ];
 
@@ -260,7 +260,11 @@ function Home() {
         <span className="text-label-md text-primary font-bold uppercase tracking-wide border border-primary rounded-full px-4 py-1">
           Now accepting founding clients
         </span>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter w-full">
+        {/* A divided row, not three identical cards -- matches the same
+            hairline-ledger language the Trades and Pricing sections below
+            already use, rather than introducing a fourth distinct "3 equal
+            boxes" treatment on the same page. */}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-outline-variant border-y border-outline-variant">
           {[
             {
               icon: "chat",
@@ -278,7 +282,7 @@ function Home() {
               body: `Not a big consulting firm, made for ${SUPPORTED_TRADES_LIST} contractors.`,
             },
           ].map((item, i) => (
-            <Reveal key={item.title} delay={i * 0.1} className="flex flex-col items-center text-center gap-2 p-gutter">
+            <Reveal key={item.title} delay={i * 0.1} className="flex flex-col items-center text-center gap-2 py-gutter px-4">
               <span className="material-symbols-outlined text-primary text-[28px]">{item.icon}</span>
               <h3 className="text-title-lg text-primary">{item.title}</h3>
               <p className="text-body-sm text-on-surface-variant">{item.body}</p>
@@ -389,7 +393,7 @@ function Home() {
         <div className="flex flex-col gap-2 max-w-2xl">
           <h2 className="text-headline-lg text-primary">No subscriptions. We invoice after the work&apos;s done.</h2>
           <p className="text-body-md text-on-surface-variant">
-            Every deliverable is free to preview before anything&apos;s due — real
+            Every deliverable is free to preview before anything&apos;s due: real
             excerpts from your actual bid, not a mockup. Starting prices below;
             we confirm the exact number with you directly before any work starts.
           </p>

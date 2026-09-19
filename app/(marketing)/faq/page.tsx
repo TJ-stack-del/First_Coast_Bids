@@ -31,7 +31,7 @@ const CATEGORIES = [
     faqs: [
       {
         q: "How does pricing work?",
-        a: "One-off starts at $399, Retainer starts at $649/mo, and Pilot is free for our first 10 clients — see the Pricing page for the full breakdown. We confirm the exact number with you directly before any work starts. No card is required to get started.",
+        a: "One-off starts at $399, Retainer starts at $649/mo, and Pilot is free for our first 10 clients. See the Pricing page for the full breakdown. We confirm the exact number with you directly before any work starts. No card is required to get started.",
       },
     ],
   },

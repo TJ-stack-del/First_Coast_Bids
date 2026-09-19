@@ -82,9 +82,16 @@ assertNoMissingTradeCards(
 
 function DeliverableCard({ ex, delay, className = "" }: { ex: (typeof EXAMPLES)[number]; delay: number; className?: string }) {
   return (
+    // No hover-lift/shadow/border-highlight here on purpose -- this card
+    // has no click destination (no full-sample content exists per trade,
+    // just this excerpt), so styling it like an interactive element would
+    // promise a click that goes nowhere. Found as a real reported bug
+    // (2026-09-19): the card's hover affordance was the exact same pattern
+    // used for genuinely clickable elements elsewhere on the site, so it
+    // read as "click me" despite having no href or onClick anywhere.
     <Reveal
       delay={delay}
-      className={`bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50 ${className}`}
+      className={`bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden flex flex-col ${className}`}
     >
       <div className="relative h-40 w-full">
         <Image src={ex.image} alt={ex.imageAlt} fill sizes="(min-width: 1024px) 300px, 100vw" className="object-cover" />
