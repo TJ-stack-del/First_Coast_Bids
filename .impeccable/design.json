@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T03:52:00Z",
+  "title": "Design System: First Coast Bids",
+  "extensions": {
+    "colorMeta": {
+      "ledger-navy": {
+        "role": "primary",
+        "displayName": "Ledger Navy",
+        "canonical": "#0C2D52",
+        "tonalRamp": ["#050E1A", "#071B33", "#0C2D52", "#123F73", "#1B4676", "#3E6494", "#7A9CC0", "#9DBFE6"]
+      },
+      "verified-green": {
+        "role": "secondary",
+        "displayName": "Verified Green",
+        "canonical": "#006C4A",
+        "tonalRamp": ["#00170F", "#00311F", "#00714E", "#00A56F", "#4EDEA3", "#82F5C1", "#B6FADA", "#E3FDF0"]
+      },
+      "muted-brass": {
+        "role": "tertiary",
+        "displayName": "Muted Brass",
+        "canonical": "#8A6934",
+        "tonalRamp": ["#2A1D14", "#4A3820", "#6D5228", "#8A6934", "#C19349", "#E2BA78", "#F0D6A8", "#F9EDDA"]
+      },
+      "flag-red": {
+        "role": "error",
+        "displayName": "Flag Red",
+        "canonical": "#BA1A1A",
+        "tonalRamp": ["#410002", "#690005", "#93000A", "#BA1A1A", "#DE3730", "#FF5449", "#FFB4AB", "#FFDAD6"]
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#F8F9FF",
+        "tonalRamp": ["#0B1C30", "#213145", "#554336", "#887364", "#DBC2B0", "#EFF4FF", "#F8F9FF", "#FFFFFF"]
+      },
+      "ledger-ink": {
+        "role": "neutral",
+        "displayName": "Ledger Ink",
+        "canonical": "#0F172A",
+        "tonalRamp": ["#060E20", "#0F172A", "#131B2E", "#171F33", "#222A3D", "#2D3449", "#31394D", "#DAE2FD"]
+      },
+      "manila": {
+        "role": "neutral-variant",
+        "displayName": "Manila",
+        "canonical": "#DBC2B0",
+        "tonalRamp": ["#211A14", "#554336", "#7A6250", "#887364", "#A08E7A", "#C4AD98", "#DBC2B0", "#F0E2D6"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Chivo)", "purpose": "Hero headlines only, one per page." },
+      "headline": { "displayName": "Headline (Chivo)", "purpose": "Section headers." },
+      "title": { "displayName": "Title (Chivo)", "purpose": "Card/row titles, sub-section headers." },
+      "body": { "displayName": "Body (Hanken Grotesk)", "purpose": "Primary reading copy, ~65ch max line length." },
+      "label": { "displayName": "Label (JetBrains Mono)", "purpose": "Badges, step numbers, tags, fine print. 11px functional-text floor enforced sitewide." }
+    },
+    "shadows": [
+      { "name": "overlay-lg", "value": "0 10px 15px -3px rgba(15,23,42,0.15), 0 4px 6px -4px rgba(15,23,42,0.1)", "purpose": "Modals, the login/auth panel, and any element genuinely lifted above the page." },
+      { "name": "overlay-xl", "value": "0 20px 25px -5px rgba(15,23,42,0.15), 0 8px 10px -6px rgba(15,23,42,0.1)", "purpose": "The heaviest overlay tier, used sparingly for the most prominent floating surfaces." },
+      { "name": "focus-ring-solid", "value": "0 0 0 2px rgb(12,45,82)", "purpose": "Solid-color focus/active ring substitute (e.g. the lifecycle stepper's active step) used instead of a soft glow, to keep the flat-ledger character even where something needs emphasis." }
+    ],
+    "motion": [
+      { "name": "hover-lift", "value": "transform: translateY(-2px); transition: transform 0.2s, opacity 0.2s;", "purpose": "Standard button/CTA hover: a small physical lift, never a glow or scale-up." },
+      { "name": "press-down", "value": "transform: scale(0.97); transition: transform 0.1s;", "purpose": "Active/press state on buttons and CTAs — a tactile press, not a color flash." },
+      { "name": "fade-in-mount", "value": "@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } } animation: fade-in 0.25s ease-out;", "purpose": "One-time page-load reveal for hero content and marketing-page sections on mount." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main CTA button used sitewide (Get Started, etc.) — a tint fill at rest, full-strength navy on hover, with a physical lift and press.",
+      "html": "<button class=\"ds-btn-primary\">Get started</button>",
+      "css": ".ds-btn-primary { background: #D6E2F0; color: #071B33; padding: 16px 32px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; border: none; cursor: pointer; transition: background 0.2s, opacity 0.2s, transform 0.15s; } .ds-btn-primary:hover { background: #0C2D52; color: #FFFFFF; opacity: 0.9; transform: translateY(-2px); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid #0C2D52; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "The secondary/ghost CTA — outlined, no fill at rest, plain background-tint on hover.",
+      "html": "<button class=\"ds-btn-ghost\">See how it works</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #0B1C30; padding: 16px 32px; border-radius: 4px; border: 1px solid #DBC2B0; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, transform 0.15s; } .ds-btn-ghost:hover { background: #EFF4FF; transform: translateY(-2px); } .ds-btn-ghost:active { transform: scale(0.97); } .ds-btn-ghost:focus-visible { outline: 2px solid #0C2D52; outline-offset: 2px; }"
+    },
+    {
+      "name": "Verified Badge",
+      "kind": "chip",
+      "refersTo": "badge-verified",
+      "description": "The 'verified/complete/done' status pill — Verified Green only, never used for anything else.",
+      "html": "<span class=\"ds-badge-verified\">Ready</span>",
+      "css": ".ds-badge-verified { display: inline-flex; align-items: center; gap: 4px; background: #82F5C1; color: #00714E; padding: 2px 10px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }"
+    },
+    {
+      "name": "Gold Badge",
+      "kind": "chip",
+      "refersTo": "badge-gold",
+      "description": "The 'certified/premium' pill (e.g. a recommended pricing tier's label) — true bright Gold Leaf fill, dark text.",
+      "html": "<span class=\"ds-badge-gold\">Start here</span>",
+      "css": ".ds-badge-gold { display: inline-flex; align-items: center; background: #C19349; color: #2A1D14; padding: 2px 10px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }"
+    },
+    {
+      "name": "Ledger Row List",
+      "kind": "custom",
+      "refersTo": "ledger-row",
+      "description": "The system's signature pattern: a hairline-divided list (Trades, Pricing, homepage benefits) used instead of a card grid for any set of 3+ comparable items. Icon + title label column, flexible description column, one continuous unit with no per-item shadow or radius.",
+      "html": "<ul class=\"ds-ledger\"><li class=\"ds-ledger-row\"><div class=\"ds-ledger-label\"><span class=\"ds-ledger-icon\">&#9670;</span><h4>HVAC</h4></div><p class=\"ds-ledger-desc\">Installation, maintenance, and repair contracts for public buildings.</p></li><li class=\"ds-ledger-row\"><div class=\"ds-ledger-label\"><span class=\"ds-ledger-icon\">&#9670;</span><h4>Janitorial</h4></div><p class=\"ds-ledger-desc\">Cleaning and facility-upkeep contracts for schools, offices, and public spaces.</p></li></ul>",
+      "css": ".ds-ledger { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; } .ds-ledger-row { display: flex; flex-direction: column; gap: 8px; padding: 24px 0; border-bottom: 1px solid #DBC2B0; } .ds-ledger-row:first-child { padding-top: 0; } .ds-ledger-row:last-child { border-bottom: none; padding-bottom: 0; } .ds-ledger-label { display: flex; align-items: center; gap: 12px; } .ds-ledger-icon { color: #0C2D52; font-size: 18px; } .ds-ledger-label h4 { margin: 0; font-family: 'Chivo', sans-serif; font-size: 20px; font-weight: 600; color: #0C2D52; text-transform: uppercase; letter-spacing: 0.02em; } .ds-ledger-desc { margin: 0; font-family: 'Hanken Grotesk', sans-serif; font-size: 12px; color: #554336; } @media (min-width: 640px) { .ds-ledger-row { flex-direction: row; align-items: baseline; gap: 32px; } .ds-ledger-label { width: 256px; flex-shrink: 0; } }"
+    },
+    {
+      "name": "Overlay Card",
+      "kind": "card",
+      "refersTo": "card-overlay",
+      "description": "A genuinely floating surface (modal, auth panel) — the only place this system uses real box-shadow elevation instead of a hairline border.",
+      "html": "<div class=\"ds-card-overlay\"><h3>Reset your password</h3><p>Choose a new password below.</p></div>",
+      "css": ".ds-card-overlay { background: #FFFFFF; border-radius: 12px; padding: 32px; box-shadow: 0 20px 25px -5px rgba(15,23,42,0.15), 0 8px 10px -6px rgba(15,23,42,0.1); } .ds-card-overlay h3 { margin: 0 0 8px; font-family: 'Chivo', sans-serif; font-size: 32px; font-weight: 700; color: #0C2D52; } .ds-card-overlay p { margin: 0; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; color: #554336; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Compliance Ledger",
+    "overview": "First Coast Bids turns dense government paperwork into a clean, verifiable record, and the design system looks like the thing it produces. Sections read as ledger rows: fixed label columns, hairline dividers, one continuous index rather than a shelf of floating cards. Navy is the ink, gold is what gets certified, green is what's been verified, red is what's been flagged. The system is confident and plain-spoken, built for a trade-business owner reading it between jobs, not a design-conscious buyer being sold an aesthetic.\n\nConfirmed anti-reference: generic tech-startup SaaS. No glossy gradients, no floating illustration blobs, no \"AI product\" sheen. The brand voice is grounded, plain-spoken, and unglamorous-on-purpose; the visual system holds to the same restraint. Density stays moderate: enough white space to read as calm and trustworthy, not so much that it reads as decorative or precious about it.",
+    "keyCharacteristics": [
+      "Ledger rows (hairline-divided lists), not card grids, for anything that's fundamentally a list",
+      "One accent color family (navy) does almost all the work; gold and green are reserved for specific, narrow meanings",
+      "Flat at rest; real elevation (shadow) is reserved for things genuinely floating above the page, never used to decorate an inline section",
+      "Chivo for anything that announces something, Hanken Grotesk for anything that explains something, JetBrains Mono for anything that's a number, a status, or a label"
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Navy does the work of \"brand.\" Gold and green are never used as a second/third general-purpose accent; each has exactly one meaning (certified/premium; verified/complete) and appears only in that context.", "section": "colors" },
+      { "name": "The No-Green-Drift Rule", "body": "Verified Green is a status color, not a brand color, even though it's used constantly. If a design decision would add a fourth meaning to green, it's the wrong color for that decision.", "section": "colors" },
+      { "name": "The Mono-Means-Data Rule", "body": "JetBrains Mono is reserved for anything that behaves like a number or a state (prices, step counters, uppercase labels/badges). Prose never gets the mono treatment, and data/labels never get Hanken Grotesk.", "section": "typography" },
+      { "name": "The Flat-Ledger Rule", "body": "Content sections get hairlines, not shadows. Shadows are reserved for things that are actually stacked above the page (modals, dropdowns), never used to decorate an inline row or card.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use a hairline-divided ledger row (divide-y/divide-x + border-outline-variant) for any list of 3+ comparable items, instead of a card grid.",
+      "Do keep Verified Green scoped to verification/completion states only, even when a general-purpose second accent color would be convenient.",
+      "Do use Muted Brass (#8A6934), not true Gold Leaf (#C19349), for any gold text or icon smaller than 18px/large-text size; true gold fails body-text contrast.",
+      "Do reserve real box-shadow elevation for things genuinely floating above the page (modals, dropdowns); use borders/dividers for everything else."
+    ],
+    "donts": [
+      "Don't build a 3-equal-column card grid for a short list of comparable items; the Ledger Row pattern already owns that job on this project, and a card grid reads as a second, inconsistent visual language on the same page.",
+      "Don't add a fourth meaning to Verified Green, or a second use for Flag Red. Their rarity is what makes them legible as status, not decoration.",
+      "Don't use a shadow to make an in-page ledger row or section \"pop\"; that contradicts the Flat-Ledger Rule and reintroduces the card-grid look the system deliberately avoids.",
+      "Don't reach for glossy gradients, floating illustration blobs, or generic \"AI product\" visual tells; the confirmed anti-reference for this system is generic tech-startup SaaS."
+    ]
+  }
+}
