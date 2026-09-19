@@ -4,7 +4,7 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
   title: "Terms",
-  description: "A plain-language summary of how using BidPulse works.",
+  description: "A plain-language summary of how using First Coast Bids works.",
 };
 
 // Same disclaimer/discipline as app/(marketing)/privacy/page.tsx -- an
@@ -27,13 +27,13 @@ export default function TermsPage() {
         <p className="text-label-md font-bold uppercase tracking-wider">This is a plain-language summary, not a final policy</p>
         <p className="text-body-md">
           We&apos;re finalizing formal, attorney-reviewed Terms of Service. In the meantime, this page describes how
-          working with BidPulse actually works today, in plain English.{" "}
+          working with First Coast Bids actually works today, in plain English.{" "}
           <Link href="/contact" className="font-bold underline">Contact us</Link> with any questions.
         </p>
       </Reveal>
 
       <Reveal delay={0.12} className="flex flex-col gap-3">
-        <h2 className="text-headline-md text-primary">What BidPulse does</h2>
+        <h2 className="text-headline-md text-primary">What First Coast Bids does</h2>
         <p className="text-body-md text-on-surface-variant">
           You send us a government RFP or solicitation. Our team prepares a capability statement, compliance
           matrix, and technical narrative for you to review, sign, and submit yourself.

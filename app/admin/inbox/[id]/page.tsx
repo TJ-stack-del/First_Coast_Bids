@@ -148,7 +148,7 @@ export default async function AdminSubmissionDetailPage({
 
   const client = submission.clients as any;
 
-  // Safety net: is this bid's trade one BidPulse has real compliance
+  // Safety net: is this bid's trade one First Coast Bids has real compliance
   // coverage for at all (lib/compliance/known-trades.ts)? If not, the
   // compliance matrix can look complete without being complete — flag it
   // here with the same visual weight as the mandatory-site-visit warning

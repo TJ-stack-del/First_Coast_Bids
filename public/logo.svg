@@ -1,13 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120" fill="none">
-  <!-- Horizontal nav logo — light theme (dark wordmark, for light surfaces) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="520" height="120" fill="none">
+  <!-- Horizontal nav logo — light theme (dark wordmark, for light surfaces).
+       Navy/Gold brand colors (matching public/logo-mark.png and
+       app/globals.css's primary/tertiary tokens); this file kept its old
+       pre-rebrand shield+pulse-line icon shape and amber palette until
+       now, since nothing but the PDF preview watermark in
+       components/ui/PacketButtons.tsx still references it. Only the
+       colors changed here, not the icon geometry; it renders at 24px
+       tall and 10% opacity, so shape fidelity to the real mark matters far
+       less than not showing the old amber brand by mistake. -->
   <defs>
     <linearGradient id="logoLightShieldGrad" x1="256" y1="40" x2="256" y2="450" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#131b2e"/>
-      <stop offset="100%" stop-color="#080e1a"/>
+      <stop offset="0%" stop-color="#1b4676"/>
+      <stop offset="100%" stop-color="#071b33"/>
     </linearGradient>
     <linearGradient id="logoLightAmber" x1="120" y1="120" x2="392" y2="380" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#fbbf24"/>
-      <stop offset="100%" stop-color="#f59e0b"/>
+      <stop offset="0%" stop-color="#e2ba78"/>
+      <stop offset="100%" stop-color="#c19349"/>
     </linearGradient>
   </defs>
   <g transform="translate(-12.4, 10.4) scale(0.2)">
@@ -17,7 +25,7 @@
           stroke-width="12"
           stroke-linejoin="round"/>
     <path d="M256 80 L374 128 C374 262 322 364 256 410 C190 364 138 262 138 128 Z"
-          stroke="#232f48"
+          stroke="#1b4676"
           stroke-width="4"
           stroke-linejoin="round"
           fill="none"/>
@@ -26,14 +34,15 @@
           stroke-width="14"
           stroke-linecap="round"
           stroke-linejoin="round"/>
-    <circle cx="270" cy="328" r="6" fill="#f59e0b"/>
-    <circle cx="232" cy="184" r="6" fill="#fbbf24"/>
+    <circle cx="270" cy="328" r="6" fill="#c19349"/>
+    <circle cx="232" cy="184" r="6" fill="#e2ba78"/>
   </g>
-  <!-- "Pulse" uses the light-mode primary token color (#8d4b00) rather
-       than the vivid dark-mode amber (#f59e0b): the vivid amber is a
-       container/accent color, not a WCAG-legible text color on a white
-       surface (see the light design system's own AAA-contrast note). -->
-  <text x="90" y="74" font-family="Chivo, system-ui, sans-serif" font-size="46" font-weight="800" letter-spacing="-1">
-    <tspan fill="#0b1c30">Bid</tspan><tspan fill="#8d4b00">Pulse</tspan>
+  <!-- "Bids" uses a darkened gold (#8a6934) rather than the vivid brand
+       gold (#c19349): true brand gold only clears WCAG's large-text/
+       graphic floor (3:1), not the 4.5:1 body-text floor this text-sized
+       span needs; same reasoning as app/globals.css's tertiary vs.
+       tertiary-container token split. -->
+  <text x="90" y="74" xml:space="preserve" font-family="Chivo, system-ui, sans-serif" font-size="46" font-weight="800" letter-spacing="-1">
+    <tspan fill="#0c2d52">First Coast </tspan><tspan fill="#8a6934">Bids</tspan>
   </text>
 </svg>

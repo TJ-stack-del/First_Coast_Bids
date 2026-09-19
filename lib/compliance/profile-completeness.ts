@@ -11,7 +11,7 @@
 // Deterministic field-presence check, not an LLM judgment call -- cheaper,
 // more reliable, and avoids the exact "third-person AI text" voice problem
 // that caused the earlier Request-info bug. Every field is weighted
-// equally: no field here matters enough to the actual paperwork BidPulse
+// equally: no field here matters enough to the actual paperwork First Coast Bids
 // prepares to justify a heavier or lighter weight than another, and equal
 // weighting is the one scheme that doesn't need its own separate
 // justification.

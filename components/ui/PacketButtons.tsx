@@ -305,7 +305,7 @@ export function PacketButtons({
               <div className="absolute inset-0 flex flex-wrap content-center justify-center gap-x-10 gap-y-6 rotate-[-30deg] scale-150 opacity-[0.07]">
                 {Array.from({ length: 24 }).map((_, i) => (
                   <span key={i} className="text-on-surface text-label-sm font-bold whitespace-nowrap">
-                    PREVIEW · {previewData.submission.clients?.company_name ?? "BidPulse"} ·{" "}
+                    PREVIEW · {previewData.submission.clients?.company_name ?? "First Coast Bids"} ·{" "}
                     {new Date().toLocaleDateString()}
                   </span>
                 ))}

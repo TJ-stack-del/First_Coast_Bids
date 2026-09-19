@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ResetPasswordForm } from "./ResetPasswordForm";
 import { Reveal } from "@/components/ui/Reveal";
+import { Logo } from "@/components/ui/Logo";
 
 export const metadata: Metadata = {
   title: "Reset Password",
@@ -20,22 +20,7 @@ export default function ResetPasswordPage() {
             href="/"
             className="block w-fit mx-auto mb-4 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <Image
-              src="/login-logo.svg"
-              alt="BidPulse"
-              width={224}
-              height={224}
-              className="h-[var(--auth-logo-height)] w-auto mx-auto dark:hidden"
-              priority
-            />
-            <Image
-              src="/login-logo-dark.svg"
-              alt="BidPulse"
-              width={224}
-              height={224}
-              className="hidden h-[var(--auth-logo-height)] w-auto mx-auto dark:block"
-              priority
-            />
+            <Logo variant="stacked" priority iconClassName="h-[var(--auth-logo-height)] w-auto" />
           </Link>
           <Reveal mode="mount" as="div">
             <span className="font-bold text-headline-lg text-primary">Reset your password</span>

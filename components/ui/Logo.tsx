@@ -1,37 +1,86 @@
 import Image from "next/image";
 
-// Shared nav wordmark, used everywhere a nav bar shows the BidPulse mark
-// (AppShell, MarketingShell's header + footer, the intake wizard's header).
-// Height is set once via --nav-logo-height (app/globals.css) rather than
-// each caller picking its own h-8/h-9/h-10 by eye -- that's exactly how it
-// drifted to three different rendered heights before this existed.
-// Renders both the light-bg and dark-bg variants (matching whichever the
-// active theme needs via dark:hidden/dark:block) since every nav context
-// this is used in supports the light/dark toggle -- not just the one
-// variant a single screenshot happened to show.
-//
-// Only the horizontal nav mark (logo.svg/logo-dark.svg) -- the stacked
-// mark used on login/reset-password is a different, deliberately taller
-// centerpiece treatment, not a nav instance, and out of scope here.
-export function Logo({ className = "", priority = false }: { className?: string; priority?: boolean }) {
-  return (
+// Brand colors for the wordmark text, matching public/logo-mark.png's own
+// navy/gold tones (#0c2d52 / #c19349) so the flat text reads as the same
+// two-color system as the dimensional mark next to it.
+const NAVY = "#0C2D52";
+const GOLD = "#C19349";
+
+// Two real layouts, not one component squeezed into both shapes with CSS:
+// "horizontal" for nav bars (icon left, text right, the common case) and
+// "stacked" for centerpiece placements (login/reset-password hero, a
+// footer mark) where the icon sits above the wordmark. Both render the
+// same two-line wordmark ("FIRST COAST" over bold "BIDS") since that's
+// the real lockup logo-mark.png's companion Stitch reference used in both
+// orientations -- only the icon's position relative to the text changes.
+export function Logo({
+  variant = "horizontal",
+  className = "",
+  iconClassName = "",
+  priority = false,
+}: {
+  variant?: "horizontal" | "stacked";
+  className?: string;
+  iconClassName?: string;
+  priority?: boolean;
+}) {
+  // Two separate source images, not one image + a CSS filter -- the dark
+  // variant was extracted from a Stitch reference rendered natively on a
+  // dark background (see public/logo-mark-dark.png), so its alpha-matte
+  // edges are clean against dark surfaces the same way logo-mark.png's are
+  // clean against light ones. A single image decontaminated for one
+  // background always shows a faint fringe of the other background's tint
+  // at its semi-transparent edges. `dark:hidden`/`hidden dark:block` swap
+  // on the CSS `.dark` class (next-themes) with no JS/hydration flicker,
+  // and no `fill` sizing since iconClassName can be `w-auto` (the
+  // reset-password hero logo) -- `fill` requires a definite parent width.
+  const iconClasses = iconClassName || "h-10 w-10";
+  const icon = (
     <>
       <Image
-        src="/logo.svg"
-        alt="BidPulse"
-        width={100}
-        height={30}
-        className={`h-[var(--nav-logo-height)] w-auto dark:hidden ${className}`}
+        src="/logo-mark.png"
+        alt="First Coast Bids"
+        width={512}
+        height={512}
+        className={`${iconClasses} dark:hidden`}
         priority={priority}
       />
       <Image
-        src="/logo-dark.svg"
-        alt="BidPulse"
-        width={100}
-        height={30}
-        className={`hidden h-[var(--nav-logo-height)] w-auto dark:block ${className}`}
+        src="/logo-mark-dark.png"
+        alt="First Coast Bids"
+        width={512}
+        height={512}
+        className={`${iconClasses} hidden dark:block`}
         priority={priority}
       />
     </>
+  );
+
+  const wordmark = (
+    <span
+      className="font-headline font-bold leading-tight"
+      style={{ color: NAVY }}
+    >
+      <span className="block tracking-wide">FIRST COAST</span>
+      <span className="block tracking-wide" style={{ color: GOLD }}>
+        BIDS
+      </span>
+    </span>
+  );
+
+  if (variant === "stacked") {
+    return (
+      <div className={`flex flex-col items-center gap-2 text-center ${className}`}>
+        {icon}
+        {wordmark}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      {icon}
+      {wordmark}
+    </div>
   );
 }

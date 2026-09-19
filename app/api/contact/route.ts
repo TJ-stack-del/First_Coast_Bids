@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const supabase = serviceClient();
 
   // support_messages.org_id is not-null — this form has no session (so no
-  // client/submission to derive an org from), and BidPulse is single-org
+  // client/submission to derive an org from), and First Coast Bids is single-org
   // today, so the oldest organization row is the only sane target. Picked
   // fresh per request rather than hardcoded so this doesn't silently break
   // if the org is ever recreated with a new id.

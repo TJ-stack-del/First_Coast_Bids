@@ -51,20 +51,34 @@
   --color-inverse-on-surface: 234 241 255;
   --color-outline: 136 115 100;
   --color-outline-variant: 219 194 176;
-  --color-surface-tint: 144 77 0;
-  --color-primary: 141 75 0;
+  /* Navy/gold brand pass (this session, following the "First Coast Bids"
+     rename): primary re-anchored on the wordmark's Navy (#0C2D52,
+     components/ui/Logo.tsx / public/logo-mark.svg's navyBevel), tertiary
+     repurposed from its old little-used blue onto the wordmark's Gold
+     (#C19349, goldBevel) since tertiary had far fewer real call sites to
+     disrupt than secondary. --color-tertiary itself uses a darkened gold
+     (#8A6934, 5.06:1 on white) rather than the true brand gold -- true
+     #C19349 only clears WCAG's 3:1 large-text/graphic floor (2.79:1 on
+     white), which fails outright as the on-surface text/icon role this
+     token serves; true gold is used for -container instead, where it's a
+     fill, not text. --color-secondary (teal-green, "verified/complete")
+     is deliberately NOT touched here -- 36+ real usages across the admin
+     inbox, matches panel, deliverables, and document badges depend on
+     it as a distinct semantic (success/done), not a brand-hue slot. */
+  --color-surface-tint: 12 45 82;
+  --color-primary: 12 45 82;
   --color-on-primary: 255 255 255;
-  --color-primary-container: 177 95 0;
-  --color-on-primary-container: 255 251 255;
-  --color-inverse-primary: 255 183 125;
+  --color-primary-container: 214 226 240;
+  --color-on-primary-container: 7 27 51;
+  --color-inverse-primary: 157 191 230;
   --color-secondary: 0 108 74;
   --color-on-secondary: 255 255 255;
   --color-secondary-container: 130 245 193;
   --color-on-secondary-container: 0 113 78;
-  --color-tertiary: 0 97 148;
+  --color-tertiary: 138 105 52;
   --color-on-tertiary: 255 255 255;
-  --color-tertiary-container: 0 123 185;
-  --color-on-tertiary-container: 253 252 255;
+  --color-tertiary-container: 193 147 73;
+  --color-on-tertiary-container: 42 29 20;
   --color-error: 186 26 26;
   --color-on-error: 255 255 255;
   --color-error-container: 255 218 214;
@@ -116,20 +130,25 @@
   --color-inverse-on-surface: 40 48 68;
   --color-outline: 160 142 122;
   --color-outline-variant: 83 68 52;
-  --color-surface-tint: 255 185 95;
-  --color-primary: 255 193 116;
-  --color-on-primary: 71 42 0;
-  --color-primary-container: 245 158 11;
-  --color-on-primary-container: 97 59 0;
-  --color-inverse-primary: 133 83 0;
+  /* Same navy/gold pass as :root above, dark-mode pairing (light-on-dark
+     for primary since flat navy fails as a dark-surface fill; bright gold
+     for tertiary since the darkened light-mode gold is unnecessary once
+     the background itself is already dark). secondary intentionally left
+     untouched -- see the :root comment. */
+  --color-surface-tint: 157 191 230;
+  --color-primary: 157 191 230;
+  --color-on-primary: 12 45 82;
+  --color-primary-container: 27 58 92;
+  --color-on-primary-container: 214 226 240;
+  --color-inverse-primary: 12 45 82;
   --color-secondary: 78 222 163;
   --color-on-secondary: 0 56 36;
   --color-secondary-container: 16 185 129;
   --color-on-secondary-container: 0 49 31;
-  --color-tertiary: 142 213 255;
-  --color-on-tertiary: 0 53 74;
-  --color-tertiary-container: 56 189 248;
-  --color-on-tertiary-container: 0 73 101;
+  --color-tertiary: 232 192 120;
+  --color-on-tertiary: 61 43 31;
+  --color-tertiary-container: 92 70 38;
+  --color-on-tertiary-container: 245 230 211;
   --color-error: 255 180 171;
   --color-on-error: 105 0 5;
   --color-error-container: 147 0 10;

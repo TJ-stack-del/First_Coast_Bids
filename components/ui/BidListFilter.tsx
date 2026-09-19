@@ -13,7 +13,7 @@ export type BidListItem = {
 
 // Client dashboard's bid-list filter bar. An item can be neither
 // needsAction nor completed (an active bid currently waiting on the
-// BidPulse team, nothing pending from the client) -- it only shows up
+// First Coast Bids team, nothing pending from the client) -- it only shows up
 // under "All" in that case, which is correct: it isn't done, but there's
 // also nothing to act on yet.
 export function BidListFilter({ items, emptyMessage }: { items: BidListItem[]; emptyMessage: string }) {

@@ -7,10 +7,28 @@ export const metadata: Metadata = {
   // absolute URL in production rather than falling back to localhost.
   metadataBase: new URL("https://bidpulse.co"),
   title: {
-    default: "BidPulse",
-    template: "%s — BidPulse",
+    default: "First Coast Bids",
+    template: "%s — First Coast Bids",
   },
   description: "Done-for-you bid prep for small trade contractors — HVAC, janitorial, and landscaping businesses bidding on local government contracts.",
+  // Explicit rather than relying on the app/icon.svg file convention (that
+  // file was removed) -- keeps the favicon source visible here instead of
+  // silent, and avoids Next.js emitting two competing <link rel="icon">
+  // tags if both a convention file and explicit metadata existed at once.
+  // PNG rather than SVG: logo-mark.png is a raster crop of the real Stitch
+  // reference image (not a hand-traced vector) -- see public/logo-mark.png.
+  // Two variants keyed on the OS-level prefers-color-scheme media query
+  // (the browser's own tab-bar chrome, not this app's .dark class/theme
+  // toggle -- a favicon can't read next-themes) so the icon doesn't show
+  // light-background matting fringe in a dark browser tab bar or vice
+  // versa. logo-mark-dark.png was matted against a dark reference image,
+  // not derived from logo-mark.png with a filter.
+  icons: {
+    icon: [
+      { url: "/logo-mark.png", media: "(prefers-color-scheme: light)" },
+      { url: "/logo-mark-dark.png", media: "(prefers-color-scheme: dark)" },
+    ],
+  },
 };
 
 export const viewport: Viewport = {

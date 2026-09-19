@@ -89,7 +89,7 @@ export function BidFileStep({
           onChange={(e) => setAcknowledged(e.target.checked)}
           className="mt-1 h-4 w-4 shrink-0 rounded border-outline-variant text-primary focus:ring-primary"
         />
-        I understand that BidPulse helps prepare my bid but does not guarantee I will win the
+        I understand that First Coast Bids helps prepare my bid but does not guarantee I will win the
         contract.
       </label>
 

@@ -216,7 +216,7 @@ export const TRADE_SPECIFIC_CERTIFICATIONS: TriggeredRequirementDefinition[] = [
       "252.204-7021",
     ],
     verificationNote:
-      "[SERIOUS, HIGH-COST COMPLIANCE FLAG, NOT a routine checklist item — this bid's own text references Controlled Unclassified Information (CUI), NIST SP 800-171, CMMC, or a related DFARS clause. Real scope: 110 security controls, a self-assessment reported to SPRS, and for many contracts a mandatory third-party (C3PAO) CMMC Level 2 assessment before award. Flag this to the client immediately — this should almost never be silently treated as a simple item to tick off like the other requirements above, and likely requires specialist cybersecurity compliance help beyond what BidPulse provides]",
+      "[SERIOUS, HIGH-COST COMPLIANCE FLAG, NOT a routine checklist item — this bid's own text references Controlled Unclassified Information (CUI), NIST SP 800-171, CMMC, or a related DFARS clause. Real scope: 110 security controls, a self-assessment reported to SPRS, and for many contracts a mandatory third-party (C3PAO) CMMC Level 2 assessment before award. Flag this to the client immediately — this should almost never be silently treated as a simple item to tick off like the other requirements above, and likely requires specialist cybersecurity compliance help beyond what First Coast Bids provides]",
   },
 ];
 

@@ -9,7 +9,7 @@ import { TAGLINE } from "@/lib/brand";
 // Shared header/footer for the public marketing site — separate from
 // AppShell, which is for the authenticated app and branches nav by role.
 // Nobody needs a role here; every visitor sees the same nav, plus
-// Log in / Get started. Visual system matches the new BidPulse mockups.
+// Log in / Get started. Visual system matches the new First Coast Bids mockups.
 //
 // Now mounted once for the whole site via app/(marketing)/layout.tsx
 // rather than individually by every page -- when every page rendered its
@@ -145,7 +145,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
             <Logo />
             <div className="flex flex-col">
               <span className="text-label-sm text-on-surface-variant">{TAGLINE}</span>
-              <span className="text-body-sm text-on-surface-variant">© {new Date().getFullYear()} BidPulse</span>
+              <span className="text-body-sm text-on-surface-variant">© {new Date().getFullYear()} First Coast Bids</span>
             </div>
           </div>
           <nav className="flex flex-wrap justify-center gap-6">
@@ -170,7 +170,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
             </Link>
           </nav>
           <p className="text-label-sm text-on-surface-variant text-center">
-            BidPulse helps you prepare a strong, compliant bid, but we can't guarantee you'll win. That decision is up to the agency.
+            First Coast Bids helps you prepare a strong, compliant bid, but we can't guarantee you'll win. That decision is up to the agency.
           </p>
         </div>
       </footer>

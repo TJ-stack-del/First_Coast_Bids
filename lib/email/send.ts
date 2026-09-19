@@ -40,7 +40,7 @@ export async function sendEmail({
         ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
       },
       body: JSON.stringify({
-        from: "BidPulse <notifications@bidpulse.co>", // bidpulse.co is now a verified sending domain,
+        from: "First Coast Bids <notifications@bidpulse.co>", // bidpulse.co is now a verified sending domain,
         to: to.trim().toLowerCase(),
         subject,
         html,

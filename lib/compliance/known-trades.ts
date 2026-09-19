@@ -1,4 +1,4 @@
-// Single source of truth for "is this bid in a trade BidPulse actually has
+// Single source of truth for "is this bid in a trade First Coast Bids actually has
 // real compliance coverage for" — used by both the admin-facing flag
 // (app/admin/inbox/[id]/page.tsx) and the client-facing notes (the
 // compliance_matrix deliverable content in generate-draft/route.ts, and the

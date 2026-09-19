@@ -96,7 +96,7 @@ export async function finalizeSubmission(
       org_id: client?.org_id,
       event_type: "no_guarantee_acknowledged",
       event_detail: {
-        text: "I understand that BidPulse helps prepare my bid but does not guarantee I will win the contract.",
+        text: "I understand that First Coast Bids helps prepare my bid but does not guarantee I will win the contract.",
       },
     });
   }

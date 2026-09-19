@@ -4,7 +4,7 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
   title: "Privacy",
-  description: "A plain-language summary of how BidPulse handles your data.",
+  description: "A plain-language summary of how First Coast Bids handles your data.",
 };
 
 // A real gap a design review surfaced: the footer had no privacy/terms
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
         <p className="text-label-md font-bold uppercase tracking-wider">This is a plain-language summary, not a final policy</p>
         <p className="text-body-md">
           We&apos;re finalizing a formal, attorney-reviewed Privacy Policy. In the meantime, this page describes how
-          BidPulse actually handles your information today, in plain English. If you have questions or a specific
+          First Coast Bids actually handles your information today, in plain English. If you have questions or a specific
           request about your data, <Link href="/contact" className="font-bold underline">contact us</Link> directly.
         </p>
       </Reveal>
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
         <h2 className="text-headline-md text-primary">How it&apos;s stored and who can see it</h2>
         <p className="text-body-md text-on-surface-variant">
           Your data lives in a secured cloud database and file storage (Supabase). Access is restricted so only
-          your own account and the BidPulse team members preparing your submissions can see it — access rules are
+          your own account and the First Coast Bids team members preparing your submissions can see it — access rules are
           enforced at the database level, not just hidden by the interface. Documents are kept in a private
           storage bucket and served through short-lived links (about an hour) rather than public URLs.
         </p>

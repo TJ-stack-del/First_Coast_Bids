@@ -25,7 +25,7 @@ import { broadcastSignedIn } from "@/lib/auth-broadcast";
 // rendered it, so this now reads the real current path directly via
 // usePathname() instead.
 //
-// Nav links are role-based since BidPulse split admin (your team,
+// Nav links are role-based since First Coast Bids split admin (your team,
 // works every client's submissions) from client (a contractor, sees only
 // their own) — see MIGRATION-TO-BIDPULSE.md. The header's notifications/
 // settings icons were dropped for now since those pages don't exist yet

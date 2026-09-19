@@ -209,7 +209,7 @@ export default async function DashboardPage() {
   // drafts always need action (they're incomplete); an active bid needs
   // action once deliverables are ready or in client review, or it has a
   // pending checklist item; closed bids are the only "Completed" ones. An
-  // active bid that's simply waiting on the BidPulse team (submitted/in
+  // active bid that's simply waiting on the First Coast Bids team (submitted/in
   // review, nothing pending) is neither -- it only shows under "All",
   // which is correct: not done, but nothing to act on yet either.
   const bidListItems: BidListItem[] = [

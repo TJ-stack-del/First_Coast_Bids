@@ -28,7 +28,7 @@ export default async function AdminSettingsPage() {
     <>
       <div className="mt-6">
         <h1 className="text-headline-lg text-primary mb-1">Settings</h1>
-        <p className="text-body-md text-on-surface-variant">Business-wide settings for how BidPulse works.</p>
+        <p className="text-body-md text-on-surface-variant">Business-wide settings for how First Coast Bids works.</p>
       </div>
 
       <div className="mt-6 bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6 max-w-xl">

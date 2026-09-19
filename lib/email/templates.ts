@@ -1,5 +1,5 @@
 // Keep every client-facing template short and plain — same 8th-grade
-// reading level standard as the rest of BidPulse's client-facing copy.
+// reading level standard as the rest of First Coast Bids' client-facing copy.
 
 const STAGE_MESSAGES: Record<string, { subject: string; body: (agency: string) => string }> = {
   submitted: {
@@ -37,7 +37,7 @@ export function getStageChangeEmail(stage: string, agency: string, companyName: 
     html: `
       <p>Hi ${companyName},</p>
       <p>${template.body(agency)}</p>
-      <p>— BidPulse</p>
+      <p>— First Coast Bids</p>
     `,
   };
 }
@@ -50,7 +50,7 @@ export function getInfoRequestEmail(message: string, agency: string, companyName
       <p>We need a bit more information to keep working on your ${agency} bid:</p>
       <p>${message.replace(/\n/g, "<br>")}</p>
       <p>Log in to your dashboard any time to check on this.</p>
-      <p>— BidPulse</p>
+      <p>— First Coast Bids</p>
     `,
   };
 }
@@ -66,7 +66,7 @@ export function getNewMessageEmail(agency: string, companyName: string) {
     html: `
       <p>Hi ${companyName},</p>
       <p>We sent you a new message about your ${agency} bid. Log in to your dashboard to view it and reply.</p>
-      <p>— BidPulse</p>
+      <p>— First Coast Bids</p>
     `,
   };
 }
@@ -85,7 +85,7 @@ export function getMatchedOpportunityEmail(agency: string, companyName: string) 
     html: `
       <p>Hi ${companyName},</p>
       <p>We came across a ${agency} bid that looks like a fit for your trade and started a draft for it. Log in to your dashboard to take a look and let us know if you want to move forward.</p>
-      <p>— BidPulse</p>
+      <p>— First Coast Bids</p>
     `,
   };
 }
@@ -185,7 +185,7 @@ export function getDailyDigestEmail(
     sortedGhosts.length > 0 ? `${sortedGhosts.length} signup${sortedGhosts.length === 1 ? "" : "s"} with no bid yet` : null;
 
   return {
-    subject: `BidPulse: ${[staleSubjectPart, ghostSubjectPart].filter(Boolean).join(" · ")}`,
+    subject: `First Coast Bids: ${[staleSubjectPart, ghostSubjectPart].filter(Boolean).join(" · ")}`,
     html: `
       ${staleItems.length > 0 ? `<p>These submissions haven't been updated in a few days, sorted by urgency:</p><ul>${rows}</ul>` : ""}
       ${ghostSection}

@@ -41,11 +41,23 @@ function clientOptionLabel(client: Client): string {
 
 // Real urgency signal computed from the real due_date -- no invented SLA
 // countdown, just how many days out the actual deadline is.
-function dueDateInfo(dueDate: string | null): { label: string; className: string } {
+// A real gap this fixes: a scraped opportunity nobody assigned or
+// dismissed before its own due date passed used to render in the exact
+// same neutral gray as a comfortably-far-off date -- an admin scanning
+// the list had no visual way to tell a dead lead from a fine one. Only
+// flagged for `status === "new"`: an expired row that's already been
+// assigned or dismissed has been handled, so calling it out again would
+// be noise, not signal. There's still no automatic dismiss/cleanup of
+// these rows -- this only makes the existing manual triage possible to
+// do at a glance instead of requiring date-math in your head.
+function dueDateInfo(dueDate: string | null, status: string): { label: string; className: string } {
   if (!dueDate) return { label: "—", className: "text-on-surface-variant" };
   const days = Math.ceil((new Date(dueDate).getTime() - Date.now()) / (24 * 60 * 60 * 1000));
   const date = new Date(dueDate).toLocaleDateString();
-  if (days < 0) return { label: date, className: "text-on-surface-variant" };
+  if (days < 0) {
+    if (status === "new") return { label: `${date} · Expired`, className: "text-error font-bold" };
+    return { label: date, className: "text-on-surface-variant" };
+  }
   if (days <= 3) return { label: `${date} · ${days}d left`, className: "text-error font-bold" };
   if (days <= 10) return { label: `${date} · ${days}d left`, className: "text-primary font-bold" };
   return { label: date, className: "text-on-surface-variant" };
@@ -407,7 +419,7 @@ export function MatchesPanel({
           </thead>
           <tbody>
             {filteredMatches.map((m) => {
-              const due = dueDateInfo(m.due_date);
+              const due = dueDateInfo(m.due_date, m.status);
               return (
                 <tr
                   key={m.id}
@@ -474,7 +486,7 @@ export function MatchesPanel({
       {/* Card list — narrower than xl. */}
       <div className="xl:hidden bg-surface-container-low rounded-xl shadow-sm divide-y divide-outline-variant overflow-hidden">
         {filteredMatches.map((m) => {
-          const due = dueDateInfo(m.due_date);
+          const due = dueDateInfo(m.due_date, m.status);
           return (
             <div
               key={m.id}

@@ -5,15 +5,15 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
   title: "FAQ",
-  description: "Answers to common questions about BidPulse's done-for-you bid prep service.",
+  description: "Answers to common questions about First Coast Bids' done-for-you bid prep service.",
 };
 
 const CATEGORIES = [
   {
-    name: "About BidPulse",
+    name: "About First Coast Bids",
     faqs: [
       {
-        q: "What is BidPulse?",
+        q: "What is First Coast Bids?",
         a: "A done-for-you bid prep service. You send us your RFP; our team prepares the capability statement, compliance matrix, and technical narrative for you.",
       },
       {
@@ -55,7 +55,7 @@ export default function FaqPage() {
         </Reveal>
         <Reveal mode="mount" delay={0.08}>
           <p className="text-body-lg text-on-surface-variant">
-            Straight answers about how BidPulse works.
+            Straight answers about how First Coast Bids works.
           </p>
         </Reveal>
       </section>

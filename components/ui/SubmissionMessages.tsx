@@ -123,7 +123,7 @@ export function SubmissionMessages({
                   }`}
                 >
                   <p className="text-label-sm font-bold uppercase tracking-wide mb-1 opacity-70">
-                    {isAdmin ? "BidPulse" : m.name}
+                    {isAdmin ? "First Coast Bids" : m.name}
                   </p>
                   <p className="text-body-md whitespace-pre-wrap break-words">{m.message}</p>
                   <p className="text-label-sm opacity-60 mt-1">{new Date(m.created_at).toLocaleString()}</p>

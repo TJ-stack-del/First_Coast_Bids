@@ -7,7 +7,7 @@ import { ImageResponse } from "next/og";
 // the same shield+pulse mark as app/icon.svg, just re-centered around
 // (0,0) so they drop into a plain <svg viewBox> here without re-deriving
 // the geometry.
-export const alt = "BidPulse — done-for-you bid prep for local government contracts";
+export const alt = "First Coast Bids — done-for-you bid prep for local government contracts";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -52,9 +52,9 @@ export default async function Image() {
             strokeLinejoin="round"
           />
         </svg>
-        <div style={{ display: "flex", marginTop: 28, fontSize: 76, fontWeight: 800, letterSpacing: -1 }}>
-          <span style={{ color: "#FFFFFF" }}>Bid</span>
-          <span style={{ color: "#f59e0b" }}>Pulse</span>
+        <div style={{ display: "flex", marginTop: 28, fontSize: 64, fontWeight: 800, letterSpacing: -1 }}>
+          <span style={{ color: "#FFFFFF" }}>First Coast&nbsp;</span>
+          <span style={{ color: "#f59e0b" }}>Bids</span>
         </div>
         <div
           style={{

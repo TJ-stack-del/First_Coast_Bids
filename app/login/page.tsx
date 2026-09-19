@@ -74,12 +74,25 @@ export default async function LoginPage({
               href="/"
               className="relative flex items-center justify-center mb-3 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
+              {/* Two source images, not one + a filter -- see
+                  components/ui/Logo.tsx for why: logo-mark-dark.png was
+                  matted against a dark background so its edges are clean
+                  on dark surfaces the same way logo-mark.png's are clean
+                  on light ones. */}
               <Image
-                src="/icon.svg"
-                alt="BidPulse"
-                width={96}
-                height={96}
-                className="w-24 h-24 object-contain drop-shadow-[0_0_16px_rgb(var(--color-primary)/0.5)]"
+                src="/logo-mark.png"
+                alt="First Coast Bids"
+                width={512}
+                height={512}
+                className="w-24 h-24 object-contain drop-shadow-[0_0_16px_rgb(var(--color-primary)/0.5)] dark:hidden"
+                priority
+              />
+              <Image
+                src="/logo-mark-dark.png"
+                alt="First Coast Bids"
+                width={512}
+                height={512}
+                className="hidden w-24 h-24 object-contain drop-shadow-[0_0_16px_rgb(var(--color-primary)/0.5)] dark:block"
                 priority
               />
             </Link>
@@ -88,7 +101,7 @@ export default async function LoginPage({
               <span className="text-label-sm uppercase tracking-wider text-secondary">Client Portal</span>
             </div>
             <h1 className="font-headline text-headline-lg-mobile text-on-surface tracking-tight font-bold">
-              Bid<span className="text-primary">Pulse</span>
+              First Coast <span className="text-primary">Bids</span>
             </h1>
             <p className="text-body-md text-on-surface-variant mt-1">Sign in to your account.</p>
           </div>

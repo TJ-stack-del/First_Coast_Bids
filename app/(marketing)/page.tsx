@@ -178,11 +178,11 @@ const PRICING_PREVIEW = [
   },
 ];
 
-// Mirrors the "About BidPulse" category in app/faq/page.tsx's CATEGORIES —
+// Mirrors the "About First Coast Bids" category in app/faq/page.tsx's CATEGORIES —
 // same note on keeping these in sync applies.
 const FAQ_PREVIEW = [
   {
-    q: "What is BidPulse?",
+    q: "What is First Coast Bids?",
     a: "A done-for-you bid prep service. You send us your RFP; our team prepares the capability statement, compliance matrix, and technical narrative for you.",
   },
   {
@@ -190,7 +190,7 @@ const FAQ_PREVIEW = [
     a: "No one can guarantee an award. What we guarantee is a complete, compliant submission prepared by people who've done this before.",
   },
   {
-    q: "Why do I submit the bid myself instead of BidPulse submitting it?",
+    q: "Why do I submit the bid myself instead of First Coast Bids submitting it?",
     a: "You hold the reins. Government procurement portals tie submissions to your own company's registered vendor credentials, so you're the one who uploads and hits submit. We prepare the package, you stay in control of your own account.",
   },
   {
@@ -364,7 +364,7 @@ function Home() {
             than the product actually has. Points at the intake CTA, not a
             contact form, since a reply-and-wait step is the wrong thing to
             introduce at the exact moment someone's deciding whether to try
-            BidPulse — the product already answers the question for free. */}
+            First Coast Bids — the product already answers the question for free. */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 max-w-2xl">
           <p className="text-body-sm text-on-surface-variant">
             We&apos;re deepest in these five, but if you&apos;re in a related trade, go

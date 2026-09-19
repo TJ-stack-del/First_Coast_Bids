@@ -52,7 +52,7 @@ const COLOR = {
   green: [15, 122, 76] as [number, number, number],
 };
 
-// Thin orange top bar + "BidPulse — Page N" footer, stamped on every
+// Thin orange top bar + "First Coast Bids — Page N" footer, stamped on every
 // page including the cover. Keeps every page identifiably branded even
 // if a page gets printed or forwarded on its own.
 function stampChrome(doc: jsPDF) {
@@ -69,7 +69,7 @@ function stampChrome(doc: jsPDF) {
   doc.setFont("courier", "normal");
   doc.setFontSize(8);
   doc.setTextColor(...COLOR.navySoft);
-  doc.text("BidPulse", 20, pageHeight - 10);
+  doc.text("First Coast Bids", 20, pageHeight - 10);
   doc.text(`Page ${doc.getNumberOfPages()}`, pageWidth - 20, pageHeight - 10, {
     align: "right",
   });

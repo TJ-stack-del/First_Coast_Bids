@@ -4,7 +4,7 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Get in touch with the BidPulse team.",
+  description: "Get in touch with the First Coast Bids team.",
 };
 
 export default function ContactPage() {
