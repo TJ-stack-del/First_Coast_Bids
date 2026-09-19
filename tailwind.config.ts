@@ -61,23 +61,33 @@ const config: Config = {
         "surface-variant": "rgb(var(--color-surface-variant) / <alpha-value>)",
         // "-fixed" tokens are the same color in both themes by M3 design
         // (a badge/chip that should look identical regardless of theme) —
-        // plain static hex, no CSS variable indirection needed. Taken from
-        // the dark "Industrial Precision" system's own namedColors (M3
-        // "fixed" tokens are theme-independent by definition, so the dark
-        // system's authored set is used as canonical rather than picking
-        // between two very-similar dark/light-authored variants).
-        "primary-fixed": "#ffddb8",
-        "primary-fixed-dim": "#ffb95f",
-        "on-primary-fixed": "#2a1700",
-        "on-primary-fixed-variant": "#653e00",
+        // plain static hex, no CSS variable indirection needed.
+        // primary-fixed/tertiary-fixed were missed during the navy/gold
+        // rebrand (2026-09) since they live here as static hex rather than
+        // in globals.css's CSS-variable tokens -- found via an impeccable
+        // `document` pass (2026-09-19) that a homepage step badge and
+        // LifecycleStepper's active-step highlight were still rendering
+        // the old amber/cyan. Values reuse the exact navy/gold hexes
+        // already established in globals.css and DESIGN.md (primary/
+        // tertiary container + on-container pairs) rather than inventing
+        // new ones, and on-tertiary-fixed-variant uses a second dark brown
+        // distinct from on-tertiary-fixed -- a first attempt reused the
+        // mid-tone "muted brass" text color here, which only reaches
+        // 2.78:1 against tertiary-fixed (fails WCAG); verified via the
+        // same luminance-contrast script used for the rest of this
+        // session's color work.
+        "primary-fixed": "#d6e2f0",
+        "primary-fixed-dim": "#9dbfe6",
+        "on-primary-fixed": "#071b33",
+        "on-primary-fixed-variant": "#0c2d52",
         "secondary-fixed": "#6ffbbe",
         "secondary-fixed-dim": "#4edea3",
         "on-secondary-fixed": "#002113",
         "on-secondary-fixed-variant": "#005236",
-        "tertiary-fixed": "#c4e7ff",
-        "tertiary-fixed-dim": "#7bd0ff",
-        "on-tertiary-fixed": "#001e2c",
-        "on-tertiary-fixed-variant": "#004c69",
+        "tertiary-fixed": "#e2ba78",
+        "tertiary-fixed-dim": "#c19349",
+        "on-tertiary-fixed": "#2a1d14",
+        "on-tertiary-fixed-variant": "#4a3820",
       },
       fontFamily: {
         sans: ["Hanken Grotesk", "sans-serif"],

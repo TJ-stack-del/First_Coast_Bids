@@ -1,11 +1,5 @@
 import Image from "next/image";
 
-// Brand colors for the wordmark text, matching public/logo-mark.png's own
-// navy/gold tones (#0c2d52 / #c19349) so the flat text reads as the same
-// two-color system as the dimensional mark next to it.
-const NAVY = "#0C2D52";
-const GOLD = "#C19349";
-
 // Two real layouts, not one component squeezed into both shapes with CSS:
 // "horizontal" for nav bars (icon left, text right, the common case) and
 // "stacked" for centerpiece placements (login/reset-password hero, a
@@ -56,15 +50,26 @@ export function Logo({
     </>
   );
 
+  // Theme-aware tokens, not hardcoded hex -- found as a real bug
+  // (2026-09-19): a literal `color: "#0C2D52"` inline style bypassed
+  // app/globals.css's own light/dark --color-primary pair entirely, so
+  // "FIRST COAST" rendered at 1.29:1 contrast in dark mode (navy text on
+  // a near-navy background), confirmed via direct WCAG luminance
+  // calculation -- essentially unreadable, not just suboptimal.
+  // text-primary already resolves to the correct value in both themes
+  // (light: the same navy; dark: a light blue, 9.38:1). "BIDS" had a
+  // second, subtler version of the same problem: its hardcoded true gold
+  // (#C19349) already failed contrast even in light mode (2.79:1, under
+  // the 3:1 large-text floor) -- exactly the on-surface-text-safety
+  // problem app/globals.css's --color-tertiary token was deliberately
+  // built to solve with a darkened "Muted Brass" for text specifically
+  // (see DESIGN.md's Colors section), while keeping true gold for fills
+  // only. Logo.tsx just never used that token, so the fix it already
+  // applied everywhere else in the app never reached here.
   const wordmark = (
-    <span
-      className="font-headline font-bold leading-tight"
-      style={{ color: NAVY }}
-    >
+    <span className="font-headline font-bold leading-tight text-primary">
       <span className="block tracking-wide">FIRST COAST</span>
-      <span className="block tracking-wide" style={{ color: GOLD }}>
-        BIDS
-      </span>
+      <span className="block tracking-wide text-tertiary">BIDS</span>
     </span>
   );
 

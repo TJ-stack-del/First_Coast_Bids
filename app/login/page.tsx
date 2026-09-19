@@ -78,13 +78,18 @@ export default async function LoginPage({
                   components/ui/Logo.tsx for why: logo-mark-dark.png was
                   matted against a dark background so its edges are clean
                   on dark surfaces the same way logo-mark.png's are clean
-                  on light ones. */}
+                  on light ones. The soft drop-shadow glow this used to
+                  carry was removed 2026-09-19 (real user report, same
+                  issue found on components/ui/PipelineArrow.tsx the same
+                  day): at this size the blurred halo read as fuzzy/
+                  pixelated rather than atmospheric, especially against a
+                  dark page background. */}
               <Image
                 src="/logo-mark.png"
                 alt="First Coast Bids"
                 width={512}
                 height={512}
-                className="w-24 h-24 object-contain drop-shadow-[0_0_16px_rgb(var(--color-primary)/0.5)] dark:hidden"
+                className="w-24 h-24 object-contain dark:hidden"
                 priority
               />
               <Image
@@ -92,7 +97,7 @@ export default async function LoginPage({
                 alt="First Coast Bids"
                 width={512}
                 height={512}
-                className="hidden w-24 h-24 object-contain drop-shadow-[0_0_16px_rgb(var(--color-primary)/0.5)] dark:block"
+                className="hidden w-24 h-24 object-contain dark:block"
                 priority
               />
             </Link>

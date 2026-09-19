@@ -1,17 +1,31 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 // Next's file-convention OG image route -- generated at request time,
 // serves as the og:image (and, absent a dedicated twitter-image, the
 // Twitter Card image too) for the root layout and every route that
-// doesn't override it with its own opengraph-image file. Icon paths are
-// the same shield+pulse mark as app/icon.svg, just re-centered around
-// (0,0) so they drop into a plain <svg viewBox> here without re-deriving
-// the geometry.
+// doesn't override it with its own opengraph-image file.
+//
+// Real bug fixed 2026-09-19: this used to hand-draw the OLD pre-rebrand
+// shield+pulse-line mark in the old amber (#f59e0b) -- a leftover from
+// before the navy/gold rebrand that nothing caught since this route
+// never renders during normal browsing, only when a social platform
+// fetches the link preview. Now embeds the actual current brand PNG
+// (public/logo-mark.png) as a base64 data URI rather than re-deriving
+// the icon geometry a second time by hand -- the same mistake (a
+// hand-drawn approximation silently drifting from the real mark) is
+// exactly how this file went stale in the first place. Requires the
+// Node.js runtime (not edge) for filesystem access to read the file.
+export const runtime = "nodejs";
 export const alt = "First Coast Bids — done-for-you bid prep for local government contracts";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
+  const iconBuffer = await readFile(path.join(process.cwd(), "public", "logo-mark.png"));
+  const iconDataUrl = `data:image/png;base64,${iconBuffer.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -26,35 +40,13 @@ export default async function Image() {
           fontFamily: "sans-serif",
         }}
       >
-        <svg width="150" height="150" viewBox="-50 -50 100 100" fill="none">
-          <path
-            d="M0 -34 L28 -20 C28 10 0 32 0 35 C0 32 -28 10 -28 -20 Z"
-            fill="none"
-            stroke="#FFFFFF"
-            strokeWidth={5}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          <path
-            d="M0 -26 L20 -16 C20 6 0 24 0 26 C0 24 -20 6 -20 -16 Z"
-            fill="none"
-            stroke="#FFFFFF"
-            strokeOpacity={0.25}
-            strokeWidth={1.8}
-            strokeLinejoin="round"
-          />
-          <path
-            d="M-38 0 L-19 0 L-11 -18 L-3 20 L5 -12 L13 8 L21 0 L38 0"
-            fill="none"
-            stroke="#f59e0b"
-            strokeWidth={4.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        {/* eslint-disable-next-line @next/next/no-img-element -- next/og's
+            ImageResponse renders its own image pipeline, not a browser DOM;
+            next/image's <Image> component doesn't apply here. */}
+        <img src={iconDataUrl} width={150} height={150} alt="" />
         <div style={{ display: "flex", marginTop: 28, fontSize: 64, fontWeight: 800, letterSpacing: -1 }}>
           <span style={{ color: "#FFFFFF" }}>First Coast&nbsp;</span>
-          <span style={{ color: "#f59e0b" }}>Bids</span>
+          <span style={{ color: "#C19349" }}>Bids</span>
         </div>
         <div
           style={{

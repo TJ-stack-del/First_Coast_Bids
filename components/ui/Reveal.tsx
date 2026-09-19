@@ -8,6 +8,10 @@ import { motion, useReducedMotion } from "motion/react";
 // spot", an ease-out-quint-ish curve), varied only by *when* it fires
 // (mode) and *how* it moves (variant), so every section reads as the
 // same authored system rather than a grab-bag of scroll-fade effects.
+// Duration is 300ms (the top of that stated range) -- was 500ms, a real
+// mismatch against this comment's own claim, caught by an emil-motion
+// skill pass (2026-09-19) rather than by anyone actually re-reading the
+// number against the comment above it.
 // Same mount-gated useReducedMotion pattern as TransformationPipeline
 // (see its own comment): the server always renders as if reduced motion
 // were off, so gating on `mounted` keeps the first client render
@@ -93,7 +97,7 @@ export function Reveal({ children, as = "div", className, mode = "view", variant
       className={className}
       initial={hidden}
       animate={inView ? shown : hidden}
-      transition={{ duration: 0.5, delay, ease: EASE }}
+      transition={{ duration: 0.3, delay, ease: EASE }}
     >
       {children}
     </Component>
