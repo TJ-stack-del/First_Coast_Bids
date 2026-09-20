@@ -18,23 +18,24 @@ export function Logo({
   iconClassName?: string;
   priority?: boolean;
 }) {
-  // Single source image -- used to be two (a separately Stitch-regenerated
-  // "dark background" variant swapped in via dark:hidden/hidden dark:block),
-  // dropped 2026-09-19 (real user report: the dark variant "looked nothing
-  // like what Stitch was rendering"). Comparing both against the actual
-  // Stitch reference confirmed it: the light extraction matched almost
-  // exactly (it's sourced directly from that reference), but the separate
-  // dark regeneration had real geometric drift -- a rounder/blobbier
-  // shield point, softer bevels, different proportions, since asking an
-  // AI model to "redraw this on a dark background" is a new generation,
-  // not a guaranteed-faithful recolor. This same light-sourced extraction
-  // was tested directly against dark surfaces at every real display size
-  // this component uses (48-224px) and composites cleanly with no
-  // background fringe, so there was never a real need for a second image.
+  // logo-icon.png, not the detailed logo-mark.png -- real bug found
+  // 2026-09-20: the detailed mark (a raster extraction of the full ornate
+  // enamel-pin render, with several thin nested outline strokes) turns
+  // visibly muddy/indistinct once scaled down to this component's real
+  // display sizes (40-96px). Confirmed this wasn't an extraction defect --
+  // shrinking the *unmodified* Stitch reference itself to the same size
+  // produces identical softening, since fine nested linework just can't
+  // survive that much downscale. logo-icon.png is a deliberate simplified
+  // redraw (single bold checkmark stroke, thicker shield outline, no
+  // nested trim lines) generated specifically for small-size legibility --
+  // it's a distinct Stitch generation, not a derivation of logo-mark.png,
+  // so don't expect pixel-identical linework between the two. Source is a
+  // real vector SVG (public/logo-icon.svg), rasterized once to PNG here
+  // for consistency with this component's existing <Image> usage.
   const iconClasses = iconClassName || "h-10 w-10";
   const icon = (
     <Image
-      src="/logo-mark.png"
+      src="/logo-icon.png"
       alt="First Coast Bids"
       width={512}
       height={512}

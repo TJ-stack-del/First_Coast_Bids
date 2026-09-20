@@ -11,19 +11,23 @@ import path from "node:path";
 // shield+pulse-line mark in the old amber (#f59e0b) -- a leftover from
 // before the navy/gold rebrand that nothing caught since this route
 // never renders during normal browsing, only when a social platform
-// fetches the link preview. Now embeds the actual current brand PNG
-// (public/logo-mark.png) as a base64 data URI rather than re-deriving
-// the icon geometry a second time by hand -- the same mistake (a
-// hand-drawn approximation silently drifting from the real mark) is
-// exactly how this file went stale in the first place. Requires the
-// Node.js runtime (not edge) for filesystem access to read the file.
+// fetches the link preview. Now embeds the actual current brand PNG as a
+// base64 data URI rather than re-deriving the icon geometry a second time
+// by hand -- the same mistake (a hand-drawn approximation silently
+// drifting from the real mark) is exactly how this file went stale in
+// the first place. Uses logo-icon.png (the simplified small-size mark),
+// not the detailed logo-mark.png -- rendered at 150px here, inside the
+// size range where the detailed mark's fine nested linework goes muddy
+// (confirmed 2026-09-20 against the unmodified Stitch reference itself,
+// not just this app's extraction). Requires the Node.js runtime (not
+// edge) for filesystem access to read the file.
 export const runtime = "nodejs";
 export const alt = "First Coast Bids — done-for-you bid prep for local government contracts";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
-  const iconBuffer = await readFile(path.join(process.cwd(), "public", "logo-mark.png"));
+  const iconBuffer = await readFile(path.join(process.cwd(), "public", "logo-icon.png"));
   const iconDataUrl = `data:image/png;base64,${iconBuffer.toString("base64")}`;
 
   return new ImageResponse(

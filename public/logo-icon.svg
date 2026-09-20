@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Background: plain clean white -->
+
+  <defs>
+    <!-- Subtle crisp gradients to give solid punchy depth while staying bold & flat -->
+    <linearGradient id="shieldFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F3866"/>
+      <stop offset="100%" stop-color="#0C2D52"/>
+    </linearGradient>
+    <linearGradient id="goldTrim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DEAE5B"/>
+      <stop offset="50%" stop-color="#C19349"/>
+      <stop offset="100%" stop-color="#A57934"/>
+    </linearGradient>
+    <linearGradient id="swooshGold" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#DEAE5B"/>
+      <stop offset="100%" stop-color="#B8893F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Group centered in 512x512 canvas -->
+  <g transform="translate(0, 0)">
+    <!-- Outer Shield Border (Bold, Solid Bronze/Gold Outline) -->
+    <!-- Shield silhouette: subtle dip/crest at top, angled shoulders, sweeping down to pointed base -->
+    <path d="M 256,44 
+             C 285,68 335,74 414,78 
+             L 414,242 
+             C 414,354 340,436 256,472 
+             C 172,436 98,354 98,242 
+             L 98,78 
+             C 177,74 227,68 256,44 Z" 
+          fill="url(#goldTrim)" />
+
+    <!-- Inner Shield Body (Rich Solid Navy Blue #0C2D52) -->
+    <path d="M 256,80 
+             C 282,100 326,106 386,110 
+             L 386,240 
+             C 386,334 324,406 256,438 
+             C 188,406 126,334 126,240 
+             L 126,110 
+             C 186,106 230,100 256,80 Z" 
+          fill="url(#shieldFill)" />
+
+    <!-- 1. Bold Gold Dynamic Swoosh / Wave entering from left, crossing upward through shield -->
+    <!-- Chunky, smooth, high-contrast ribbon ending in a bold upward arrowhead -->
+    <path d="M 126,276 
+             C 170,230 200,296 264,284 
+             C 298,278 322,252 344,216 
+             L 344,188 
+             L 404,232 
+             L 358,284 
+             L 358,260 
+             C 334,296 304,330 258,336 
+             C 188,346 154,290 126,328 Z" 
+          fill="url(#swooshGold)" />
+
+    <!-- 2. Hero Bold Checkmark-Arrow (Upward Growth Vector) -->
+    <!-- Crisp single chunky stroke forming checkmark and sharp upward arrow breaking the upper right shoulder -->
+    <!-- Checkmark dip down, then shooting up right with massive arrow tip for instant recognition at 32px -->
+    <path d="M 154,238 
+             L 218,298 
+             L 336,152 
+             L 320,138 
+             L 396,96 
+             L 386,182 
+             L 366,164 
+             L 226,346 
+             L 132,258 Z" 
+          fill="#FFFFFF" 
+          opacity="0.12" />
+
+    <!-- Primary Arrow / Checkmark in crisp Navy & Gold Accent -->
+    <path d="M 166,236 
+             L 224,292 
+             L 332,154 
+             L 316,140 
+             L 396,98 
+             L 384,182 
+             L 364,164 
+             L 228,336 
+             L 142,256 Z" 
+          fill="url(#goldTrim)" />
+
+    <!-- Core Arrow Navy Inlay for high contrast punch against gold -->
+    <path d="M 178,242 
+             L 224,284 
+             L 338,138 
+             L 366,104 
+             L 374,158 
+             L 358,144 
+             L 226,312 
+             L 158,248 Z" 
+          fill="#0C2D52" />
+  </g>
+</svg>

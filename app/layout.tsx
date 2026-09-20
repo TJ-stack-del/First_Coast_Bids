@@ -19,15 +19,20 @@ export const metadata: Metadata = {
   // file was removed) -- keeps the favicon source visible here instead of
   // silent, and avoids Next.js emitting two competing <link rel="icon">
   // tags if both a convention file and explicit metadata existed at once.
-  // PNG rather than SVG: logo-mark.png is a raster crop of the real Stitch
-  // reference image (not a hand-traced vector) -- see public/logo-mark.png.
-  // A separate dark-mode favicon variant used to be keyed on the OS-level
-  // prefers-color-scheme media query here; dropped 2026-09-19 along with
-  // every other dark-mode variant of this icon (see components/ui/Logo.tsx)
-  // once logo-mark.png itself was confirmed to composite cleanly on dark
-  // backgrounds with no fringe, at every real size this asset is used at.
+  // logo-icon.png/.svg, not logo-mark.png -- a browser tab favicon is the
+  // single smallest real display size this brand mark is ever shown at
+  // (often 16-32px), and the detailed mark's fine nested linework turns
+  // muddy at that scale -- confirmed true of the unmodified Stitch
+  // reference at the same size too, not an artifact of extraction
+  // (2026-09-20). logo-icon.svg is a real vector (see
+  // components/ui/Logo.tsx for the simplification rationale); listed
+  // first so browsers that support SVG favicons get a crisp render at
+  // any tab size, with the PNG as a fallback for the ones that don't.
   icons: {
-    icon: "/logo-mark.png",
+    icon: [
+      { url: "/logo-icon.svg", type: "image/svg+xml" },
+      { url: "/logo-icon.png", type: "image/png" },
+    ],
   },
 };
 

@@ -74,16 +74,18 @@ export default async function LoginPage({
               href="/"
               className="relative flex items-center justify-center mb-3 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
-              {/* Single source image -- see components/ui/Logo.tsx for why
-                  the separate dark-mode variant this used to swap in was
-                  dropped (2026-09-19, real user report: it had drifted
-                  from the true Stitch reference). The soft drop-shadow
-                  glow this used to carry was removed the same day (same
-                  issue found on components/ui/PipelineArrow.tsx): at this
-                  size the blurred halo read as fuzzy/pixelated rather than
+              {/* logo-icon.png (simplified small-size mark) -- see
+                  components/ui/Logo.tsx for why: at this 96px display size
+                  the detailed mark's fine nested linework goes muddy, which
+                  turned out to be true of the unmodified Stitch reference
+                  at the same size too, not an extraction defect
+                  (2026-09-20). The soft drop-shadow glow this used to
+                  carry was removed separately (same issue found on
+                  components/ui/PipelineArrow.tsx): at this size the
+                  blurred halo read as fuzzy/pixelated rather than
                   atmospheric, especially against a dark page background. */}
               <Image
-                src="/logo-mark.png"
+                src="/logo-icon.png"
                 alt="First Coast Bids"
                 width={512}
                 height={512}
