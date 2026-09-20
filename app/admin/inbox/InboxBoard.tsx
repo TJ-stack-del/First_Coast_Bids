@@ -145,7 +145,7 @@ export function InboxBoard({
           type="button"
           onClick={() => setView("board")}
           className={`px-3 py-1.5 text-label-md font-semibold transition active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
-            view === "board" ? "bg-primary-container text-on-primary-container" : "bg-surface-container-lowest dark:bg-surface-container-low text-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container"
+            view === "board" ? "bg-primary-container text-on-primary-container" : "bg-surface-container-lowest text-on-surface hover:bg-surface-container-low"
           }`}
         >
           Board
@@ -154,7 +154,7 @@ export function InboxBoard({
           type="button"
           onClick={() => setView("list")}
           className={`px-3 py-1.5 text-label-md font-semibold transition active:scale-[0.97] border-l border-outline-variant focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
-            view === "list" ? "bg-primary-container text-on-primary-container" : "bg-surface-container-lowest dark:bg-surface-container-low text-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container"
+            view === "list" ? "bg-primary-container text-on-primary-container" : "bg-surface-container-lowest text-on-surface hover:bg-surface-container-low"
           }`}
         >
           List
@@ -193,7 +193,7 @@ export function InboxBoard({
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as "fifo" | "due")}
-          className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded px-2 py-1 text-label-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+          className="bg-surface-container-lowest border border-outline-variant rounded px-2 py-1 text-label-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
         >
           <option value="fifo">Submission order</option>
           <option value="due">Due date</option>
@@ -287,7 +287,7 @@ export function InboxBoard({
                           if (!formattedValue && !sub.due_date && !showDrafted) return null;
                           return (
                             <div
-                              className={`bg-surface-container-lowest dark:bg-surface-container-low p-1.5 rounded grid gap-1 text-center ${
+                              className={`bg-surface-container-lowest p-1.5 rounded grid gap-1 text-center ${
                                 showDrafted ? "grid-cols-3" : "grid-cols-2"
                               }`}
                             >
@@ -339,9 +339,9 @@ export function InboxBoard({
           of real content (long agency names, badges) without cutting
           anything off. Below that, a stacked card per submission instead —
           see the xl:hidden block below. */}
-      <div className="hidden xl:block bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl">
+      <div className="hidden xl:block bg-surface-container-lowest border border-outline-variant rounded-xl">
         <table className="w-full text-body-md table-fixed">
-          <thead className="bg-surface-container-low dark:bg-surface-container">
+          <thead className="bg-surface-container-low">
             <tr>
               <th className="text-left px-4 py-3 text-label-md text-on-surface-variant uppercase tracking-wider w-[26%]">Client</th>
               <th className="text-left px-4 py-3 text-label-md text-on-surface-variant uppercase tracking-wider w-[24%]">Agency</th>
@@ -353,7 +353,7 @@ export function InboxBoard({
           </thead>
           <tbody>
             {filtered.map((sub) => (
-              <tr key={sub.id} className="border-t border-outline-variant hover:bg-surface-container-low dark:hover:bg-surface-container transition">
+              <tr key={sub.id} className="border-t border-outline-variant hover:bg-surface-container-low transition">
                 <td className="px-4 py-3 text-on-surface">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center text-label-sm font-bold shrink-0">
@@ -415,12 +415,12 @@ export function InboxBoard({
       {/* Card list — narrower than xl (laptop widths with less room, and
           mobile). Same data, stacked instead of columned, so nothing is
           ever cut off or forces sideways scrolling. */}
-      <div className="xl:hidden bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl divide-y divide-outline-variant">
+      <div className="xl:hidden bg-surface-container-lowest border border-outline-variant rounded-xl divide-y divide-outline-variant">
         {filtered.map((sub) => (
           <Link
             key={sub.id}
             href={`/admin/inbox/${sub.id}`}
-            className="flex flex-col gap-3 px-4 py-4 hover:bg-surface-container-low dark:hover:bg-surface-container transition focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+            className="flex flex-col gap-3 px-4 py-4 hover:bg-surface-container-low transition focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">

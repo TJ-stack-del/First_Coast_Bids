@@ -134,7 +134,7 @@ export default async function ComplianceVaultPage() {
         </div>
       )}
 
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6 mt-4">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
         <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">verified</span>
           Certifications & Licenses
@@ -146,7 +146,7 @@ export default async function ComplianceVaultPage() {
         <CertificationsSection clientId={client.id} initialCertifications={certifications} />
       </div>
 
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6 mt-4">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
         <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">shield</span>
           Insurance & Bonding
@@ -158,7 +158,7 @@ export default async function ComplianceVaultPage() {
         <InsuranceBondingSection clientId={client.id} initialPolicies={insurancePolicies} initialBonding={bondingRecords} />
       </div>
 
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6 mt-4">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
         <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">folder_copy</span>
           Document Library
@@ -170,7 +170,7 @@ export default async function ComplianceVaultPage() {
         <DocumentLibrarySection clientId={client.id} initialDocuments={documents} />
       </div>
 
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6 mt-4">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
         <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">work_history</span>
           Past Performance

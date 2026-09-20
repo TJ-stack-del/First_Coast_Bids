@@ -12,7 +12,7 @@ export function CompleteBidFile({ submissionId, clientId }: { submissionId: stri
   const router = useRouter();
 
   return (
-    <div className="bg-surface-container-lowest dark:bg-surface-container-low border-2 border-primary rounded-xl p-6">
+    <div className="bg-surface-container-lowest border-2 border-primary rounded-xl p-6">
       <h2 className="text-title-lg text-primary mb-2 flex items-center gap-2">
         <span className="material-symbols-outlined text-primary text-[20px]">upload_file</span>
         Your bid file

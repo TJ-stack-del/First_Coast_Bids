@@ -274,7 +274,7 @@ export function PacketButtons({
           onClick={() => setPreviewData(null)}
         >
           <div
-            className="bg-surface-container-lowest dark:bg-surface-container-low rounded-xl max-w-2xl w-full max-h-[80vh] relative overflow-hidden"
+            className="bg-surface-container-lowest rounded-xl max-w-2xl w-full max-h-[80vh] relative overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Watermark only — never appears in the actual downloaded PDF,
@@ -365,7 +365,7 @@ export function PacketButtons({
           }}
         >
           <div
-            className="bg-surface-container-lowest dark:bg-surface-container-low rounded-xl max-w-md w-full p-6 flex flex-col gap-4"
+            className="bg-surface-container-lowest rounded-xl max-w-md w-full p-6 flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-title-lg text-on-surface font-bold">Before you download</h3>

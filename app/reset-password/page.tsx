@@ -28,12 +28,7 @@ export default function ResetPasswordPage() {
           </Reveal>
         </div>
 
-        {/* dark:bg-surface-container-low override -- see app/login/page.tsx
-            for the full reasoning (the two themes need opposite container
-            tiers for genuine elevation; -lowest is correct in light mode,
-            -low is correct in dark mode). Kept in sync with the login
-            card's same fix. */}
-        <Reveal mode="mount" delay={0.08} className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-8">
+        <Reveal mode="mount" delay={0.08} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-8">
           <ResetPasswordForm />
         </Reveal>
       </div>

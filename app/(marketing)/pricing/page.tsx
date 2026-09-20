@@ -154,7 +154,7 @@ export default function PricingPage() {
               className={`py-3 px-4 rounded text-label-md text-center transition active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 pkg.highlight
                   ? "bg-primary-container text-on-primary-container hover:opacity-90 hover:-translate-y-0.5"
-                  : "bg-surface-container-low dark:bg-surface-container text-on-surface border border-outline hover:bg-surface-container-high hover:-translate-y-0.5"
+                  : "bg-surface-container-low text-on-surface border border-outline hover:bg-surface-container-high hover:-translate-y-0.5"
               }`}
             >
               {pkg.cta.label}

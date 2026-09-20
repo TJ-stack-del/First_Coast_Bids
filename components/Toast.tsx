@@ -51,9 +51,9 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: () =>
   }, [onDismiss]);
 
   const styles: Record<ToastVariant, string> = {
-    error: "bg-surface-container-lowest dark:bg-surface-container-low border-error text-error",
-    success: "bg-surface-container-lowest dark:bg-surface-container-low border-primary text-primary",
-    info: "bg-surface-container-lowest dark:bg-surface-container-low border-primary text-on-surface",
+    error: "bg-surface-container-lowest border-error text-error",
+    success: "bg-surface-container-lowest border-primary text-primary",
+    info: "bg-surface-container-lowest border-primary text-on-surface",
   };
 
   return (

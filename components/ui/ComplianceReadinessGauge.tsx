@@ -13,7 +13,7 @@ export function ComplianceReadinessGauge({
   total: number;
 }) {
   return (
-    <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6">
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
       <div className="flex items-center justify-between gap-2 mb-3">
         <h2 className="text-title-lg text-primary flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">speed</span>

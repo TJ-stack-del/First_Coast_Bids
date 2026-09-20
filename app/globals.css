@@ -5,12 +5,14 @@
 /* Design tokens as RGB-triplet CSS variables (not hex) so Tailwind's
    `rgb(var(--color-x) / <alpha-value>)` pattern can still support opacity
    modifiers like `bg-secondary/50`. tailwind.config.ts's `colors` block
-   references these names 1:1 — every token added there needs a pair of
-   entries here (light in :root, dark in .dark), except the "-fixed"
-   tokens, which are deliberately the same in both themes (that's their
-   whole purpose) and so stay as plain static hex in the config instead.
-   Values here are the same M3-style scheme this app already used, just
-   split into light/dark instead of being light-only. */
+   references these names 1:1. This app was light/dark dual-theme at one
+   point (a .dark block lived here, toggled via next-themes); removed
+   2026-09-20 (explicit user call, light-only site-wide) after repeated
+   real friction keeping the brand icon and these tokens faithful across
+   both themes. The "-fixed" tokens in tailwind.config.ts stay as plain
+   static hex there rather than moving here, since a light-only app has
+   no theme for them to stay invariant across anymore, but nothing
+   consumes that distinction currently, so it wasn't worth touching. */
 :root {
   /* Single source of truth for the nav wordmark's rendered height
      (components/ui/Logo.tsx) -- every nav instance shares this instead
@@ -86,76 +88,6 @@
   --color-background: 248 249 255;
   --color-on-background: 11 28 48;
   --color-surface-variant: 211 228 254;
-}
-
-.dark {
-  /* KNOWN ISSUE, worked around at every call site rather than here:
-     surface-container-lowest (52) is literally darker than plain surface
-     (80) in this ramp -- the opposite of "elevated." Every card/modal that
-     wants to look raised above the page uses `bg-surface-container-lowest
-     dark:bg-surface-container-low` (surface-container-low (92) actually
-     sits above surface) instead of relying on the bare class, and any
-     element nested one level inside such a card steps up again
-     (`dark:bg-surface-container` (105), etc.) to preserve the same-relative-
-     elevation relationship its light-mode counterpart already has (where
-     the ramp order is correctly inverted -- surface-container-lowest is
-     the lightest tier there, so no light-mode override is needed). A
-     real design-token pass that renames/reorders this ramp so the dark
-     ramp's own ordering matches its name-implied elevation would remove
-     the need for every one of these per-call-site overrides -- not done
-     here since it would mean auditing every existing token consumer app-
-     wide, a bigger change than the bug it fixes.
-     "Industrial Precision" — the dark design system from the Stitch
-     project (assets/7f0094d24ac44e9e885c0d324b7805a5). Base token values
-     (surface/background, secondary-container) are the exact
-     overrideNeutralColor (#0f172a) / overrideSecondaryColor (#10b981)
-     brand seed hexes from the design system record, per explicit user
-     choice — these differ slightly from the M3-tonal-expanded values
-     actually baked into each generated screen's own Tailwind config
-     (#0b1326 / #00a572), which is what every earlier screenshot in this
-     project was matched against. The surrounding surface-container-*
-     tonal ramp is untouched (still the M3-expanded ramp) since Stitch
-     never published a ramp regenerated from this exact seed. */
-  --color-surface: 15 23 42;
-  --color-surface-dim: 15 23 42;
-  --color-surface-bright: 49 57 77;
-  --color-surface-container-lowest: 6 14 32;
-  --color-surface-container-low: 19 27 46;
-  --color-surface-container: 23 31 51;
-  --color-surface-container-high: 34 42 61;
-  --color-surface-container-highest: 45 52 73;
-  --color-on-surface: 218 226 253;
-  --color-on-surface-variant: 216 195 173;
-  --color-inverse-surface: 218 226 253;
-  --color-inverse-on-surface: 40 48 68;
-  --color-outline: 160 142 122;
-  --color-outline-variant: 83 68 52;
-  /* Same navy/gold pass as :root above, dark-mode pairing (light-on-dark
-     for primary since flat navy fails as a dark-surface fill; bright gold
-     for tertiary since the darkened light-mode gold is unnecessary once
-     the background itself is already dark). secondary intentionally left
-     untouched -- see the :root comment. */
-  --color-surface-tint: 157 191 230;
-  --color-primary: 157 191 230;
-  --color-on-primary: 12 45 82;
-  --color-primary-container: 27 58 92;
-  --color-on-primary-container: 214 226 240;
-  --color-inverse-primary: 12 45 82;
-  --color-secondary: 78 222 163;
-  --color-on-secondary: 0 56 36;
-  --color-secondary-container: 16 185 129;
-  --color-on-secondary-container: 0 49 31;
-  --color-tertiary: 232 192 120;
-  --color-on-tertiary: 61 43 31;
-  --color-tertiary-container: 92 70 38;
-  --color-on-tertiary-container: 245 230 211;
-  --color-error: 255 180 171;
-  --color-on-error: 105 0 5;
-  --color-error-container: 147 0 10;
-  --color-on-error-container: 255 218 214;
-  --color-background: 15 23 42;
-  --color-on-background: 218 226 253;
-  --color-surface-variant: 45 52 73;
 }
 
 .material-symbols-outlined {

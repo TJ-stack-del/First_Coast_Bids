@@ -44,7 +44,7 @@ export function ConfirmDialog({
       aria-label={title}
     >
       <div
-        className="bg-surface-container-lowest dark:bg-surface-container-low rounded-xl max-w-md w-full p-6"
+        className="bg-surface-container-lowest rounded-xl max-w-md w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-title-lg text-on-surface font-bold mb-2">{title}</h2>

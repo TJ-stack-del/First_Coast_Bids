@@ -91,7 +91,7 @@ function DeliverableCard({ ex, delay, className = "" }: { ex: (typeof EXAMPLES)[
     // read as "click me" despite having no href or onClick anywhere.
     <Reveal
       delay={delay}
-      className={`bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden flex flex-col ${className}`}
+      className={`bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex flex-col ${className}`}
     >
       <div className="relative h-40 w-full">
         <Image src={ex.image} alt={ex.imageAlt} fill sizes="(min-width: 1024px) 300px, 100vw" className="object-cover" />
@@ -99,7 +99,7 @@ function DeliverableCard({ ex, delay, className = "" }: { ex: (typeof EXAMPLES)[
       <div className="p-gutter flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-label-md text-on-surface-variant uppercase tracking-wider">{ex.trade}</h2>
-          <span className="text-[10px] px-2 py-0.5 rounded border border-outline-variant bg-surface-container-low dark:bg-surface-container text-on-surface-variant font-bold uppercase">
+          <span className="text-[10px] px-2 py-0.5 rounded border border-outline-variant bg-surface-container-low text-on-surface-variant font-bold uppercase">
             Sample
           </span>
         </div>

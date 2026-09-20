@@ -35,7 +35,7 @@ export default async function CompanyProfilePage() {
         <p className="text-body-md text-on-surface-variant">{client.company_name}</p>
       </div>
 
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6 mt-4">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
         <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">business</span>
           Company Info

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -31,20 +30,17 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Matches the Stitch "Industrial Precision" dark system's surface color
-  // (--color-surface / --color-background in app/globals.css .dark).
-  themeColor: "#0f172a",
+  // Matches the Stitch "Industrial Precision Light" system's surface color
+  // (--color-surface / --color-background in app/globals.css :root).
+  // Dark mode was removed site-wide 2026-09-20 (explicit user call, after
+  // repeated real friction keeping the brand icon and color tokens
+  // faithful across both themes) -- this app is light-only now.
+  themeColor: "#f8f9ff",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // suppressHydrationWarning is next-themes' documented requirement: it
-    // sets the "dark"/"light" class on <html> via an inline script that
-    // runs before React hydrates, specifically to avoid a flash of the
-    // wrong theme — which necessarily makes the server-rendered and
-    // first-client-render <html> attributes differ. Only suppresses the
-    // warning on this one element, not real mismatches elsewhere.
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -57,11 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap"
         />
       </head>
-      <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-        </ThemeProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

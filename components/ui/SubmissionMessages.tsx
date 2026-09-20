@@ -96,7 +96,7 @@ export function SubmissionMessages({
   }
 
   return (
-    <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6">
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
       <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
         <span className="material-symbols-outlined text-primary text-[20px]">chat</span>
         Messages

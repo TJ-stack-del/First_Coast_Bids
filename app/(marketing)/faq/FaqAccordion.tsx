@@ -17,7 +17,7 @@ export function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[] }) {
       {faqs.map((item, i) => {
         const isOpen = openIndex === i;
         return (
-          <div key={item.q} className="border border-outline-variant rounded-lg bg-surface-container-lowest dark:bg-surface-container-low overflow-hidden">
+          <div key={item.q} className="border border-outline-variant rounded-lg bg-surface-container-lowest overflow-hidden">
             <button
               type="button"
               onClick={() => setOpenIndex(isOpen ? null : i)}

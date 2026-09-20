@@ -162,7 +162,7 @@ export function AdminSubmissionActions({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
         <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">timeline</span>
           Move to stage
@@ -195,7 +195,7 @@ export function AdminSubmissionActions({
         )}
       </div>
 
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
         <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">fact_check</span>
           Compliance checklist
@@ -248,7 +248,7 @@ export function AdminSubmissionActions({
         )}
       </div>
 
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
         <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">edit_note</span>
           Internal notes

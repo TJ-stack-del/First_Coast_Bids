@@ -339,7 +339,7 @@ export function DeliverablesPanel({
   }
 
   return (
-    <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6">
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
       <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
         <span className="material-symbols-outlined text-primary text-[20px]">description</span>
         Deliverables
@@ -384,7 +384,7 @@ export function DeliverablesPanel({
                   className={`text-[10px] px-2 py-0.5 rounded border font-bold uppercase ${
                     existing
                       ? "bg-secondary-container text-on-secondary-container border-primary/20"
-                      : "bg-surface-container-low dark:bg-surface-container text-on-surface-variant border-outline-variant"
+                      : "bg-surface-container-low text-on-surface-variant border-outline-variant"
                   }`}
                 >
                   {existing ? "Draft" : "Not started"}

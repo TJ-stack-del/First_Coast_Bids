@@ -133,7 +133,7 @@ export function Combobox({
           <ul
             role="listbox"
             style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width }}
-            className="z-50 max-h-56 overflow-auto rounded-lg border border-outline-variant bg-surface-container-lowest dark:bg-surface-container-low shadow-lg py-1"
+            className="z-50 max-h-56 overflow-auto rounded-lg border border-outline-variant bg-surface-container-lowest shadow-lg py-1"
           >
             {filtered.length === 0 && (
               <li className="px-3 py-2 text-body-sm text-on-surface-variant">{emptyMessage}</li>

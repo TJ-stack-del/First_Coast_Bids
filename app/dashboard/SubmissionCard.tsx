@@ -104,14 +104,14 @@ export function SubmissionCard({
         )}
 
         <div className={`grid gap-space-sm ${formattedValue ? "grid-cols-2" : "grid-cols-1"}`}>
-          <div className="bg-surface-container-lowest dark:bg-surface-container rounded-lg p-space-md">
+          <div className="bg-surface-container-lowest rounded-lg p-space-md">
             <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Submission deadline</p>
             <p className="text-body-lg text-on-surface font-bold mt-0.5">
               {submission.due_date ? new Date(submission.due_date).toLocaleDateString() : "Not set"}
             </p>
           </div>
           {formattedValue && (
-            <div className="bg-surface-container-lowest dark:bg-surface-container rounded-lg p-space-md">
+            <div className="bg-surface-container-lowest rounded-lg p-space-md">
               <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Estimated value</p>
               <p className="text-body-lg text-on-surface font-bold mt-0.5 font-code">{formattedValue}</p>
             </div>
@@ -145,7 +145,7 @@ export function SubmissionCard({
               </div>
             )}
 
-            <div className="bg-surface-container-lowest dark:bg-surface-container rounded-lg overflow-hidden">
+            <div className="bg-surface-container-lowest rounded-lg overflow-hidden">
               <div className="px-space-md py-space-sm flex items-center justify-between">
                 <h4 className="text-label-sm text-on-surface font-bold uppercase tracking-wider flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary text-[18px]">fact_check</span>

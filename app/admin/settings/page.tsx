@@ -31,7 +31,7 @@ export default async function AdminSettingsPage() {
         <p className="text-body-md text-on-surface-variant">Business-wide settings for how First Coast Bids works.</p>
       </div>
 
-      <div className="mt-6 bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6 max-w-xl">
+      <div className="mt-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 max-w-xl">
         <h2 className="text-title-lg text-primary mb-2 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-[20px]">payments</span>
           Lean package threshold

@@ -25,7 +25,7 @@ export default function ContactPage() {
         as="div"
         mode="mount"
         delay={0.16}
-        className="max-w-xl mx-auto w-full bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl p-6 md:p-8"
+        className="max-w-xl mx-auto w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-6 md:p-8"
       >
         <ContactForm />
       </Reveal>

@@ -28,14 +28,14 @@ export function SupportMessagesList({ messages }: { messages: Message[] }) {
 
   if (items.length === 0) {
     return (
-      <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl mt-4 px-4 py-6 text-center text-on-surface-variant">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl mt-4 px-4 py-6 text-center text-on-surface-variant">
         No support messages yet.
       </div>
     );
   }
 
   return (
-    <div className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-xl mt-4 divide-y divide-outline-variant">
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl mt-4 divide-y divide-outline-variant">
       {items.map((m) => (
         <div key={m.id} className="flex flex-col gap-2 px-4 py-4">
           <div className="flex items-start justify-between gap-3">

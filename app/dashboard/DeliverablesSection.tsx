@@ -84,7 +84,7 @@ export function DeliverablesSection({
           {present.map((type) => (
             <div
               key={type}
-              className="flex items-center gap-space-sm bg-surface-container-lowest dark:bg-surface-container rounded-lg px-space-md py-space-sm"
+              className="flex items-center gap-space-sm bg-surface-container-lowest rounded-lg px-space-md py-space-sm"
             >
               <span className="material-symbols-outlined text-secondary text-[20px]">{CORE_ICONS[type]}</span>
               <span className="flex-1 text-body-md text-on-surface font-semibold">{CORE_LABELS[type]}</span>

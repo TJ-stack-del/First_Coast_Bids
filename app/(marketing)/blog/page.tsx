@@ -44,7 +44,7 @@ export default function BlogPage() {
             key={post.title}
             as="article"
             delay={i * 0.1}
-            className="bg-surface-container-lowest dark:bg-surface-container-low border border-outline-variant rounded-lg p-6 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50"
+            className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50"
           >
             <div className="flex items-center justify-between text-label-sm text-on-surface-variant uppercase tracking-wider">
               <span className="text-primary font-bold">{post.category}</span>

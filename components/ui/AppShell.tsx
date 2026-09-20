@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { Logo } from "./Logo";
 import { SignOutButton } from "./SignOutButton";
-import { ThemeToggle } from "./ThemeToggle";
 import { AdminGuide } from "./AdminGuide";
 import { broadcastSignedIn } from "@/lib/auth-broadcast";
 
@@ -138,7 +137,6 @@ export function AppShell({
               {formatViewerName(viewerName)} · {role === "admin" ? "Admin" : "Client view"}
             </p>
             {role === "admin" && <AdminGuide />}
-            <ThemeToggle />
             <div className="flex items-center gap-1">
               <SignOutButton />
             </div>
