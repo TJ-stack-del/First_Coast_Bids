@@ -11,6 +11,10 @@
     {
       "path": "/api/process-stage-email-outbox",
       "schedule": "30 13 * * *"
+    },
+    {
+      "path": "/api/check-sam-status",
+      "schedule": "0 12 * * *"
     }
   ]
 }
