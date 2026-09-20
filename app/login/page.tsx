@@ -74,30 +74,20 @@ export default async function LoginPage({
               href="/"
               className="relative flex items-center justify-center mb-3 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
-              {/* Two source images, not one + a filter -- see
-                  components/ui/Logo.tsx for why: logo-mark-dark.png was
-                  matted against a dark background so its edges are clean
-                  on dark surfaces the same way logo-mark.png's are clean
-                  on light ones. The soft drop-shadow glow this used to
-                  carry was removed 2026-09-19 (real user report, same
-                  issue found on components/ui/PipelineArrow.tsx the same
-                  day): at this size the blurred halo read as fuzzy/
-                  pixelated rather than atmospheric, especially against a
-                  dark page background. */}
+              {/* Single source image -- see components/ui/Logo.tsx for why
+                  the separate dark-mode variant this used to swap in was
+                  dropped (2026-09-19, real user report: it had drifted
+                  from the true Stitch reference). The soft drop-shadow
+                  glow this used to carry was removed the same day (same
+                  issue found on components/ui/PipelineArrow.tsx): at this
+                  size the blurred halo read as fuzzy/pixelated rather than
+                  atmospheric, especially against a dark page background. */}
               <Image
                 src="/logo-mark.png"
                 alt="First Coast Bids"
                 width={512}
                 height={512}
-                className="w-24 h-24 object-contain dark:hidden"
-                priority
-              />
-              <Image
-                src="/logo-mark-dark.png"
-                alt="First Coast Bids"
-                width={512}
-                height={512}
-                className="hidden w-24 h-24 object-contain dark:block"
+                className="w-24 h-24 object-contain"
                 priority
               />
             </Link>

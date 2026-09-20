@@ -18,36 +18,29 @@ export function Logo({
   iconClassName?: string;
   priority?: boolean;
 }) {
-  // Two separate source images, not one image + a CSS filter -- the dark
-  // variant was extracted from a Stitch reference rendered natively on a
-  // dark background (see public/logo-mark-dark.png), so its alpha-matte
-  // edges are clean against dark surfaces the same way logo-mark.png's are
-  // clean against light ones. A single image decontaminated for one
-  // background always shows a faint fringe of the other background's tint
-  // at its semi-transparent edges. `dark:hidden`/`hidden dark:block` swap
-  // on the CSS `.dark` class (next-themes) with no JS/hydration flicker,
-  // and no `fill` sizing since iconClassName can be `w-auto` (the
-  // reset-password hero logo) -- `fill` requires a definite parent width.
+  // Single source image -- used to be two (a separately Stitch-regenerated
+  // "dark background" variant swapped in via dark:hidden/hidden dark:block),
+  // dropped 2026-09-19 (real user report: the dark variant "looked nothing
+  // like what Stitch was rendering"). Comparing both against the actual
+  // Stitch reference confirmed it: the light extraction matched almost
+  // exactly (it's sourced directly from that reference), but the separate
+  // dark regeneration had real geometric drift -- a rounder/blobbier
+  // shield point, softer bevels, different proportions, since asking an
+  // AI model to "redraw this on a dark background" is a new generation,
+  // not a guaranteed-faithful recolor. This same light-sourced extraction
+  // was tested directly against dark surfaces at every real display size
+  // this component uses (48-224px) and composites cleanly with no
+  // background fringe, so there was never a real need for a second image.
   const iconClasses = iconClassName || "h-10 w-10";
   const icon = (
-    <>
-      <Image
-        src="/logo-mark.png"
-        alt="First Coast Bids"
-        width={512}
-        height={512}
-        className={`${iconClasses} dark:hidden`}
-        priority={priority}
-      />
-      <Image
-        src="/logo-mark-dark.png"
-        alt="First Coast Bids"
-        width={512}
-        height={512}
-        className={`${iconClasses} hidden dark:block`}
-        priority={priority}
-      />
-    </>
+    <Image
+      src="/logo-mark.png"
+      alt="First Coast Bids"
+      width={512}
+      height={512}
+      className={iconClasses}
+      priority={priority}
+    />
   );
 
   // Theme-aware tokens, not hardcoded hex -- found as a real bug

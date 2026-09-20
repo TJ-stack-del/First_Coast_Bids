@@ -18,25 +18,13 @@ import Image from "next/image";
 // up from the previous 64px circle) -- "prepared by our team" is exactly
 // the moment this component represents, so the brand icon standing on
 // its own reads better here than a small icon boxed inside a shape.
+// Single source image -- see components/ui/Logo.tsx for why the separate
+// dark-mode variant this used to swap in was dropped (2026-09-19, real
+// user report: it had drifted from the true Stitch reference).
 export function PipelineArrow() {
   return (
     <div className="relative flex items-center justify-center">
-      <Image
-        src="/logo-mark.png"
-        alt=""
-        aria-hidden="true"
-        width={512}
-        height={512}
-        className="h-20 w-20 dark:hidden"
-      />
-      <Image
-        src="/logo-mark-dark.png"
-        alt=""
-        aria-hidden="true"
-        width={512}
-        height={512}
-        className="hidden h-20 w-20 dark:block"
-      />
+      <Image src="/logo-mark.png" alt="" aria-hidden="true" width={512} height={512} className="h-20 w-20" />
     </div>
   );
 }
