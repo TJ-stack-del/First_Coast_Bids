@@ -82,7 +82,7 @@ just confirm presence):
 ```bash
 for key in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY \
   SUPABASE_SERVICE_ROLE_KEY ANTHROPIC_API_KEY RESEND_API_KEY \
-  ADMIN_DIGEST_EMAIL CRON_SECRET; do
+  ADMIN_DIGEST_EMAIL CRON_SECRET SAM_GOV_API_KEY; do
   if grep -q "^${key}=" .env.local; then
     echo "OK: $key present"
   else

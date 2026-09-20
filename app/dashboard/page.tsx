@@ -80,7 +80,7 @@ export default async function DashboardPage() {
   const { data: client } = await supabase
     .from("clients")
     .select(
-      "id, org_id, company_name, contact_name, naics_codes, license_number, business_registration_number, years_in_business, insurance_provider, general_liability_coverage, workers_comp_coverage, business_address, business_phone, sam_registration_status, sam_registration_expires_at"
+      "id, org_id, company_name, contact_name, naics_codes, license_number, business_registration_number, years_in_business, insurance_provider, general_liability_coverage, workers_comp_coverage, business_address, business_phone, sam_uei, sam_registration_status, sam_registration_expires_at"
     )
     .eq("auth_user_id", user.id)
     .maybeSingle();
@@ -405,6 +405,12 @@ export default async function DashboardPage() {
                 <p className="text-body-sm text-error mt-1">
                   Your SAM.gov registration expires {client.sam_registration_expires_at} — renew it at sam.gov to
                   stay eligible for federal opportunities.
+                </p>
+              )}
+              {client.sam_uei && client.sam_registration_status && client.sam_registration_status !== "active" && (
+                <p className="text-body-sm text-error mt-1">
+                  Your SAM.gov registration is not active — you won&apos;t be matched to federal opportunities until
+                  it&apos;s renewed at sam.gov.
                 </p>
               )}
               {client.business_address && <p className="text-on-surface-variant">{client.business_address}</p>}

@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
     .not("sam_uei", "is", null);
 
   if (fetchError) {
+    console.error("[check-sam-status] failed to load clients", { message: fetchError.message });
     return NextResponse.json({ error: fetchError.message }, { status: 500 });
   }
 
@@ -57,6 +58,10 @@ export async function GET(request: NextRequest) {
 
       const { error: updateError } = await supabase.from("clients").update(update).eq("id", client.id);
       if (updateError) {
+        console.error("[check-sam-status] failed to update client", {
+          clientId: client.id,
+          message: updateError.message,
+        });
         errors.push({ clientId: client.id, error: updateError.message });
         continue;
       }
@@ -67,7 +72,12 @@ export async function GET(request: NextRequest) {
       // client's last-known status with a wrong "unknown" -- leaving
       // sam_status_checked_at stale is the honest signal that this
       // client's status is unverified, not "verified as unknown."
-      errors.push({ clientId: client.id, error: e instanceof Error ? e.message : String(e) });
+      const message = e instanceof Error ? e.message : String(e);
+      console.error("[check-sam-status] failed to check client registration", {
+        clientId: client.id,
+        message,
+      });
+      errors.push({ clientId: client.id, error: message });
     }
   }
 
