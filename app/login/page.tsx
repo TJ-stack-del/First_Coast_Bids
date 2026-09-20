@@ -39,11 +39,19 @@ export default async function LoginPage({
           screen's split layout. Mobile collapses to just the auth card
           below, same as Stitch's dedicated mobile sign-in screen. */}
       <div className="hidden md:flex md:w-1/2 lg:w-3/5 relative flex-col justify-center gap-10 px-16 py-12 bg-surface-container-low overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary-container/10 blur-3xl rounded-full pointer-events-none" />
         <div className="relative flex flex-col gap-6 max-w-lg">
-          <h1 className="font-headline text-headline-lg text-primary font-bold">
+          {/* h2, not h1 -- the auth panel's "First Coast Bids" below is
+              this page's one true h1 (present at every viewport width,
+              including mobile where this whole panel is hidden). This
+              headline used to also be an h1, producing two h1s on desktop
+              simultaneously and, combined with the PANEL_STEPS titles
+              being h3, a skipped heading level (h1->h3, no h2) --  a real
+              WCAG heading-hierarchy defect found via critique 2026-09-20.
+              Font size is controlled by the className, not the tag, so
+              this carries no visual change. */}
+          <h2 className="font-headline text-headline-lg text-primary font-bold">
             You run the crew. We handle the paperwork.
-          </h1>
+          </h2>
           <p className="text-body-lg text-on-surface-variant">
             Upload the RFP. We turn complex solicitations into a ready-to-submit capability
             statement, compliance matrix, and technical narrative, ready for you to review
@@ -67,7 +75,6 @@ export default async function LoginPage({
 
       {/* Auth panel */}
       <div className="flex-1 relative flex items-center justify-center px-margin-mobile py-12 overflow-hidden">
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-72 h-44 bg-primary-container/20 blur-3xl rounded-full pointer-events-none md:hidden" />
         <div className="w-full max-w-md relative">
           <div className="text-center mb-6">
             <Link
@@ -92,14 +99,29 @@ export default async function LoginPage({
                 priority
               />
             </Link>
+            {/* bg-primary/text-primary, not bg-secondary/text-secondary --
+                secondary (verified-green) is reserved sitewide for
+                verified/complete states (DESIGN.md's No-Green-Drift Rule);
+                this dot verifies nothing, it's a plain status indicator,
+                so it belongs on the brand's one general-purpose accent
+                instead (found via critique 2026-09-20). */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high mb-2">
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <span className="text-label-sm uppercase tracking-wider text-secondary">Client Portal</span>
+              <span className="w-2 h-2 rounded-full bg-primary" />
+              <span className="text-label-sm uppercase tracking-wider text-primary">Client Portal</span>
             </div>
             <h1 className="font-headline text-headline-lg-mobile text-on-surface tracking-tight font-bold">
               First Coast <span className="text-primary">Bids</span>
             </h1>
             <p className="text-body-md text-on-surface-variant mt-1">Sign in to your account.</p>
+            {/* Mobile-only echo of the desktop marketing panel's headline
+                (hidden md:flex above) -- found via critique 2026-09-20:
+                that panel is the one genuinely on-brand, reassuring
+                element on this page, and it was invisible on mobile,
+                exactly the device this trade-contractor audience most
+                plausibly logs in from. */}
+            <p className="text-body-md text-on-surface-variant mt-2 md:hidden">
+              You run the crew. We handle the paperwork.
+            </p>
           </div>
 
           {reason === "inactive" && (

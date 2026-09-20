@@ -71,7 +71,7 @@ export function LoginForm() {
     setSubmitting(true);
 
     const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     });
 
@@ -93,9 +93,11 @@ export function LoginForm() {
     setOtpError(null);
     setOtpSubmitting(true);
 
-    if (isEmail(contact)) {
+    const trimmedContact = contact.trim();
+
+    if (isEmail(trimmedContact)) {
       const { error: otpErr } = await supabase.auth.signInWithOtp({
-        email: contact,
+        email: trimmedContact,
         options: {
           shouldCreateUser: false,
           emailRedirectTo: `${window.location.origin}/auth/callback`,
@@ -111,7 +113,7 @@ export function LoginForm() {
     }
 
     const { error: otpErr } = await supabase.auth.signInWithOtp({
-      phone: normalizePhone(contact),
+      phone: normalizePhone(trimmedContact),
       options: { shouldCreateUser: false },
     });
     setOtpSubmitting(false);
@@ -128,7 +130,7 @@ export function LoginForm() {
     setOtpSubmitting(true);
 
     const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      phone: normalizePhone(contact),
+      phone: normalizePhone(contact.trim()),
       token: code,
       type: "sms",
     });
@@ -158,7 +160,7 @@ export function LoginForm() {
     // exchange route — same one the passwordless email link already uses)
     // with next=/reset-password, so the recovery code gets exchanged for a
     // real session before the client ever sees the reset-password form.
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
       redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
     });
 
@@ -175,7 +177,7 @@ export function LoginForm() {
       <div className="flex flex-col gap-5">
         {signedInBanner}
         {forgotSent ? (
-          <div className="flex flex-col gap-4 text-center">
+          <div className="flex flex-col gap-4 text-center" role="status" aria-live="polite">
             <p className="text-body-md text-on-surface-variant">
               If an account exists for {forgotEmail}, we emailed a link to reset the password.
               Open it on this device to continue.
@@ -195,7 +197,11 @@ export function LoginForm() {
         ) : (
           <form onSubmit={handleSendResetLink} className="flex flex-col gap-5">
             {forgotError && (
-              <p className="text-body-md text-error bg-error-container/20 border border-error/30 rounded px-3 py-2">
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="text-body-md text-error bg-error-container/20 border border-error/30 rounded px-3 py-2"
+              >
                 {forgotError}
               </p>
             )}
@@ -237,7 +243,11 @@ export function LoginForm() {
       <div className="flex flex-col gap-5">
         {signedInBanner}
         {otpError && (
-          <p className="text-body-md text-error bg-error-container/20 border border-error/30 rounded px-3 py-2">
+          <p
+            role="alert"
+            aria-live="assertive"
+            className="text-body-md text-error bg-error-container/20 border border-error/30 rounded px-3 py-2"
+          >
             {otpError}
           </p>
         )}
@@ -265,7 +275,7 @@ export function LoginForm() {
             </button>
           </form>
         ) : otpChannel === "email" ? (
-          <div className="flex flex-col gap-4 text-center">
+          <div className="flex flex-col gap-4 text-center" role="status" aria-live="polite">
             <p className="text-body-md text-on-surface-variant">
               We emailed a sign-in link to {contact}. Open it on this device to finish signing in.
             </p>
@@ -317,7 +327,11 @@ export function LoginForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {signedInBanner}
       {error && (
-        <p className="text-body-md text-error bg-error-container/20 border border-error/30 rounded px-3 py-2">
+        <p
+          role="alert"
+          aria-live="assertive"
+          className="text-body-md text-error bg-error-container/20 border border-error/30 rounded px-3 py-2"
+        >
           {error}
         </p>
       )}
@@ -388,6 +402,15 @@ function Field({
   icon?: string;
   required?: boolean;
 }) {
+  // Only the password field gets a reveal toggle -- a masked-only field
+  // with no way to confirm what was typed is a real failure point for
+  // someone typing one-handed under screen glare (or on a job site,
+  // gloves-off, checking their own paste). Other fields (email, OTP code)
+  // are never masked so there's nothing to reveal.
+  const [revealed, setRevealed] = useState(false);
+  const isPassword = type === "password";
+  const effectiveType = isPassword && revealed ? "text" : type;
+
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{label}</span>
@@ -398,15 +421,26 @@ function Field({
           </span>
         )}
         <input
-          type={type}
+          type={effectiveType}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete={autoComplete}
           required={required}
           className={`w-full h-14 border-0 bg-surface-container text-on-surface placeholder:text-outline text-body-lg rounded-xl outline-none focus:bg-surface-container-high transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary ${
-            icon ? "pl-12 pr-4" : "px-4"
-          }`}
+            icon ? "pl-12" : "pl-4"
+          } ${isPassword ? "pr-12" : "pr-4"}`}
         />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setRevealed((r) => !r)}
+            aria-label={revealed ? "Hide password" : "Show password"}
+            aria-pressed={revealed}
+            className="material-symbols-outlined absolute right-3.5 flex items-center text-on-surface-variant text-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary rounded-sm"
+          >
+            {revealed ? "visibility_off" : "visibility"}
+          </button>
+        )}
       </div>
     </label>
   );
