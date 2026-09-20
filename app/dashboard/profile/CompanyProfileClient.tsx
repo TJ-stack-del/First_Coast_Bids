@@ -23,6 +23,7 @@ type CompanyInfo = {
   naics_codes: string[];
   small_business_statuses: string[];
   set_asides: string[];
+  sam_uei: string | null;
 };
 
 // Owns the upload+extraction step so a client can fill in most of this page

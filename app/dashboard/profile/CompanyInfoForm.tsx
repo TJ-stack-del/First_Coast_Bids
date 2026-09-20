@@ -22,6 +22,7 @@ type CompanyInfo = {
   naics_codes: string[];
   small_business_statuses: string[];
   set_asides: string[];
+  sam_uei: string | null;
 };
 
 // Existing rows may hold values that predate these checkbox lists (e.g. a
@@ -46,6 +47,7 @@ const FIELDS: { key: keyof CompanyInfo; label: string; type?: string; area?: boo
   { key: "general_liability_coverage", label: "General liability coverage (e.g. $1M/$2M)" },
   { key: "workers_comp_coverage", label: "Workers' comp coverage" },
   { key: "commercial_auto_coverage", label: "Commercial auto coverage" },
+  { key: "sam_uei", label: "SAM.gov Unique Entity ID (UEI) — only if you plan to bid on federal work" },
 ];
 
 // Filled in once, reused as facts across every future bid (app/api/
