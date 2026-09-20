@@ -18,24 +18,18 @@ export function Logo({
   iconClassName?: string;
   priority?: boolean;
 }) {
-  // logo-icon.png, not the detailed logo-mark.png -- real bug found
-  // 2026-09-20: the detailed mark (a raster extraction of the full ornate
-  // enamel-pin render, with several thin nested outline strokes) turns
-  // visibly muddy/indistinct once scaled down to this component's real
-  // display sizes (40-96px). Confirmed this wasn't an extraction defect --
-  // shrinking the *unmodified* Stitch reference itself to the same size
-  // produces identical softening, since fine nested linework just can't
-  // survive that much downscale. logo-icon.png is a deliberate simplified
-  // redraw (single bold checkmark stroke, thicker shield outline, no
-  // nested trim lines) generated specifically for small-size legibility --
-  // it's a distinct Stitch generation, not a derivation of logo-mark.png,
-  // so don't expect pixel-identical linework between the two. Source is a
-  // real vector SVG (public/logo-icon.svg), rasterized once to PNG here
-  // for consistency with this component's existing <Image> usage.
+  // logo-mark.png, the detailed enamel-pin mark sourced directly from the
+  // real Stitch reference. A simplified flat redraw was tried for small
+  // sizes (2026-09-20) to fix real softening of the fine nested linework
+  // at this component's 40-96px display sizes, but it traded away the
+  // premium metallic/beveled look the brand mark depends on -- explicit
+  // call: keep one consistent detailed mark everywhere, small-size
+  // softness accepted as the tradeoff, rather than two different-looking
+  // icons depending on size.
   const iconClasses = iconClassName || "h-10 w-10";
   const icon = (
     <Image
-      src="/logo-icon.png"
+      src="/logo-mark.png"
       alt="First Coast Bids"
       width={512}
       height={512}
