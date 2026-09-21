@@ -91,6 +91,15 @@ async function fetchOpportunitiesForNaicsCode(naicsCode: string, apiKey: string)
     .filter((o): o is ScrapedOpportunity => o !== null);
 }
 
+// Small, fixed batch size, not full concurrency across all 11 codes at
+// once -- SAM.gov's public API has no documented per-key rate limit this
+// was tuned against, and firing 11 requests simultaneously against a
+// government API on a shared free-tier key is a worse first move than a
+// modest batch. 4 at a time cuts worst-case sequential latency by roughly
+// 4x (this route's real timeout risk -- see the batching comment above
+// fetchOpportunitiesForNaicsCode) while staying conservative.
+const BATCH_SIZE = 4;
+
 export async function scrapeSamGov(): Promise<ScrapedOpportunity[]> {
   const apiKey = process.env.SAM_GOV_API_KEY;
   if (!apiKey) {
@@ -98,9 +107,40 @@ export async function scrapeSamGov(): Promise<ScrapedOpportunity[]> {
   }
 
   const results: ScrapedOpportunity[] = [];
-  for (const code of NAICS_CODES) {
-    const found = await fetchOpportunitiesForNaicsCode(code, apiKey);
-    results.push(...found);
+  const codeErrors: string[] = [];
+
+  // Batched, not one sequential loop that aborts on the first failure --
+  // a single rate-limited or transient-5xx NAICS code (of 11 real,
+  // separate API calls, since SAM.gov accepts only one NAICS code per
+  // request) must not discard opportunities already fetched from every
+  // code that succeeded before it. Promise.allSettled gives per-item
+  // error isolation within each batch, matching this app's existing
+  // per-item isolation convention (see app/api/check-sam-status's
+  // per-client try/catch) rather than the all-or-nothing behavior a
+  // single throw inside Promise.all would have. Only throws for the
+  // whole function if every single code failed -- that's the real
+  // "something is systemically broken" signal (e.g. a revoked API key),
+  // which must still surface as a loud scraper-level error rather than a
+  // silent, indistinguishable-from-"no results today" empty array.
+  for (let i = 0; i < NAICS_CODES.length; i += BATCH_SIZE) {
+    const batch = NAICS_CODES.slice(i, i + BATCH_SIZE);
+    const settled = await Promise.allSettled(batch.map((code) => fetchOpportunitiesForNaicsCode(code, apiKey)));
+
+    settled.forEach((outcome, idx) => {
+      const code = batch[idx];
+      if (outcome.status === "fulfilled") {
+        results.push(...outcome.value);
+      } else {
+        const message = outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason);
+        console.error("[sam-gov] failed to fetch opportunities for NAICS code", { code, message });
+        codeErrors.push(`${code}: ${message}`);
+      }
+    });
   }
+
+  if (codeErrors.length === NAICS_CODES.length) {
+    throw new Error(`scrapeSamGov: every NAICS code request failed -- ${codeErrors.join("; ")}`);
+  }
+
   return results;
 }
