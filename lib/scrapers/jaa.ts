@@ -17,6 +17,11 @@ export type ScrapedOpportunity = {
   // do carry one; matched_opportunities.scope already existed in the
   // schema but no scraper populated it before this.
   scope?: string | null;
+  // Optional — only lib/scrapers/sam-gov.ts populates this (SAM.gov
+  // opportunities carry a real NAICS code; neither jaa.ts's nor coj.ts's
+  // listing pages have an equivalent). Used downstream to compute a
+  // suggested-client match against clients.naics_codes.
+  naics_code?: string | null;
 };
 
 // flyjacksonville.com/bids.aspx is a plain server-rendered ASP.NET page —
