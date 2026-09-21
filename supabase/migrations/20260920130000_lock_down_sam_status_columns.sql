@@ -24,6 +24,13 @@
 -- columns. SELECT, INSERT, and the anon/service_role grants are
 -- untouched -- service_role (used by the cron routes) keeps full UPDATE
 -- access on the whole table.
+--
+-- The column list below must exactly match lib/clients/writable-fields.ts's
+-- CLIENT_WRITABLE_FIELDS -- lib/clients/writable-fields.test.ts checks the
+-- two against each other on every test run. If you're adding a new
+-- client-writable column, update both, in the same commit, or the test
+-- fails loudly instead of that column's save failing silently in
+-- production later.
 revoke update on table "public"."clients" from "authenticated";
 
 grant update (
