@@ -22,6 +22,8 @@ type Match = {
   match_score: number | null;
   status: string;
   assigned_client_id: string | null;
+  naics_code: string | null;
+  suggested_client_id: string | null;
   created_at: string;
 };
 
@@ -445,7 +447,12 @@ export function MatchesPanel({
                         <AssignControls
                           match={m}
                           clients={clients}
-                          selected={assignSelections[m.id] ?? ""}
+                          // Falls back to the computed suggestion only when the admin
+                  // hasn't touched this row's dropdown yet -- once they pick
+                  // anything, assignSelections[m.id] takes over. The admin
+                  // still has to click Assign to confirm; nothing here
+                  // auto-assigns just because a value is pre-selected.
+                  selected={assignSelections[m.id] ?? m.suggested_client_id ?? ""}
                           onSelect={(v) => setAssignSelections((s) => ({ ...s, [m.id]: v }))}
                           onAssign={() => handleAssignClick(m.id)}
                           onDismiss={() => handleDismiss(m.id)}
@@ -507,7 +514,12 @@ export function MatchesPanel({
                 <AssignControls
                   match={m}
                   clients={clients}
-                  selected={assignSelections[m.id] ?? ""}
+                  // Falls back to the computed suggestion only when the admin
+                  // hasn't touched this row's dropdown yet -- once they pick
+                  // anything, assignSelections[m.id] takes over. The admin
+                  // still has to click Assign to confirm; nothing here
+                  // auto-assigns just because a value is pre-selected.
+                  selected={assignSelections[m.id] ?? m.suggested_client_id ?? ""}
                   onSelect={(v) => setAssignSelections((s) => ({ ...s, [m.id]: v }))}
                   onAssign={() => handleAssignClick(m.id)}
                   onDismiss={() => handleDismiss(m.id)}
