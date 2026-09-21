@@ -31,6 +31,27 @@
 -- client-writable column, update both, in the same commit, or the test
 -- fails loudly instead of that column's save failing silently in
 -- production later.
+--
+-- LANDMINE FOR FUTURE ADMIN FEATURES: this GRANT is per Postgres role, not
+-- per RLS policy, and admins authenticate as the same "authenticated" role
+-- as ordinary clients (the "admins manage clients" RLS policy is what
+-- distinguishes them, via is_admin(org_id)). Postgres checks a column-level
+-- GRANT before RLS ever runs. That means if an admin-facing feature is ever
+-- built that updates a `clients` column through the normal (non-service-
+-- role) Supabase client -- including one of the three cron-owned columns
+-- this migration deliberately excludes, for a manual admin correction --
+-- it will fail with "permission denied for column", even though RLS would
+-- have allowed it, and that error has nothing to do with RLS at all. As of
+-- this migration, no such admin code path exists (verified: every current
+-- non-service-role UPDATE on `clients` is CompanyInfoForm.tsx or
+-- IntakeWizard.tsx, both client-facing, both already covered by the grant
+-- below), so this is a real risk to design around later, not a live bug
+-- today. When that feature gets built: either add the columns admins need
+-- to this grant (if clients should never write them anyway), or route the
+-- admin update through a service-role API route instead (if the column
+-- must stay off this grant, e.g. the three cron-owned ones) -- don't just
+-- add the column to this list to make the error go away without deciding
+-- which case it is.
 revoke update on table "public"."clients" from "authenticated";
 
 grant update (

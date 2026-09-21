@@ -8,7 +8,7 @@ import { signRfpDocumentUrls } from "@/lib/storage";
 import { BidProcessNotices } from "@/components/ui/BidProcessNotices";
 import { isKnownTrade } from "@/lib/compliance/known-trades";
 import { computeProfileCompleteness } from "@/lib/compliance/profile-completeness";
-import { isSamRegistrationExpiringSoon } from "@/lib/sam-gov/expiration-warning";
+import { getSamStatusMessage } from "@/lib/sam-gov/status-message";
 import { RETAINER_PLACEHOLDER_AGENCY } from "@/lib/submissions";
 
 // Reads cookies (via lib/supabase/server) which already opts this page out
@@ -105,6 +105,12 @@ export default async function DashboardPage() {
     businessAddress: client.business_address,
     businessPhone: client.business_phone,
     hasCertification: (certifications?.length ?? 0) > 0,
+  });
+
+  const samStatusMessage = getSamStatusMessage({
+    sam_uei: client.sam_uei,
+    sam_registration_status: client.sam_registration_status,
+    sam_registration_expires_at: client.sam_registration_expires_at,
   });
 
   const { data: submissions, error: submissionsError } = await supabase
@@ -401,18 +407,7 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-col gap-space-sm text-body-md">
               <p className="text-on-surface font-semibold">{client.company_name}</p>
-              {isSamRegistrationExpiringSoon(client.sam_registration_expires_at) && (
-                <p className="text-body-sm text-error mt-1">
-                  Your SAM.gov registration expires {client.sam_registration_expires_at} — renew it at sam.gov to
-                  stay eligible for federal opportunities.
-                </p>
-              )}
-              {client.sam_uei && client.sam_registration_status && client.sam_registration_status !== "active" && (
-                <p className="text-body-sm text-error mt-1">
-                  Your SAM.gov registration is not active — you won&apos;t be matched to federal opportunities until
-                  it&apos;s renewed at sam.gov.
-                </p>
-              )}
+              {samStatusMessage && <p className="text-body-sm text-error mt-1">{samStatusMessage}</p>}
               {client.business_address && <p className="text-on-surface-variant">{client.business_address}</p>}
               {client.years_in_business != null && (
                 <p className="text-on-surface-variant">{client.years_in_business} years in business</p>

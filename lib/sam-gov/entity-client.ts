@@ -1,3 +1,5 @@
+import type { SamRegistrationStatus } from "./registration-status";
+
 // SAM.gov Entity Management API (production v3) -- real REST API, not
 // scraping. Response shape under entityData[].entityRegistration:
 // registrationStatus ("Active" when active, otherwise some other
@@ -6,8 +8,15 @@
 // not guessed from memory.
 const ENTITY_API_BASE = "https://api.sam.gov/entity-information/v3/entities";
 
+// found:true only ever carries "active"/"inactive" -- those are the two
+// states the Entity API itself distinguishes. The caller (app/api/
+// check-sam-status/route.ts) is what maps found:false onto the third real
+// database value, "not_registered" -- see lib/sam-gov/registration-status.ts
+// for the full set of values this app's clients.sam_registration_status
+// column can actually hold, which is wider than what this API result type
+// alone represents.
 export type EntityRegistrationResult =
-  | { found: true; status: "active" | "inactive"; expiresAt: string | null }
+  | { found: true; status: Extract<SamRegistrationStatus, "active" | "inactive">; expiresAt: string | null }
   | { found: false };
 
 type RawEntityApiResponse = {

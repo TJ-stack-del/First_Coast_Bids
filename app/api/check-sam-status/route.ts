@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { checkEntityRegistration } from "@/lib/sam-gov/entity-client";
 import { runWithConcurrency } from "@/lib/concurrency";
+import type { SamRegistrationStatus } from "@/lib/sam-gov/registration-status";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -66,17 +67,19 @@ export async function GET(request: NextRequest) {
     try {
       const result = await checkEntityRegistration(client.sam_uei!);
 
-      const update = result.found
-        ? {
-            sam_registration_status: result.status,
-            sam_registration_expires_at: result.expiresAt,
-            sam_status_checked_at: new Date().toISOString(),
-          }
-        : {
-            sam_registration_status: "not_registered",
-            sam_registration_expires_at: null,
-            sam_status_checked_at: new Date().toISOString(),
-          };
+      // Explicitly typed against the same SamRegistrationStatus this app's
+      // dashboard and (per the SAM.gov opportunity-sourcing plan) future
+      // matching logic will branch on -- not left to infer as a bare
+      // string, which previously let "not_registered" exist as a real
+      // written value with no shared type declaring it alongside
+      // "active"/"inactive"/"unknown".
+      const status: SamRegistrationStatus = result.found ? result.status : "not_registered";
+
+      const update = {
+        sam_registration_status: status,
+        sam_registration_expires_at: result.found ? result.expiresAt : null,
+        sam_status_checked_at: new Date().toISOString(),
+      };
 
       const { error: updateError } = await supabase.from("clients").update(update).eq("id", client.id);
       if (updateError) {
