@@ -237,12 +237,20 @@ redirect links, webhook calls). Status as of this pass:
    anywhere (`is_org_member`, `org_has_admin`) were the safe subset and
    are now fully locked down (see Confirmed Working).
 
-2. **Leaked Password Protection disabled — Mike's own toggle, not a
-   code task.** Same lint pass flagged this (Supabase Auth checking new
-   passwords against HaveIBeenPwned.org). Not exposed in
-   `supabase/config.toml` in this CLI version, so it's dashboard-only:
-   both projects' **Authentication → Policies** (or Auth settings) →
-   enable "Leaked password protection." Safe, additive, no compat risk.
+2. **Leaked Password Protection — CORRECTED, 2026-09-22: this is
+   Supabase Pro-plan-gated, not a free toggle as originally logged
+   here.** Checked directly in the dashboard (Authentication → Sign In
+   / Providers → Email → "Prevent use of leaked passwords"): the switch
+   is already ON in both `bidpulse-dev` and `bidpulse-production`, but
+   the org (`TJ-stack-del's Org`) is on Supabase's **Free** plan, and
+   the setting's own description says "Only available on Pro plan and
+   above." Confirmed directly (tried to enable it, blocked pending a
+   Pro upgrade) — so despite showing enabled, this is very likely a
+   no-op on the current plan, not real protection. **Real status: not
+   actually available without upgrading to Supabase Pro** — a pricing/
+   plan decision for Mike, not something left undone by neglect. Leave
+   the switch on (harmless, and it'll activate automatically if the
+   org ever upgrades) but don't count this as closed.
 
 3. **Compliance checklist auto-population from completeness signals —
    deliberately not built yet.** Needs its own schema migration (a
