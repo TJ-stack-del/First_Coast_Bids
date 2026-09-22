@@ -20,7 +20,9 @@ jobs:
       - name: Request GitHub OIDC token and process queued email
         shell: bash
         env:
-          OIDC_AUDIENCE: https://bidpulse.co/api/process-stage-email-outbox
+          # Must match lib/auth/github-actions-oidc.ts's AUDIENCE exactly --
+          # www.firstcoastbids.com confirmed canonical (no redirect) 2026-09-22.
+          OIDC_AUDIENCE: https://www.firstcoastbids.com/api/process-stage-email-outbox
         run: |
           set -euo pipefail
 

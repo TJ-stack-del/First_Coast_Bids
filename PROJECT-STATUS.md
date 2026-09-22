@@ -181,14 +181,16 @@ redirect links, webhook calls). Status as of this pass:
   claims reflect the *current* repo name, so this was silently failing
   the scheduled stage-email-outbox cron's auth check since the rename.
   Fixed to `TJ-stack-del/First_Coast_Bids`.
-- **Not done yet, needs a decision + dashboard access this repo doesn't
-  have:** the OIDC `AUDIENCE` constant (same file) and
+- **Also done, this pass:** the OIDC `AUDIENCE` constant (same file) and
   `.github/workflows/process-stage-email-outbox.yml`'s matching
-  `OIDC_AUDIENCE` still say `bidpulse.co` — blocked on confirming which
-  of `www.firstcoastbids.com` / `firstcoastbids.com` actually serves
-  without a redirect (an exact match is required for the JWT audience
-  check; a redirect breaks the server-to-server call even though it's
-  fine for browsers).
+  `OIDC_AUDIENCE` — both moved to `https://www.firstcoastbids.com/api/
+  process-stage-email-outbox`, confirmed the correct one via a real
+  `curl -sI` test (`www.` returns 200 with no redirect; the bare domain
+  308-redirects to it, which would have broken the exact-match audience
+  check). **Not independently verified against a real triggered cron
+  run** — worth confirming the next scheduled run (`7,22,37,52 * * * *`)
+  actually succeeds once this is deployed, not just that the values
+  look right.
 - **Not touched at all yet, needs Mike in each dashboard directly —
   the single highest-risk item here:** Supabase Auth's **Site URL** and
   **Redirect URLs** for both `bidpulse-dev` and `bidpulse-production`
