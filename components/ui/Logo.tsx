@@ -55,7 +55,7 @@ export function Logo({
   // only. Logo.tsx just never used that token, so the fix it already
   // applied everywhere else in the app never reached here.
   const wordmark = (
-    <span className="font-headline font-bold leading-tight text-primary">
+    <span data-wordmark className="font-headline font-bold leading-tight text-primary">
       <span className="block tracking-wide">FIRST COAST</span>
       <span className="block tracking-wide text-tertiary">BIDS</span>
     </span>

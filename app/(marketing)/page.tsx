@@ -3,8 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { KNOWN_TRADES, assertNoMissingTradeCards } from "@/lib/compliance/known-trades";
-import { TransformationPipeline } from "@/components/ui/TransformationPipeline";
-import { Reveal } from "@/components/ui/Reveal";
+import { SampleSpecimen } from "@/components/landing/SampleSpecimen";
+import s from "@/components/landing/landing.module.css";
 
 export const metadata: Metadata = {
   description: "We help you win local government contracts. Send us the bid papers. Our team handles the paperwork so you can send in a strong bid.",
@@ -51,18 +51,21 @@ const HOW_IT_WORKS = [
     icon: "search",
     badge: "bg-primary-fixed text-on-primary-fixed",
     title: "1. Tell us about the bid",
+    who: "You",
     body: "A three-step form: your company info, the agency and job details, and the bid file itself.",
   },
   {
     icon: "fact_check",
     badge: "bg-secondary-container text-on-secondary-container",
     title: "2. We do the work",
+    who: "Our team",
     body: "Our team writes the paperwork about your company, checks it against the agency's rules, and writes up the technical part.",
   },
   {
     icon: "task",
     badge: "bg-tertiary-fixed text-on-tertiary-fixed",
     title: "3. You review and send it",
+    who: "You",
     body: "You check everything over. We confirm once it's actually sent in to the agency.",
   },
 ];
@@ -149,7 +152,7 @@ const PRICING_PREVIEW = [
     priceLine: PILOT_PRICE_LINE,
     terms: "No commitment after",
     features: ["One full bid, done for you", "See how the process works"],
-    cta: { label: "Get started", href: "/intake?package=pilot" },
+    cta: { label: "Start a pilot bid", href: "/intake?package=pilot" },
     highlight: true,
     badgeLabel: "Start here",
   },
@@ -159,7 +162,7 @@ const PRICING_PREVIEW = [
     priceLine: "Starting at $399",
     terms: "Confirmed with you before work starts",
     features: ["The write-up about your company", "A checklist matching the agency's rules", "The technical write-up"],
-    cta: { label: "Get started", href: "/intake?package=one_off" },
+    cta: { label: "Start a one-off bid", href: "/intake?package=one_off" },
     highlight: false,
     badgeLabel: null,
   },
@@ -172,7 +175,7 @@ const PRICING_PREVIEW = [
     // Kept in sync with pricing/page.tsx's own retainer CTA -- see that
     // file's comment for why this is /intake now, not a mailto: dead end,
     // and for why the ?package= param matters.
-    cta: { label: "Get started", href: "/intake?package=retainer" },
+    cta: { label: "Ask about a retainer", href: "/intake?package=retainer" },
     highlight: false,
     badgeLabel: null,
   },
@@ -197,291 +200,329 @@ const FAQ_PREVIEW = [
     q: "How does pricing work?",
     a: "One-off starts at $399, Retainer starts at $649/mo, and Pilot is free for our first 10 clients. See the Pricing page for the full breakdown. We confirm the exact number with you directly before any work starts. No card is required to get started, and every deliverable is free to preview before anything's due.",
   },
+  {
+    q: "What do I need to get started?",
+    a: "Just the RFP itself (or a link to it) and basic company info: NAICS codes, small-business status, and set-asides if you have them.",
+  },
+  {
+    q: "Is my data secure?",
+    a: "Your submission and files are tied to your account only, and every status change on your bid is recorded in an audit trail.",
+  },
 ];
 
+// 2026-09-22 redesign (Braun structure + Stripe Press warmth), built from the
+// approved draft in design-drafts/2026-09-22-landing-directions/ (v0.6). The
+// hero stays centred (an explicit earlier call); everything below sits on a
+// left-aligned grid of hairline-ruled spec tables. No scroll reveals: the
+// only motion is hover color changes and the packet's page edges.
 function Home() {
   return (
     <>
       {/* ---------- Hero ---------- */}
-      {/* The page's one on-load moment: headline, subhead, CTAs, and trade
-          badges arrive as a single authored beat (mode="mount", staggered
-          by a fixed delay) rather than each having its own scroll trigger
-          -- everything below the fold uses whileInView instead, so the
-          "page just loaded" feeling only happens once, where it matters. */}
-      {/* A design review suggested left-aligning this (flagged as "safe but
-          generic" centered) -- tried it, but per explicit user direction it
-          killed the hero's actual vibe, so this stays centered/symmetric.
-          Not every audit finding is worth taking; this one wasn't. */}
-      <section className="flex flex-col items-center text-center gap-6 py-8">
-        <Reveal mode="mount">
-          <h1 className="text-display-lg text-primary font-bold max-w-3xl">
-            You run the crew. We handle the paperwork.
-          </h1>
-        </Reveal>
-        <Reveal mode="mount" delay={0.08}>
-          <p className="text-body-lg text-on-surface-variant max-w-xl">
-            Upload the RFP. We turn complex solicitations into a ready-to-submit capability
-            statement, compliance matrix, and technical narrative, so you can review, sign,
-            and send.
-          </p>
-        </Reveal>
-        <Reveal mode="mount" delay={0.16} className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto justify-center mt-2">
-          <Link
-            href="/intake"
-            className="w-full sm:w-auto px-8 py-4 bg-primary-container text-on-primary-container rounded text-label-md hover:opacity-90 hover:-translate-y-0.5 transition active:scale-[0.97] flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
+      <section className={s.hero}>
+        <h1 className={s.h1}>
+          You run the crew. <em>We handle the paperwork.</em>
+        </h1>
+        <p className={s.heroLede}>
+          Upload the RFP. We turn complex solicitations into a ready-to-submit capability statement, compliance
+          matrix, and technical narrative, so you can review, sign, and send.
+        </p>
+        <div className={s.ctas}>
+          <Link href="/intake" className={`${s.btn} ${s.btnPrimary}`}>
             Get started
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
           </Link>
-          <a
-            href="#how"
-            className="w-full sm:w-auto px-8 py-4 border border-outline-variant text-on-surface rounded text-label-md hover:bg-surface-container-low hover:-translate-y-0.5 transition active:scale-[0.97] text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
+          <a href="#how" className={`${s.btn} ${s.btnQuiet}`}>
             See how it works
           </a>
-        </Reveal>
-
-        <Reveal mode="mount" delay={0.24} className="flex flex-wrap items-center justify-center gap-2 pt-2">
+        </div>
+        {/* The one proof signal above the fold (landing-page skill): a claim
+            the sample sheet below backs up, not an invented stat. */}
+        <a href="#sample" className={s.proofline}>
+          Every requirement cites its page in the RFP. Anything we don&apos;t know stays a visible blank.{" "}
+          <span>See a sample sheet</span>
+        </a>
+        <ul className={s.trades} aria-label="Trades we work with">
           {TRADES.map((trade) => (
-            <span
-              key={trade.id}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-low text-label-sm text-on-surface-variant uppercase tracking-wider"
-            >
-              <span className="material-symbols-outlined text-primary text-[14px]">{trade.icon}</span>
-              {trade.title}
-            </span>
+            <li key={trade.id}>{trade.title}</li>
           ))}
-        </Reveal>
-
-        <TransformationPipeline />
+        </ul>
       </section>
 
-      <section className="flex flex-col items-center gap-6">
-        <span className="text-label-md text-primary font-bold uppercase tracking-wide border border-primary rounded-full px-4 py-1">
-          Now accepting founding clients
-        </span>
-        {/* A divided row, not three identical cards -- matches the same
-            hairline-ledger language the Trades and Pricing sections below
-            already use, rather than introducing a fourth distinct "3 equal
-            boxes" treatment on the same page. */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-outline-variant border-y border-outline-variant">
-          {[
-            {
-              icon: "chat",
-              title: "Plain-language process",
-              body: "No confusing paperwork jargon. We explain everything in plain English.",
-            },
-            {
-              icon: "construction",
-              title: "You focus on the job",
-              body: "We handle the writing so you can keep running your business.",
-            },
-            {
-              icon: "storefront",
-              title: "Built for small trades",
-              body: `Not a big consulting firm, made for ${SUPPORTED_TRADES_LIST} contractors.`,
-            },
-          ].map((item, i) => (
-            <Reveal key={item.title} delay={i * 0.1} className="flex flex-col items-center text-center gap-2 py-gutter px-4">
-              <span className="material-symbols-outlined text-primary text-[28px]">{item.icon}</span>
-              <h3 className="text-title-lg text-primary">{item.title}</h3>
-              <p className="text-body-sm text-on-surface-variant">{item.body}</p>
-            </Reveal>
-          ))}
+      {/* ---------- Proof: the sample sheet ---------- */}
+      <section id="sample" className={s.block}>
+        <div className={s.head}>
+          <h2 className={s.h2}>
+            Every line traced to the RFP. <em>Nothing made up.</em>
+          </h2>
+          <p className={s.lede}>
+            Here&apos;s part of a compliance matrix, labelled the way you&apos;d label a part. Each numbered point is
+            something our team does on every bid.
+          </p>
+        </div>
+        <SampleSpecimen />
+      </section>
+
+      {/* ---------- Founding clients ---------- */}
+      <section className={s.block}>
+        <div className={s.head}>
+          <h2 className={s.h2}>
+            Now accepting <em>founding clients.</em>
+          </h2>
+        </div>
+        <div className={s.benefits}>
+          <article>
+            <h3 className={s.serif}>Plain-language process</h3>
+            <p className={s.muted}>No confusing paperwork jargon. We explain everything in plain English.</p>
+          </article>
+          <article>
+            <h3 className={s.serif}>You focus on the job</h3>
+            <p className={s.muted}>We handle the writing so you can keep running your business.</p>
+          </article>
+          <article>
+            <h3 className={s.serif}>Built for small trades</h3>
+            <p className={s.muted}>Not a big consulting firm, made for {SUPPORTED_TRADES_LIST} contractors.</p>
+          </article>
         </div>
       </section>
 
       {/* ---------- How it works ---------- */}
-      <section
-        id="how"
-        className="bg-primary text-on-primary -mx-margin-mobile md:-mx-margin-desktop px-margin-mobile md:px-margin-desktop py-section-gap flex flex-col gap-gutter"
-      >
-        <div className="flex flex-col gap-2 max-w-2xl">
-          <h2 className="text-headline-lg text-on-primary">
-            Three steps. You&apos;re never the one filling out the form.
+      <section id="how" className={`${s.block} ${s.how}`}>
+        <div className={s.head}>
+          <h2 className={s.h2}>
+            Three steps. <em>You&apos;re in charge of the last one.</em>
           </h2>
         </div>
-        {/* A vertical stepped list, not another 3-column grid -- a design
-            review flagged this section landing immediately after the
-            "Plain-language process / You focus on the job / Built for small
-            trades" trio above with the identical 3-equal-column rhythm,
-            reading as the same layout twice in a row. Each badge now also
-            uses its own step.badge token (primary-fixed / secondary-container
-            / tertiary-fixed) instead of every badge hardcoding bg-tertiary --
-            that per-step color distinction was already defined in
-            HOW_IT_WORKS but never actually wired into the render before. */}
-        <div className="flex flex-col gap-8 max-w-2xl">
-          {HOW_IT_WORKS.map((step, i) => (
-            <Reveal key={step.title} variant="scale" delay={i * 0.12} className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-code text-body-md shrink-0 ${step.badge}`}>
-                {String(i + 1).padStart(2, "0")}
-              </div>
-              <div className="flex flex-col gap-1 pt-2">
-                <h3 className="text-headline-md text-on-primary">{step.title.replace(/^\d+\.\s*/, "")}</h3>
-                <p className="text-body-sm text-on-primary/70">{step.body}</p>
-              </div>
-            </Reveal>
-          ))}
+        <div className={s.tableWrap}>
+          <table className={s.table}>
+            <thead>
+              <tr>
+                <th scope="col">Step</th>
+                <th scope="col">Who</th>
+                <th scope="col">What happens</th>
+              </tr>
+            </thead>
+            <tbody>
+              {HOW_IT_WORKS.map((step) => (
+                <tr key={step.title}>
+                  <th scope="row" className={`${s.serif} ${s.stepName}`}>
+                    {step.title.replace(/^\d+\.\s*/, "")}
+                  </th>
+                  <td className={s.who}>{step.who}</td>
+                  <td>
+                    {step.body}
+                    {step.who === "Our team" && <span className={`${s.sub} ${s.promise}`}>Most bids ready in 48 hours</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <p className="text-body-sm text-on-primary/70 flex items-center gap-2">
-          <span className="material-symbols-outlined text-on-primary text-[18px] shrink-0">verified_user</span>
-          We never submit on your behalf. You stay in control of your own agency portal account.
-        </p>
+        <p className={s.control}>We never submit on your behalf. You stay in control of your own agency portal account.</p>
       </section>
 
       {/* ---------- Trades ---------- */}
-      <section className="bg-surface-container-low border-y border-outline-variant -mx-margin-mobile md:-mx-margin-desktop px-margin-mobile md:px-margin-desktop py-section-gap flex flex-col gap-gutter">
-        <div className="flex flex-col gap-2 max-w-2xl">
-          <h2 className="text-headline-lg text-primary">Trades we work with</h2>
-          <p className="text-body-md text-on-surface-variant">
-            We're set up for the kind of bids small trade businesses actually deal with.
-          </p>
+      <section id="trades" className={s.block}>
+        <div className={s.head}>
+          <h2 className={s.h2}>
+            Trades we <em>work with.</em>
+          </h2>
+          <p className={s.lede}>We&apos;re set up for the kind of bids small trade businesses actually deal with.</p>
         </div>
-        {/* Manifest-style rows, not a card grid -- a fixed label column
-            (icon + trade name) alongside a description column, divided by
-            hairlines only. No per-item border/background/radius: reads as
-            one continuous index rather than a shelf of same-size boxes. */}
-        {/* The section's signature moment: rows reveal top to bottom in
-            reading order (a fixed per-row delay, not a synchronized group
-            fade) -- reads like a manifest being read down the list, distinct
-            from the grouped reveals used elsewhere on the page. */}
-        <ul className="flex flex-col divide-y divide-outline-variant">
-          {TRADES.map((trade, i) => (
-            <Reveal
-              key={trade.title}
-              as="li"
-              delay={i * 0.08}
-              className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-8 py-6 first:pt-0 last:pb-0"
-            >
-              <div className="flex items-center gap-3 sm:w-64 shrink-0">
-                <span className="material-symbols-outlined text-primary text-[22px]">{trade.icon}</span>
-                <h4 className="text-title-lg text-primary uppercase tracking-wide">{trade.title}</h4>
-              </div>
-              <p className="text-body-sm text-on-surface-variant sm:flex-1">{trade.body}</p>
-            </Reveal>
+        <ul className={s.tradelist}>
+          {TRADES.map((trade) => (
+            <li key={trade.id}>
+              <h3 className={s.serif}>{trade.title}</h3>
+              <p className={s.muted}>{trade.body}</p>
+            </li>
           ))}
         </ul>
-        {/* The intake flow already accepts any trade and gives an honest
-            heads-up (not a rejection) when it's outside the trades above with
-            deep compliance-matrix coverage — see lib/compliance/known-trades.ts.
-            This copy makes that explicit instead of implying a harder gate
-            than the product actually has. Points at the intake CTA, not a
-            contact form, since a reply-and-wait step is the wrong thing to
-            introduce at the exact moment someone's deciding whether to try
-            First Coast Bids — the product already answers the question for free. */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 max-w-2xl">
-          <p className="text-body-sm text-on-surface-variant">
-            We&apos;re deepest in these five, but if you&apos;re in a related trade, go
-            ahead and{" "}
-            <Link href="/intake" className="text-primary font-bold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm">
-              start your bid
-            </Link>
-            . You&apos;ll get an honest heads-up right away if something&apos;s outside our
-            sweet spot (a trade outside these five gets less tailored compliance
-            guidance, but we&apos;ll tell you that up front, not after you&apos;ve paid).
-            Prefer to ask first?{" "}
-            <Link href="/contact" className="text-primary font-bold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm">
-              Contact us
-            </Link>
-            .
-          </p>
-        </div>
+        {/* A trade outside these five is a heads-up, not a rejection -- see
+            lib/compliance/known-trades.ts. */}
+        <p className={s.note}>
+          We&apos;re deepest in these five, but if you&apos;re in a related trade, go ahead and{" "}
+          <Link href="/intake" className={s.inlineLink}>
+            start your bid
+          </Link>
+          . You&apos;ll get an honest heads-up right away if something&apos;s outside our sweet spot (a trade outside
+          these five gets less tailored compliance guidance, but we&apos;ll tell you that up front, not after
+          you&apos;ve paid). Prefer to ask first?{" "}
+          <Link href="/contact" className={s.inlineLink}>
+            Contact us
+          </Link>
+          .
+        </p>
       </section>
 
-      {/* ---------- Pricing (rate sheet, not a card grid) ---------- */}
-      <section id="pricing" className="flex flex-col gap-gutter">
-        <div className="flex flex-col gap-2 max-w-2xl">
-          <h2 className="text-headline-lg text-primary">Plain prices, confirmed with you before work starts.</h2>
-          <p className="text-body-md text-on-surface-variant">
-            Every deliverable is free to preview before anything&apos;s due: real
-            excerpts from your actual bid, not a mockup. Starting prices are below.
+      {/* ---------- Pricing: one spec table, Pilot marked by a navy rule ---------- */}
+      <section id="pricing" className={s.block}>
+        <div className={s.head}>
+          <h2 className={s.h2}>
+            Plain prices, <em>confirmed with you before work starts.</em>
+          </h2>
+          <p className={s.lede}>
+            Every deliverable is free to preview before anything&apos;s due: real excerpts from your actual bid, not a
+            mockup. Starting prices are below.
           </p>
         </div>
-        {/* One bordered ledger, not three floating cards: tiers are columns
-            of a single rate sheet separated by hairlines, the popular tier
-            marked by a tint fill rather than its own shadow/ring. Revealed
-            as one synchronized unit (unlike the Trades list's row-by-row
-            reveal) so the three tiers stay comparable at a glance instead
-            of arriving staggered. */}
-        <Reveal className="rounded-xl border border-outline-variant overflow-hidden grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-outline-variant">
-          {PRICING_PREVIEW.map((tier) => (
-            <div
-              key={tier.name}
-              className={`p-space-base flex flex-col gap-space-md ${tier.highlight ? "bg-primary-container/10" : ""}`}
-            >
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-headline-md text-primary">{tier.name}</h3>
-                  {tier.badgeLabel && (
-                    <span className="px-2 py-0.5 rounded bg-primary-container text-on-primary-container text-label-sm font-bold uppercase tracking-wider">
-                      {tier.badgeLabel}
-                    </span>
-                  )}
-                </div>
-                <p className="text-body-md text-on-surface-variant mt-1">{tier.tagline}</p>
-                <p className="text-body-md font-bold text-primary mt-1">{tier.priceLine}</p>
-              </div>
-              <ul className="flex flex-col gap-2 flex-grow">
-                {tier.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-body-sm text-on-surface">
-                    <span className="material-symbols-outlined text-secondary text-[18px] shrink-0">check_circle</span>
-                    {f}
-                  </li>
+        <div className={`${s.tableWrap} ${s.pricingWrap}`}>
+          <table className={`${s.table} ${s.pricing}`}>
+            <thead>
+              <tr>
+                <th scope="col">Plan</th>
+                {PRICING_PREVIEW.map((tier) => (
+                  <th key={tier.name} scope="col" className={tier.highlight ? s.live : ""}>
+                    <span className={`${s.serif} ${s.planName}`}>{tier.name}</span>
+                    {tier.badgeLabel && <span className={s.planNote}>{tier.badgeLabel}</span>}
+                  </th>
                 ))}
-              </ul>
-              <p className="text-label-sm font-code text-on-surface-variant uppercase tracking-wide">{tier.terms}</p>
-              <Link
-                href={tier.cta.href}
-                className="mt-auto px-4 py-2.5 bg-primary-container hover:bg-primary hover:-translate-y-0.5 text-on-primary-container rounded-lg text-label-md font-bold text-center transition active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              >
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Price</th>
+                {PRICING_PREVIEW.map((tier) => (
+                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
+                    <PriceLine line={tier.priceLine} />
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <th scope="row">For</th>
+                {PRICING_PREVIEW.map((tier) => (
+                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
+                    {tier.tagline}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <th scope="row">Terms</th>
+                {PRICING_PREVIEW.map((tier) => (
+                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
+                    {tier.terms}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <th scope="row">Included</th>
+                {PRICING_PREVIEW.map((tier) => (
+                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
+                    {tier.features[0]}
+                    {tier.features.length > 1 && <span className={s.sub}>{tier.features.slice(1).join(" · ")}</span>}
+                  </td>
+                ))}
+              </tr>
+              <tr className={s.ctaRow}>
+                <th scope="row">
+                  <span className="sr-only">Choose a plan</span>
+                </th>
+                {PRICING_PREVIEW.map((tier) => (
+                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
+                    <Link href={tier.cta.href} className={`${s.btn} ${tier.highlight ? s.btnPrimary : s.btnQuiet}`}>
+                      {tier.cta.label}
+                    </Link>
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        {/* Phones: one spec block per plan instead of a sideways-scrolling table. */}
+        <div className={s.plansMobile}>
+          {PRICING_PREVIEW.map((tier) => (
+            <article key={tier.name} className={tier.highlight ? s.liveCard : ""}>
+              <span className={`${s.serif} ${s.planName}`}>
+                {tier.name}
+                {tier.badgeLabel && <span className={s.planNote}>{tier.badgeLabel}</span>}
+              </span>
+              <dl>
+                <dt>Price</dt>
+                <dd>
+                  <PriceLine line={tier.priceLine} />
+                </dd>
+                <dt>For</dt>
+                <dd>{tier.tagline}</dd>
+                <dt>Terms</dt>
+                <dd>{tier.terms}</dd>
+                <dt>Included</dt>
+                <dd>
+                  {tier.features[0]}
+                  {tier.features.length > 1 && <span className={s.sub}>{tier.features.slice(1).join(" · ")}</span>}
+                </dd>
+              </dl>
+              <Link href={tier.cta.href} className={`${s.btn} ${tier.highlight ? s.btnPrimary : s.btnQuiet}`}>
                 {tier.cta.label}
               </Link>
+            </article>
+          ))}
+        </div>
+        <p className={s.fineprint}>
+          No card required to get started. We never promise a win: our readiness check tells you whether the
+          submission is complete and correct, not whether you&apos;ll be awarded the contract.{" "}
+          <Link href="/pricing" className={s.inlineLink}>
+            See full pricing
+          </Link>
+        </p>
+      </section>
+
+      {/* ---------- FAQ ---------- */}
+      <section id="faq" className={s.block}>
+        <div className={s.head}>
+          <h2 className={s.h2}>
+            Questions contractors <em>actually ask.</em>
+          </h2>
+        </div>
+        <dl className={s.faq}>
+          {FAQ_PREVIEW.map((item) => (
+            <div key={item.q}>
+              <dt className={s.serif}>{item.q}</dt>
+              <dd>{item.a}</dd>
             </div>
           ))}
-        </Reveal>
-        <Link href="/pricing" className="text-primary font-bold hover:underline self-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm">
-          See full pricing →
-        </Link>
-      </section>
-
-      {/* ---------- FAQ preview ---------- */}
-      {/* Four questions shown in full, not an accordion -- a design review
-          flagged the click-to-expand pattern as the generic template
-          treatment when there's this little to hide. The real /faq page
-          (dozens of questions across categories) keeps FaqAccordion, where
-          progressive disclosure actually earns its place. */}
-      <section id="faq" className="flex flex-col gap-gutter max-w-2xl mx-auto w-full">
-        <div className="flex flex-col gap-2 text-center">
-          <h2 className="text-headline-lg text-primary">Questions contractors actually ask</h2>
-        </div>
-        <div className="flex flex-col divide-y divide-outline-variant border-y border-outline-variant">
-          {FAQ_PREVIEW.map((item, i) => (
-            <Reveal key={item.q} delay={i * 0.08} className="flex flex-col gap-1.5 py-5">
-              <h3 className="text-title-lg text-primary">{item.q}</h3>
-              <p className="text-body-md text-on-surface-variant">{item.a}</p>
-            </Reveal>
-          ))}
-        </div>
-        <Link href="/faq" className="text-primary font-bold hover:underline text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm">
-          Read the full FAQ →
-        </Link>
-      </section>
-
-      <section className="bg-primary-container text-on-primary-container rounded-xl px-margin-mobile md:px-margin-desktop py-section-gap flex flex-col items-center text-center gap-6">
-        <h2 className="text-headline-lg text-on-primary-container max-w-2xl">
-          Ready to send in a strong bid?
-        </h2>
-        <p className="text-body-md text-on-primary-container/80 max-w-xl">
-          Tell us about your bid. It only takes a few minutes.
+        </dl>
+        <p className={s.note}>
+          <Link href="/faq" className={s.inlineLink}>
+            Read the full FAQ
+          </Link>
         </p>
-        <Link
-          href="/intake"
-          className="px-8 py-4 bg-surface text-primary rounded text-label-md hover:opacity-90 hover:-translate-y-0.5 transition active:scale-[0.97] flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface"
-        >
-          <span className="material-symbols-outlined text-[18px]">assignment</span>
+      </section>
+
+      {/* ---------- Final call to action ---------- */}
+      <section className={`${s.final} -mx-margin-mobile md:-mx-margin-desktop`} aria-labelledby="final-cta">
+        <h2 id="final-cta" className={s.h2}>
+          Ready to send in a <em>strong bid?</em>
+        </h2>
+        <p>Tell us about your bid. It only takes a few minutes.</p>
+        <Link href="/intake" className={`${s.btn} ${s.finalBtn}`}>
           Get started
         </Link>
+        <span className={s.risk}>No card required to get started.</span>
       </section>
+    </>
+  );
+}
+
+// "Starting at $399" / "Starting at $649/mo" / "Free for the first 10 clients"
+// rendered as a spec-table price: the figure in navy monospace with its
+// qualifier underneath. Pilot's line has no figure, so it reads "On us"
+// (the product's own wording -- never a bare "free", PRODUCT.md) above the
+// real terms.
+function PriceLine({ line }: { line: string }) {
+  const m = line.match(/^Starting at (\$[\d,]+)(\/mo)?$/);
+  if (m) {
+    return (
+      <>
+        <span className={`${s.price} ${s.mono}`}>
+          {m[1]}
+          {m[2] && <span className={s.muted} style={{ fontSize: 14 }}>{m[2]}</span>}
+        </span>
+        <span className={s.sub}>Starting at</span>
+      </>
+    );
+  }
+  return (
+    <>
+      <span className={`${s.price} ${s.priceWord}`}>On us</span>
+      <span className={s.sub}>{line}</span>
     </>
   );
 }

@@ -200,57 +200,6 @@ body {
   animation: rail-draw 0.6s var(--ease-arrive) 0.1s both;
 }
 
-/* Landing focal moment -- the review, rehearsed once. `.motion-sequence`
-   is set to data-played="true" by InViewSequence when the comparison
-   scrolls into view; until then (server render, JS off, reduced motion)
-   nothing here applies and every mark and stamp is simply shown.
-   1) A highlighter swipes across each flagged requirement on the RFP. */
-@keyframes highlighter-swipe {
-  from {
-    background-size: 0% 100%;
-  }
-}
-.motion-sequence[data-played="false"] .highlight-swipe {
-  background-size: 0% 100%;
-}
-.highlight-swipe {
-  /* The mark's tint is a sized gradient rather than a background-color so
-     it can be drawn left-to-right like a real pen stroke. currentColor is
-     the mark's own text color, at the same 20% strength the old Tailwind
-     "/20" background utility used. */
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-  background-image: linear-gradient(
-    color-mix(in srgb, currentColor 20%, transparent),
-    color-mix(in srgb, currentColor 20%, transparent)
-  );
-}
-.motion-sequence[data-played="true"] .highlight-swipe {
-  animation: highlighter-swipe 0.5s cubic-bezier(0.65, 0, 0.35, 1) both;
-  animation-delay: calc(0.45s + var(--seq, 0) * 0.3s);
-}
-
-/* 2) Then each deliverable's "Ready" stamp lands, in order. */
-@keyframes stamp-land {
-  from {
-    opacity: 0;
-    transform: scale(1.35) rotate(-6deg);
-  }
-  60% {
-    opacity: 1;
-  }
-}
-.motion-sequence[data-played="false"] .stamp-land {
-  opacity: 0;
-}
-.motion-sequence[data-played="true"] .stamp-land {
-  animation: stamp-land 0.32s var(--ease-arrive) both;
-  animation-delay: calc(1.3s + var(--seq, 0) * 0.14s);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-step-in,
   .animate-disclose {
@@ -258,14 +207,6 @@ body {
   }
   .animate-rail-draw {
     animation: none;
-  }
-  .motion-sequence[data-played] .highlight-swipe {
-    animation: none;
-    background-size: 100% 100%;
-  }
-  .motion-sequence[data-played] .stamp-land {
-    animation: fade-in-opacity 0.3s ease-out both;
-    animation-delay: calc(0.3s + var(--seq, 0) * 0.14s);
   }
 }
 
@@ -292,4 +233,70 @@ body {
 .text-label-md-mobile,
 .text-code-sm {
   font-family: theme("fontFamily.code");
+}
+
+/* ---- Marketing theme: Braun structure + Stripe Press warmth -------------
+   Applied only inside app/(marketing)/layout.tsx's wrapper, so the public
+   site takes the 2026-09-22 redesign (design-drafts/2026-09-22-landing-
+   directions/) while the dashboard, intake and admin keep their own look
+   until they get their own design pass. Every marketing page picks this up
+   through the same color tokens it already uses; nothing here changes a
+   token outside .theme-press. Fonts come from next/font in that layout
+   (--font-newsreader, --font-archivo). */
+.theme-press {
+  --color-surface: 240 235 221; /* bone paper #F0EBDD */
+  --color-surface-bright: 240 235 221;
+  --color-surface-dim: 216 206 180;
+  --color-surface-container-lowest: 251 248 240; /* raised panel #FBF8F0 */
+  --color-surface-container-low: 234 228 212;
+  --color-surface-container: 231 223 203; /* sunken bed #E7DFCB */
+  --color-surface-container-high: 224 215 192;
+  --color-surface-container-highest: 216 206 180;
+  --color-surface-variant: 231 223 203;
+  --color-background: 240 235 221;
+  --color-on-surface: 27 26 23; /* ink #1B1A17 */
+  --color-on-background: 27 26 23;
+  --color-on-surface-variant: 94 88 72; /* #5E5848, ~6:1 on bone */
+  --color-outline: 138 128 104;
+  --color-outline-variant: 205 194 168; /* hairline #CDC2A8 */
+  /* Primary actions are solid navy here (the draft's buttons), not the app's
+     light-blue container. Tints like bg-primary-container/10 stay navy-based. */
+  --color-primary-container: 12 45 82;
+  --color-on-primary-container: 255 255 255;
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-on-surface));
+  font-family: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+}
+.theme-press ::selection {
+  background: rgb(var(--color-primary));
+  color: #fff;
+}
+/* Headings: Newsreader at its regular weight, overriding the app's Chivo
+   tiers (and any font-bold on them -- serif headings in this system carry
+   hierarchy by size, not weight). */
+.theme-press :is(
+    .text-display-lg,
+    .text-display-lg-mobile,
+    .text-headline-lg,
+    .text-headline-lg-mobile,
+    .text-headline-md,
+    .text-title-lg,
+    .font-headline
+  ) {
+  font-family: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+/* The wordmark is part of the logo, not a heading: it keeps its own face
+   (Chivo, loaded site-wide in app/layout.tsx) whatever theme it sits in. */
+.theme-press [data-wordmark] {
+  font-family: theme("fontFamily.headline");
+  font-weight: 700;
+  letter-spacing: normal;
+}
+/* Monospace is for real figures only in this system (prices, page numbers,
+   solicitation numbers via font-code / metric tiers); UI labels read in the
+   body face instead. */
+.theme-press :is(.text-label-md, .text-label-sm, .text-label-md-mobile) {
+  font-family: inherit;
 }
