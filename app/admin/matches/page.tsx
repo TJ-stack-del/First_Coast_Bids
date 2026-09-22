@@ -28,9 +28,13 @@ export default async function AdminMatchesPage() {
   const { data: matches } = await supabase
     .from("matched_opportunities")
     .select(
-      "id, source_title, source_agency, source_url, scope, solicitation_number, due_date, match_score, status, assigned_client_id, created_at"
+      "id, source_title, source_agency, source_url, scope, solicitation_number, due_date, match_score, status, assigned_client_id, naics_code, suggested_client_id, created_at"
     )
     .eq("org_id", member.org_id)
+    // Scored (SAM.gov-sourced) rows first, highest match_score first;
+    // unscored JAA/COJ rows (match_score null) sort after all scored rows
+    // via nullsFirst: false, then fall back to the existing recency order.
+    .order("match_score", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false });
 
   const { data: clientsRaw } = await supabase

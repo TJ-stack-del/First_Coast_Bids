@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { scrapeJaa, type ScrapedOpportunity } from "@/lib/scrapers/jaa";
 import { scrapeCoj } from "@/lib/scrapers/coj";
 import { scrapeCojForecast } from "@/lib/scrapers/coj-forecast";
+import { scrapeSamGov } from "@/lib/scrapers/sam-gov";
+import { findBestMatchingClient } from "@/lib/sam-gov/match-scoring";
 
 // coj.ts no longer needs a real browser (see that file's own comment —
 // the "JS-rendered" table turned out to be a plain Oracle ADF loopback
@@ -30,6 +32,7 @@ const SCRAPERS: { name: string; run: () => Promise<ScrapedOpportunity[]> }[] = [
   { name: "jaa", run: scrapeJaa },
   { name: "coj", run: scrapeCoj },
   { name: "coj-forecast", run: scrapeCojForecast },
+  { name: "sam-gov", run: scrapeSamGov },
 ];
 
 function isAuthorized(request: NextRequest): boolean {
@@ -58,6 +61,46 @@ export async function GET(request: NextRequest) {
 
   if (orgError || !org) {
     return NextResponse.json({ error: "No organization set up yet." }, { status: 500 });
+  }
+
+  // Fetched once per run, not once per opportunity -- reused across every
+  // inserted row below.
+  //
+  // DEPLOYMENT SEQUENCING (corrected 2026-09-21 -- an earlier version of
+  // this comment claimed a missing column here would crash the whole
+  // cron run; verified that's wrong, see below): sam_registration_status
+  // does not exist in this branch's schema. It's added by the separate,
+  // still-unmerged SAM registration-monitoring PR's migration
+  // (20260920120000_add_sam_registration_fields_to_clients.sql). Do not
+  // deploy this PR to an environment before that PR's migration has
+  // actually been applied to the same database (merging the git PR is
+  // not sufficient by itself). The real failure mode if you do: this
+  // query returns {data: null, error}, supabase-js v2 does not throw by
+  // default, and the error is checked and logged below specifically so
+  // this doesn't silently degrade to "every suggestion is null" with zero
+  // visibility -- matching this app's existing scraper convention of
+  // failing loudly rather than looking identical to "ran fine, found
+  // nothing." Once the column exists for real: every client legitimately
+  // has sam_registration_status null/not-yet-checked until the
+  // registration-monitoring cron's first run, at which point
+  // findBestMatchingClient's active-status gate correctly finds zero
+  // eligible clients until a real registration check completes -- that
+  // part matches the original plan's own stated expectation.
+  // Ordered by created_at ascending so findBestMatchingClient's documented
+  // "first-registered-in-the-list wins" tie-break is actually true --
+  // without an explicit order, Postgres/PostgREST may return rows in any
+  // order, letting the winner of a tie between two equally-matching
+  // clients silently flip between cron runs.
+  const { data: clientsForMatching, error: clientsForMatchingError } = await supabase
+    .from("clients")
+    .select("id, naics_codes, sam_registration_status")
+    .eq("org_id", org.id)
+    .order("created_at", { ascending: true });
+
+  if (clientsForMatchingError) {
+    console.error("[scrape] failed to load clients for match scoring -- every suggestion this run will be null", {
+      message: clientsForMatchingError.message,
+    });
   }
 
   const results: Record<
@@ -89,6 +132,10 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
+        const suggestion = item.naics_code
+          ? findBestMatchingClient(item.naics_code, clientsForMatching ?? [])
+          : null;
+
         const { error: insertError } = await supabase.from("matched_opportunities").insert({
           org_id: org.id,
           assigned_client_id: null,
@@ -99,6 +146,9 @@ export async function GET(request: NextRequest) {
           solicitation_number: item.solicitation_number ?? null,
           scope: item.scope ?? null,
           status: "new",
+          naics_code: item.naics_code ?? null,
+          suggested_client_id: suggestion?.clientId ?? null,
+          match_score: suggestion?.score ?? null,
         });
 
         // Previously discarded silently on failure — a bad insert (e.g. a

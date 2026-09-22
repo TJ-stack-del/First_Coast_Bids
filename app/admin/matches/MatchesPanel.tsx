@@ -22,6 +22,8 @@ type Match = {
   match_score: number | null;
   status: string;
   assigned_client_id: string | null;
+  naics_code: string | null;
+  suggested_client_id: string | null;
   created_at: string;
 };
 
@@ -161,13 +163,20 @@ export function MatchesPanel({
   }
 
   function handleAssignClick(matchId: string) {
-    const clientId = assignSelections[matchId];
+    const match = matches.find((m) => m.id === matchId);
+    // Falls back to the computed suggestion, same as the dropdown's own
+    // displayed value (AssignControls' `selected` prop) -- without this,
+    // an admin who trusts the pre-selected client shown on screen and
+    // clicks Assign directly (without first re-touching the dropdown,
+    // which is the only thing that ever populates assignSelections) hit a
+    // false "pick a client first" error on the exact one-click path this
+    // suggestion feature exists to enable.
+    const clientId = assignSelections[matchId] ?? match?.suggested_client_id ?? "";
     if (!clientId) {
       showToast("Pick a client to assign this to first.", "error");
       return;
     }
 
-    const match = matches.find((m) => m.id === matchId);
     const client = clients.find((c) => c.id === clientId);
     if (!match || !client) return;
 
@@ -182,10 +191,10 @@ export function MatchesPanel({
   }
 
   async function performAssign(matchId: string) {
-    const clientId = assignSelections[matchId];
-    if (!clientId) return;
-
     const match = matches.find((m) => m.id === matchId);
+    // Same fallback as handleAssignClick -- see its comment.
+    const clientId = assignSelections[matchId] ?? match?.suggested_client_id ?? "";
+    if (!clientId) return;
     if (!match) return;
 
     setBusyId(matchId);
@@ -457,7 +466,12 @@ export function MatchesPanel({
                         <AssignControls
                           match={m}
                           clients={clients}
-                          selected={assignSelections[m.id] ?? ""}
+                          // Falls back to the computed suggestion only when the admin
+                  // hasn't touched this row's dropdown yet -- once they pick
+                  // anything, assignSelections[m.id] takes over. The admin
+                  // still has to click Assign to confirm; nothing here
+                  // auto-assigns just because a value is pre-selected.
+                  selected={assignSelections[m.id] ?? m.suggested_client_id ?? ""}
                           onSelect={(v) => setAssignSelections((s) => ({ ...s, [m.id]: v }))}
                           onAssign={() => handleAssignClick(m.id)}
                           onDismiss={() => handleDismiss(m.id)}
@@ -519,7 +533,12 @@ export function MatchesPanel({
                 <AssignControls
                   match={m}
                   clients={clients}
-                  selected={assignSelections[m.id] ?? ""}
+                  // Falls back to the computed suggestion only when the admin
+                  // hasn't touched this row's dropdown yet -- once they pick
+                  // anything, assignSelections[m.id] takes over. The admin
+                  // still has to click Assign to confirm; nothing here
+                  // auto-assigns just because a value is pre-selected.
+                  selected={assignSelections[m.id] ?? m.suggested_client_id ?? ""}
                   onSelect={(v) => setAssignSelections((s) => ({ ...s, [m.id]: v }))}
                   onAssign={() => handleAssignClick(m.id)}
                   onDismiss={() => handleDismiss(m.id)}
