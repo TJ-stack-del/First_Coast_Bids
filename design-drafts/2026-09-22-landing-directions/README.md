@@ -17,14 +17,15 @@ Live copy: https://claude.ai/artifact/XxN25pUWJUFHNyRQ5KasWA (pinned in the clau
   - bone paper `#F0EBDD`
   - Newsreader serif headings with the second half in italic navy
   - a soft real shadow under the document sheet only
-  - the packet object under the hero: navy cloth cover, gold foil title, caption "Three documents, bound as one packet, ready for your signature."
-- **Type:** Newsreader (headings, call-outs), Archivo 400/500 (UI, tables), JetBrains Mono (numbers).
-- **Colour:** navy `#0C2D52` is the one strong colour. Gold `#C19349` appears as the packet foil and the Pilot signal dot. Green and red are for status only.
+  - the packet object: navy cloth cover with a gold foil title, the three documents fanned behind it, caption "Three documents, bound as one packet, ready for your signature." Since v0.3 it sits beside the "Every line traced to the RFP" heading.
+- **Type:** Newsreader (headings, call-out titles, plan names, packet caption only), Archivo 400/500 (all running text, UI, tables), JetBrains Mono (real figures only: page numbers, prices, solicitation numbers).
+- **Colour:** navy `#0C2D52` is the one strong colour. Gold `#C19349` appears once, as the packet foil (plus the logo). Pilot is marked by a navy top rule and a light navy tint. Green and red are for status only.
+
+v0.3 (2026-09-22) applied a 7-point critique (scored 7.0/10 before the fixes): smaller flat packet showing three documents, one body typeface, monospace only for figures, gold used once, unbreakable placeholders, phone call-outs in a left margin, one-line sheet caption.
 
 ## Open decisions
 
 - The plan buttons say "Start a pilot bid", "Start a one-off bid" and "Ask about a retainer" instead of three identical "Get started" buttons. This copy change hasn't been approved yet.
-- Gold appears twice (foil and the Pilot dot). Drop the dot if gold should appear once.
 - The packet cover is drawn. It needs a real photo of a printed sample packet.
 - Not drafted yet: the "Now accepting founding clients" row, trade descriptions, FAQ teaser, footer.
 - Next step: build into the real site on a branch (tokens in `app/globals.css` / `tailwind.config.ts`, then DESIGN.md).

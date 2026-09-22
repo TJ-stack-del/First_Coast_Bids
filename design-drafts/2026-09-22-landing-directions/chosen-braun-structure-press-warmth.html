@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Archivo:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
   /* Remix: Braun structure (spec sheet, call-outs, spec tables, one gold
-     signal, quick mechanical motion) with Stripe Press warmth (bone paper,
+     foil, quick mechanical motion) with Stripe Press warmth (bone paper,
      serif headings with italic navy emphasis, a real shadow under the one
      document object). Single light world, painted explicitly. */
   :root {
@@ -17,7 +17,7 @@
     --ink-3: #A8A8A8;       /* rules/disabled only, never body text */
     --navy: #0C2D52;        /* the one strong colour */
     --navy-press: #081F3A;
-    --gold: #C19349;        /* signal only: a dot or bar, never text */
+    --gold: #C19349;        /* the packet foil only (and the logo), never text */
     --brass: #8A6934;       /* gold-family text when needed */
     --verified: #006C4A;
     --flag: #BA1A1A;
@@ -43,7 +43,8 @@
   .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; }
   @media (min-width: 768px) { .wrap { padding-inline: 40px; } }
   .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-  .label { font-family: var(--mono); font-size: var(--t-13); letter-spacing: 0.04em; color: var(--ink-2); }
+  .label { font-family: var(--sans); font-size: var(--t-13); color: var(--ink-2); }
+  .label.mono { font-family: var(--mono); letter-spacing: 0.02em; }
   h1, h2, h3 { font-weight: 500; margin: 0; text-wrap: balance; }
   h1, h2, .key h3, .sheet-top h3 { font-family: var(--serif); font-weight: 400; }
   h1 em, h2 em { font-style: italic; color: var(--navy); }
@@ -81,11 +82,11 @@
   /* ---- hero (kept centred: an earlier explicit call on the live site) ---- */
   .hero { text-align: center; padding-block: 64px 40px; display: grid; justify-items: center; gap: 24px; }
   .hero h1 { font-size: calc(var(--t-56) * 1.08); line-height: 1.04; letter-spacing: -0.015em; color: var(--ink); max-width: 16ch; }
-  .hero p { font-family: var(--serif); font-size: 21px; line-height: 1.5; color: var(--ink-2); max-width: 36em; }
+  .hero p { font-size: 19px; line-height: 1.5; color: var(--ink-2); max-width: 36em; }
   .hero .ctas { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   @media (max-width: 480px) { .hero .ctas { width: 100%; } .hero .ctas .btn { flex: 1 1 100%; } }
   .trades { display: flex; flex-wrap: wrap; justify-content: center; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-top: 8px; }
-  .trades li { list-style: none; padding: 8px 16px; font-family: var(--mono); font-size: var(--t-13); color: var(--ink-2); }
+  .trades li { list-style: none; padding: 8px 16px; font-size: 14px; color: var(--ink-2); }
   .trades li + li { border-left: 1px solid var(--rule); }
   .trades ul { display: contents; }
   @media (max-width: 560px) { .trades li + li { border-left: 0; } }
@@ -94,7 +95,7 @@
   section.block { padding-block: 64px; border-top: 1px solid var(--rule); }
   .head { display: grid; gap: 8px; margin-bottom: 32px; max-width: 40em; }
   .head h2 { font-size: calc(var(--t-40) * 1.1); line-height: 1.1; letter-spacing: -0.01em; }
-  .head p { color: var(--ink-2); font-size: 19px; font-family: var(--serif); }
+  .head p { color: var(--ink-2); font-size: 18px; }
 
   /* ---- specimen: annotated sample deliverable ---- */
   .specimen { display: grid; gap: 32px; grid-template-columns: 1fr; align-items: start; }
@@ -108,7 +109,7 @@
     padding: 24px; border: 1px solid var(--rule);
   }
   @media (min-width: 560px) { .bed { padding: 40px; } }
-  .bed-cap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .bed-cap { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 16px; flex-wrap: wrap; margin-bottom: 12px; }
   .sheet { background: var(--panel); border: 1px solid var(--rule); box-shadow: 0 24px 40px -20px rgba(27,26,23,.28), 0 6px 12px -6px rgba(27,26,23,.18); padding: 24px; position: relative; }
   .sheet-top { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 12px; margin-bottom: 4px; }
   .sheet-top h3 { font-size: 24px; }
@@ -118,10 +119,10 @@
   .req { font-size: 15px; }
   .src { grid-column: 1 / -1; font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
   .src q { font-family: var(--sans); font-style: normal; color: var(--ink); quotes: "\201C" "\201D"; }
-  .status { font-family: var(--mono); font-size: 12px; font-weight: 500; align-self: start; padding: 2px 8px; border: 1px solid currentColor; border-radius: 2px; white-space: nowrap; }
+  .status { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; align-self: start; padding: 2px 8px; border: 1px solid currentColor; border-radius: 2px; white-space: nowrap; }
   .status.ok { color: var(--verified); }
   .status.hold { color: var(--flag); }
-  .ph { font-family: var(--mono); font-size: 13px; color: var(--flag); background: var(--flag-wash); padding: 1px 4px; border-radius: 2px; }
+  .ph { white-space: nowrap; font-family: var(--mono); font-size: 13px; color: var(--flag); background: var(--flag-wash); padding: 1px 4px; border-radius: 2px; }
   .sign { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-top: 24px; }
   .sign div { border-top: 1px solid var(--ink); padding-top: 6px; }
   .balloon {
@@ -134,15 +135,14 @@
   .sheet .balloon { left: -36px; }
   .row .balloon { left: -60px; }
   @media (max-width: 559px) {
-    .row .balloon { left: auto; right: -12px; top: -12px; }
-    .row .balloon::after { display: none; }
-    .sheet .sign-b { right: -12px; left: auto; top: -12px; }
+    .sheet { padding-left: 48px; padding-right: 16px; }
+    .row .balloon, .sheet .balloon { left: -40px; }
   }
   .key { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
   .key li { display: grid; grid-template-columns: 24px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--rule); cursor: default; }
   .key .n { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--navy); display: grid; place-items: center; font: 500 12px/1 var(--mono); color: var(--navy); transition: background-color 80ms var(--ease), color 80ms var(--ease); }
   .key h3 { font-size: 21px; margin-bottom: 4px; }
-  .key p { color: var(--ink-2); font-size: 16px; }
+  .key p { color: var(--ink-2); font-size: 16px; line-height: 1.55; }
   .key li.on .n, .balloon.on { background: var(--navy); color: #fff; }
   .row.on { background: rgba(12,45,82,.04); }
 
@@ -165,19 +165,20 @@
     .pricing-wrap { display: none; }
     .plans-m { display: grid; gap: 0; border-top: 2px solid var(--ink); }
     .plans-m article { padding: 20px 0; border-bottom: 1px solid var(--rule); display: grid; gap: 12px; }
-    .plans-m article.live { background: rgba(193,147,73,.07); padding-inline: 12px; margin-inline: -12px; }
+    .plans-m article.live { border-top: 2px solid var(--navy); background: rgba(12,45,82,.04); padding-inline: 12px; margin-inline: -12px; }
     .plans-m dl { display: grid; grid-template-columns: 88px 1fr; gap: 8px 16px; margin: 0; font-size: 15px; }
     .plans-m dt { font-weight: 500; }
     .plans-m dd { margin: 0; }
   }
   .plan { display: flex; align-items: center; gap: 8px; font-family: var(--serif); font-size: 26px; font-weight: 400; color: var(--ink); letter-spacing: 0; }
-  .signal { width: 10px; height: 10px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 3px rgba(193,147,73,.22); flex: none; }
-  .plan-note { display: block; font-family: var(--mono); font-size: 12px; color: var(--brass); margin-top: 4px; }
+  .plan-note { display: block; font-size: 13px; font-weight: 500; color: var(--navy); margin-top: 4px; }
   .price { font-family: var(--mono); font-size: var(--t-20); font-weight: 500; color: var(--navy); }
+  .price.word { font-family: var(--serif); font-size: 24px; font-weight: 400; line-height: 1.1; }
   .pricing td:first-of-type { /* first plan column */ }
   .pricing tr.cta td, .pricing tr.cta th { border-bottom: 0; padding-top: 20px; }
   .pricing .btn { min-height: 44px; padding: 0 16px; width: 100%; }
-  .col-live { background: rgba(193,147,73,.07); }
+  .col-live { background: rgba(12,45,82,.04); }
+  .pricing thead th.col-live { box-shadow: inset 0 2px 0 var(--navy); }
   .fineprint { margin-top: 16px; color: var(--ink-2); font-size: 14px; max-width: 60em; }
 
   /* ---- assumptions ---- */
@@ -186,28 +187,40 @@
   footer { padding-block: 32px 48px; color: var(--ink-2); font-size: 14px; border-top: 1px solid var(--rule); }
 
 
-  /* The packet, brought over from direction C: navy cloth, one gold foil
-     stamp, a real shadow. A drawn stand-in for the photograph it wants. */
-  .object { display: grid; justify-items: center; gap: 20px; padding-block: 8px 72px; }
-  .packet { position: relative; width: min(320px, 76vw); aspect-ratio: 8.5 / 11; perspective: 1400px; }
-  .packet .pages { position: absolute; inset: 6px -6px -6px 6px; background: var(--panel); border: 1px solid var(--rule); }
-  .cover {
-    position: absolute; inset: 0; background-color: var(--navy);
-    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 4px), repeating-linear-gradient(-45deg, rgba(0,0,0,.08) 0 1px, transparent 1px 3px);
-    box-shadow: 0 28px 48px -12px rgba(27,26,23,.35), 0 8px 16px -8px rgba(27,26,23,.25);
-    transform: rotateY(-8deg) rotateX(2deg); transform-origin: left center;
-    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-    display: grid; grid-template-rows: 1fr auto; padding: 32px 28px;
+  /* The packet: three documents fanned behind a navy cover with one gold
+     foil stamp. Lies flat on the desk (a slight tilt, no 3D), smaller than
+     v0.2 so the sample sheet below still reaches a laptop's first screen.
+     A drawn stand-in for the photograph it wants. */
+  /* Packet sits beside the proof heading on desktop, so the hero leads
+     straight into the evidence; on phones it falls between them. */
+  .intro { display: grid; gap: 8px 48px; margin-bottom: 40px; }
+  .intro .head { margin-bottom: 0; }
+  @media (min-width: 900px) { .intro { grid-template-columns: minmax(0, 1fr) auto; align-items: start; } }
+  .object { display: grid; justify-items: center; gap: 16px; padding-block: 8px 0; }
+  .caption { max-width: 17em !important; }
+  .packet { position: relative; width: min(220px, 64vw); transform: rotate(-1.5deg); padding-top: 72px; }
+  .doc {
+    position: absolute; left: 0; right: 0; bottom: 0; background: var(--panel);
+    border: 1px solid var(--rule); padding: 7px 12px; font-size: 11px; font-weight: 500;
+    color: var(--ink-2); transition: transform 150ms var(--ease);
   }
-  .packet:hover .cover { transform: rotateY(-16deg) rotateX(3deg); }
-  .foil { color: var(--gold); font-family: var(--serif); text-align: center; align-self: center; display: grid; gap: 12px; justify-items: center; }
-  .foil .rule { width: 56px; height: 1px; background: var(--gold); }
-  .foil .t { font-size: 28px; line-height: 1.15; font-style: italic; }
-  .foil .s { font-family: var(--sans); font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; }
-  .cover .spine { font-family: var(--sans); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(193,147,73,.75); text-align: center; }
+  .doc:nth-child(1) { top: 0; }
+  .doc:nth-child(2) { top: 24px; }
+  .doc:nth-child(3) { top: 48px; }
+  .packet:hover .doc:nth-child(1) { transform: translateY(-6px); }
+  .packet:hover .doc:nth-child(2) { transform: translateY(-3px); }
+  .cover {
+    position: relative; aspect-ratio: 8.5 / 11; background-color: var(--navy);
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 4px), repeating-linear-gradient(-45deg, rgba(0,0,0,.08) 0 1px, transparent 1px 3px);
+    box-shadow: 0 20px 32px -16px rgba(27,26,23,.35), 0 6px 12px -6px rgba(27,26,23,.25);
+    display: grid; place-items: center; padding: 24px 20px;
+  }
+  .foil { color: var(--gold); font-family: var(--serif); text-align: center; display: grid; gap: 10px; justify-items: center; }
+  .foil .rule { width: 44px; height: 1px; background: var(--gold); }
+  .foil .t { font-size: 22px; line-height: 1.15; font-style: italic; }
+  .foil .s { font-family: var(--sans); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; }
   .caption { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink-2); text-align: center; max-width: 30em; }
   .caption .todo { display: block; margin-top: 6px; font-family: var(--mono); font-style: normal; font-size: 12px; color: var(--flag); }
-  @media (prefers-reduced-motion: reduce) { .packet:hover .cover { transform: rotateY(-8deg) rotateX(2deg); } }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
     .btn:active { transform: none; }
@@ -215,7 +228,7 @@
 </style>
 <div class="draft">
   <div class="wrap">
-    <span class="label">v0.2 draft</span>
+    <span class="label">v0.3 draft</span>
     <span style="font-size:14px;color:var(--ink-2)">Braun structure with Stripe Press warmth. Real copy, placeholders marked, no live links.</span>
   </div>
 </div>
@@ -251,28 +264,31 @@
   </section>
 
 
-  <div class="wrap object">
-    <div class="packet" role="img" aria-label="A sample bid submission package">
-      <div class="pages"></div>
-      <div class="cover">
-        <div class="foil"><span class="rule"></span><span class="t">Bid Submission Package</span><span class="s">Sample · Synthetic</span><span class="rule"></span></div>
-        <div class="spine">Capability · Compliance · Narrative</div>
-      </div>
-    </div>
-    <p class="caption">Three documents, bound as one packet, ready for your signature.<span class="todo">[Photo needed: a real printed sample packet, side-lit on paper]</span></p>
-  </div>
 
   <section class="block" id="sample">
     <div class="wrap">
+      <div class="intro">
       <div class="head">
         <h2>Every line traced to the RFP. <em>Nothing made up.</em></h2>
         <p>Here's part of a compliance matrix, labelled the way you'd label a part. Each numbered point is something our team does on every bid.</p>
+      </div>
+        <div class="object">
+          <div class="packet" role="img" aria-label="A sample bid submission package: capability statement, compliance matrix and technical narrative behind a navy cover">
+            <div class="doc">Technical narrative</div>
+            <div class="doc">Compliance matrix</div>
+            <div class="doc">Capability statement</div>
+            <div class="cover">
+              <div class="foil"><span class="rule"></span><span class="t">Bid Submission Package</span><span class="s">Sample · Synthetic</span><span class="rule"></span></div>
+            </div>
+          </div>
+          <p class="caption">Three documents, bound as one packet, ready for your signature.<span class="todo">[Photo needed: a real printed sample packet, side-lit on paper]</span></p>
+        </div>
       </div>
 
       <div class="specimen">
         <div class="bed">
           <div class="bed-cap">
-            <span class="label">Sample. Synthetic example, not a real client.</span>
+            <span class="label">Synthetic sample, not a real client</span>
             <span class="label mono">Sheet 2 of 3</span>
           </div>
           <div class="sheet" id="sheet">
@@ -346,13 +362,13 @@
           <thead>
             <tr>
               <th scope="col"><span class="label">Spec</span></th>
-              <th scope="col" class="col-live"><span class="plan"><span class="signal" aria-hidden="true"></span>Pilot</span><span class="plan-note">Start here</span></th>
+              <th scope="col" class="col-live"><span class="plan">Pilot</span><span class="plan-note">Start here</span></th>
               <th scope="col"><span class="plan">One-off</span></th>
               <th scope="col"><span class="plan">Retainer</span></th>
             </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Price</th><td class="col-live"><span class="price">On us</span><span class="sub">Free for the first 10 clients</span></td><td><span class="price">$399</span><span class="sub">Starting at</span></td><td><span class="price">$649<span style="font-size:14px;color:var(--ink-2)">/mo</span></span><span class="sub">Starting at</span></td></tr>
+            <tr><th scope="row">Price</th><td class="col-live"><span class="price word">On us</span><span class="sub">Free for the first 10 clients</span></td><td><span class="price">$399</span><span class="sub">Starting at</span></td><td><span class="price">$649<span style="font-size:14px;color:var(--ink-2)">/mo</span></span><span class="sub">Starting at</span></td></tr>
             <tr><th scope="row">For</th><td class="col-live">A low-commitment first bid, on us to prove the process.</td><td>A single bid, fully prepared.</td><td>Ongoing coverage for teams bidding regularly.</td></tr>
             <tr><th scope="row">Terms</th><td class="col-live">No commitment after</td><td>Confirmed with you before work starts</td><td>Up to 2 full bids a month</td></tr>
             <tr><th scope="row">Included</th><td class="col-live">One full bid, done for you<span class="sub">See how the process works</span></td><td>The write-up about your company<span class="sub">A checklist matching the agency's rules · The technical write-up</span></td><td>We watch for new bids every month<span class="sub">One person who knows your file</span></td></tr>
@@ -362,9 +378,9 @@
       </div>
       <div class="plans-m">
         <article class="live">
-          <span class="plan"><span class="signal" aria-hidden="true"></span>Pilot <span class="plan-note" style="margin:0 0 0 4px">Start here</span></span>
+          <span class="plan">Pilot <span class="plan-note" style="margin:0 0 0 4px">Start here</span></span>
           <dl>
-            <dt>Price</dt><dd><span class="price">On us</span><span class="sub">Free for the first 10 clients</span></dd>
+            <dt>Price</dt><dd><span class="price word">On us</span><span class="sub">Free for the first 10 clients</span></dd>
             <dt>For</dt><dd>A low-commitment first bid, on us to prove the process.</dd>
             <dt>Terms</dt><dd>No commitment after</dd>
             <dt>Included</dt><dd>One full bid, done for you<span class="sub">See how the process works</span></dd>
@@ -399,14 +415,13 @@
   <section class="block">
     <div class="wrap">
       <div class="assume">
-        <span class="label">What changed from A</span>
+        <span class="label">v0.3: changes from the critique</span>
         <ul>
-          <li>Bone paper instead of grey, and serif headings (Newsreader) with the second half in italic navy.</li>
-          <li>The sample sheet now sits on the grid with a soft real shadow, the only shadow on the page.</li>
-          <li>Call-out notes, step names and plan names are set in the serif; tables and buttons stay in Archivo, numbers in JetBrains Mono.</li>
-          <li>The packet from C sits under the hero: navy cloth cover, gold foil title, cover opens slightly on hover. It's drawn; a real photo of a printed sample packet would replace it.</li>
-          <li>Gold now appears twice: the foil on the packet and the signal dot on Pilot.</li>
-          <li>Removed the small grey labels above headings. The headings carry the section on their own.</li>
+          <li>Packet is smaller and lies flat, with the three documents fanned behind the cover so it visibly holds three things. It now sits beside the "Every line traced" heading, so the hero leads straight into the proof.</li>
+          <li>One reading face: all running text is Archivo. The serif is only for headings, call-out titles, plan names and the packet caption.</li>
+          <li>Monospace only for real figures: page numbers, prices, solicitation numbers. Trades, status tags and "On us" moved out of it.</li>
+          <li>Gold appears once, as the packet's foil. Pilot is marked by a navy top rule and a light navy tint.</li>
+          <li>Placeholders never break across lines. On phones the numbered circles sit in a left margin instead of colliding with status tags.</li>
           <li>Still open: plan button labels ("Start a pilot bid" etc.) are a copy change for you to approve.</li>
         </ul>
       </div>
@@ -415,7 +430,7 @@
 </main>
 
 <footer>
-  <div class="wrap">First Coast Bids · Draft v0.2, Braun + Press</div>
+  <div class="wrap">First Coast Bids · Draft v0.3, Braun + Press</div>
 </footer>
 
 <script>
