@@ -191,16 +191,24 @@ redirect links, webhook calls). Status as of this pass:
   run** — worth confirming the next scheduled run (`7,22,37,52 * * * *`)
   actually succeeds once this is deployed, not just that the values
   look right.
-- **Not touched at all yet, needs Mike in each dashboard directly —
-  the single highest-risk item here:** Supabase Auth's **Site URL** and
-  **Redirect URLs** for both `bidpulse-dev` and `bidpulse-production`
-  currently point at `bidpulse.co` (see `CLAUDE.md`'s own incident
-  history on this exact setting). If not moved to `firstcoastbids.com`
-  before the domain lapses, every password-reset/magic-link email stops
-  working — or if the new owner points DNS at a real server before
-  anyone notices, could send real users' auth links to a domain Mike no
-  longer controls. This is the one item on this list that should not
-  wait.
+- **Done, 2026-09-22, via the Supabase dashboard directly (previously
+  the single highest-risk item here):** `bidpulse-production`'s Site URL
+  moved from `https://bidpulse.co` to `https://www.firstcoastbids.com`
+  (the old `bidpulse.co` Redirect URL entry deliberately left in place
+  alongside the new one, as a safety net until closer to the deadline).
+  `bidpulse-dev` turned out to have zero `bidpulse.co` references at
+  all — but while checking it, found and fixed a separate, real drift
+  from `CLAUDE.md`'s own documented fix: dev's Site URL had drifted to
+  one specific Codespace's temporary forwarded URL (would have broken
+  again the next time that Codespace got rebuilt) instead of the stable
+  `http://localhost:3000` fallback the incident write-up calls for —
+  reset to `http://localhost:3000`. Also removed a stray
+  `https://bidpulse-nine.vercel.app/**` entry from dev's Redirect
+  URLs — the production Vercel alias had no business being on dev's
+  allow-list, the same cross-wiring shape that caused the original
+  dev→production misdirect incident. **Not yet independently verified**
+  with a real password-reset/magic-link click-through on either
+  project — worth doing before fully trusting this is closed.
 - **Also not yet done:** removing `bidpulse.co` as an assigned domain in
   Vercel (safe to leave until closer to the deadline, but shouldn't be
   the *last* thing checked — do it with enough runway to catch any
