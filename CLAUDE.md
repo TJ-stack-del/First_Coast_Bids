@@ -1,8 +1,13 @@
 # Working notes for Claude Code on this repo
 
-Read `PROJECT-STATUS.md` and `BUILD-ORDER-BIDPULSE.md` for project history
-and what's queued next. This file is durable process/convention notes only
-— things learned the hard way that should never need re-learning.
+Read `PROJECT-STATUS.md` for project history and what's queued next, and
+`PRODUCT.md`/`DESIGN.md` for current product positioning and brand/visual
+identity (the project was renamed from "BidPulse" to "First Coast Bids" on
+2026-09-19 — see `PROJECT-STATUS.md`'s intro for what that does and doesn't
+cover yet). `BUILD-ORDER-BIDPULSE.md` was archived 2026-09-22 (moved to
+`archive/`, unique content folded into `PROJECT-STATUS.md`) — don't read it
+as current. This file is durable process/convention notes only — things
+learned the hard way that should never need re-learning.
 
 ## PostgREST embeds break silently when a table gains a second FK
 

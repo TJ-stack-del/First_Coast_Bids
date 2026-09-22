@@ -1,18 +1,104 @@
-# BidPulse — Project Status & Handoff
+# BidPulse (now First Coast Bids) — Project Status & Handoff
 
-Read this first in any new conversation about BidPulse. It captures decisions,
-context, and pending work that isn't visible just from reading the code.
+Read this first in any new conversation about this project. It captures
+decisions, context, and pending work that isn't visible just from reading
+the code. **This is the one current status/handoff doc** — see "Related
+docs" near the bottom for what else exists and why.
 
-## What BidPulse Is
+## What this project is
 A done-for-you government bid prep service for small local trade contractors
 (janitorial, HVAC, landscaping) in the Jacksonville, FL area. Contractor
-submits bid info through an intake wizard; Mike (admin) prepares the actual
-deliverables (capability statement, compliance matrix, technical narrative)
-using AI-assisted drafting, then the client pays and downloads the package.
+submits bid info through an intake wizard; a real admin/team member prepares
+the actual deliverables (capability statement, compliance matrix, technical
+narrative) using AI-assisted drafting, then the client pays and downloads
+the package. Full current product/brand spec: `PRODUCT.md`; full current
+visual design system: `DESIGN.md` — both more authoritative than this
+file for product positioning, pricing language, and brand identity.
+
+**Renamed from "BidPulse" to "First Coast Bids," 2026-09-19 (commit
+`730c36c`) — this is real and complete in the app, not proposed.** Per
+`PRODUCT.md`'s own changelog: "the full rebrand across marketing pages,
+admin/dashboard UI, wordmark, PDF packet footer, email sender name, OG
+image, and PWA manifest is complete." New identity: navy (#0C2D52) + gold
+(#C19349), full detail in `DESIGN.md`. **Still using the old name / not yet
+migrated:** the production domain (`bidpulse.co`), the GitHub repo/URL
+itself, `package.json`'s internal `"name"` field (still `"bidpulse"`), and
+two already-rendered launch videos — all deliberately separate,
+not-yet-executed follow-ups per `PRODUCT.md`. The earlier trademark
+question that originally motivated reconsidering the name (a different
+ad-tech company already using "BidPulse") is effectively moot now that the
+product itself is renamed — see the old note preserved under Business/
+Naming Note below.
 
 **Stack:** Next.js 15 (App Router, TypeScript), Tailwind, Supabase
-(Postgres + Auth + Storage), Vercel (now deployed at bidpulse-nine.vercel.app).
-GitHub Codespaces for development.
+(Postgres + Auth + Storage), Vercel (now deployed at bidpulse-nine.vercel.app,
+production domain still `bidpulse.co`). GitHub Codespaces for development.
+
+**Deploy status (2026-09-22, doc-consolidation pass — supersedes every
+entry below, which are stale and should not be trusted as current):**
+This file had not been substantively updated since ~2026-09-16 (see the
+Package Pricing section's own date) until this pass, despite `origin/main`
+moving **277 commits** past the `fb688a4` reference point the 2026-09-09
+entry below describes, to `8b4297f` as of this writing. **None of the
+work below this note has been independently re-verified against
+production the way this file's own evidence standard requires** — it's a
+`git log`-derived survey done to stop this file actively misleading
+whoever reads it next, not a replacement for real verification. Real,
+confirmed-via-git developments since the last update that this file
+doesn't mention anywhere else:
+- The First Coast Bids rename (above).
+- `4e5e42f` **removed dark mode site-wide, light-only going forward** —
+  directly contradicts every dark-mode note elsewhere in this file (the
+  "systemic dark-mode elevation bug" entry under Confirmed Working, for
+  instance); those entries are now moot, not current.
+- Real starting prices now published (contradicts the "Package Pricing…
+  deliberately not published" note further down — check that section's
+  own currency before trusting it).
+- A structurally distinct Retainer signup flow with tier auto-detection.
+- SAM.gov integration: opportunity-sourcing (a new `matched_opportunities`
+  producer alongside the JAA scraper and inbound-email pipeline),
+  deterministic NAICS-overlap match scoring/suggestions surfaced in the
+  admin matches screen, and a daily SAM.gov registration-status check
+  cron warning clients about expiring registrations. Two design/plan docs
+  exist for this: `docs/superpowers/specs/2026-09-20-sam-gov-adoption-design.md`
+  and the two `docs/superpowers/plans/2026-09-20-sam-*.md` files.
+  Genuinely new schema (SAM.gov UEI + registration columns on `clients`).
+- A scheduled, encrypted database backup GitHub Actions workflow — likely
+  closes Currently Open item #7 (Backup/disaster-recovery plan) below;
+  **not confirmed working**, worth a real verification pass before
+  striking that item.
+- The City of Jacksonville Beach scraper (a fourth scraper alongside
+  JAA/JEA/Atlantic Beach), added in the very latest commit (`8b4297f`).
+- The RFP-extraction Python module now lives at `rfp-extractor/` (package
+  `bidpulse_rfp_extractor`), **not** `rfp-extraction/` as several entries
+  below still say — it was rebuilt from scratch under a different PR
+  (`f1413a2` and later commits) after this file's own Phase 1+2 work
+  (under the old `rfp-extraction/` path) never made it into `main`. The
+  new module independently covers Phase 1 (admin-field extraction) and
+  Phase 2 (section segmentation — `rfp-extractor/evidence/phase2/`) with
+  its own evidence and its own bug list; see its `README.md` and
+  `evidence/README.md`/`evidence/phase2/README.md` rather than the
+  Phase 1/2 narrative later in this file, which describes a different,
+  no-longer-existing implementation of the same two phases. Every
+  `rfp-extraction/` path reference below is corrected in-place to
+  `rfp-extractor/` with a note; the narrative (what bugs were found, why
+  design decisions were made) is left as real history.
+- **Three small, single-commit branches sitting open, unmerged, each one
+  commit ahead of `main`:** `fix/transactional-stage-transitions` ("Make
+  submission stage transitions atomic"), `fix/durable-stage-email-outbox`
+  ("Make stage email delivery durable"), `feat/outbox-15-minute-retries`
+  ("Run outbox retries every 15 minutes") — read together, these look
+  like a deliberate small series hardening the stage-change email/outbox
+  path against partial failure. Not reviewed in depth this pass; worth
+  checking whether they're still wanted or already superseded before
+  either merging or closing them.
+- The `HANDOFF-2026-09-10.md` file this doc cites below (in the item
+  about the 19-commit push) does not exist anywhere in this repo's
+  history on any branch — a dead reference, not a hidden file; don't go
+  looking for it.
+
+*(Earlier entries below, kept for history — none describe current
+reality; each is now stale on top of the last):*
 
 **Deploy status (2026-09-15, updated — supersedes the 2026-09-09 entry
 below, which is stale and should not be trusted):** `origin/main` and
@@ -247,6 +333,29 @@ non-action (see Known Issues / Recently Fixed, which includes real
     production project is still outstanding — do that next, not from
     dev.
 
+14. **CI workflow exists but needs Mike to add secrets before it
+    actually runs — carried over from `BUILD-ORDER-BIDPULSE.md`
+    (archived, folded in here).** `.github/workflows/ci.yml` (type
+    check + build on every push to `main` and every PR, dev-project
+    secrets only) was added and is otherwise ready. Needs Mike to add
+    the required secrets under repo Settings → Secrets and variables →
+    Actions before it runs for real — unconfirmed whether this has
+    happened since the workflow was added.
+
+15. **Three small, single-commit branches sitting open on GitHub,
+    unmerged — see the 2026-09-22 Deploy status note at the top of
+    this file for the actual branch names/commit messages.** Not
+    reviewed in depth; worth deciding whether to merge or close them.
+
+16. **Full reconciliation pass against `origin/main`'s actual current
+    state (as of `8b4297f`, 2026-09-22) — not done yet, only surveyed
+    via `git log`.** The 277-commits-of-drift note at the top of this
+    file lists what's known to exist but none of it has been verified
+    the way this file's own standard requires (real requests, real DB
+    reads, screenshots). Next session's first real task on this repo
+    should probably be closing that gap before adding more new work on
+    top of an unverified base.
+
 ### Business decisions (Mike's, not code tasks)
 - **Pricing as a deliberate throttle** — raising prices to intentionally
   slow growth while building capacity is a legitimate strategy some
@@ -266,6 +375,17 @@ non-action (see Known Issues / Recently Fixed, which includes real
 
 
 ## Confirmed Working (tested with real evidence, not just "reported done")
+- **Consolidated admin communication surfaces — done and verified,
+  carried over from `BUILD-ORDER-BIDPULSE.md` (archived, folded in
+  here) since it was missing from this file entirely.**
+  `RequestInfoForm.tsx` shows a picker of the submission's open
+  checklist items (plus "Other" for anything not yet tracked);
+  selecting one pre-fills a second-person request built from that
+  item's own label, sends the notification tied to it, and marks it
+  `in_progress` instead of creating a duplicate row. "Other" still
+  creates a new checklist item exactly as before. Verified against the
+  real dev server and database: the existing-item path updates in
+  place, the "Other" path still creates a genuinely new row.
 - **Compliance & Licensing Vault Phases 1-5 and 7 shipped and live —
   CLOSED 2026-09-15.** Phases 1-4 (trade licenses, structured insurance/
   bonding, RFP-boilerplate document library, past performance + hybrid
@@ -1292,11 +1412,21 @@ non-action (see Known Issues / Recently Fixed, which includes real
   a full RFP to identify what belongs in the compliance matrix,
   technical narrative, or capability statement. Deterministic
   (regex/layout-heuristic based), no generative model calls anywhere.
-  Lives entirely in `rfp-extraction/` — does not touch the Next.js app,
-  any existing route, or any of BidPulse's own LLM-based extraction.
-  Full design: `rfp-extraction-pipeline-design.md`; phase briefs:
-  `BRIEF-rfp-extraction-phase1.md`, `BRIEF-rfp-extraction-phase2.md`
-  (all three uploaded by the user this session, now committed).
+  Lived entirely in `rfp-extraction/` (does not touch the Next.js app,
+  any existing route, or any of BidPulse's own LLM-based extraction) —
+  **but that directory and everything below no longer exists in the
+  codebase; see the 2026-09-22 Deploy status note at the top of this
+  file.** The module was rebuilt from scratch, independently, under
+  `rfp-extractor/` (a separate PR), and that's what actually ships
+  today — check `rfp-extractor/README.md` and its own `evidence/`
+  folder for the current, real implementation and its own bug list
+  rather than assuming this narrative still applies. Kept below as
+  real history of what the original Phase 1+2 build found, in case
+  it's useful context for whoever works on the current module's own
+  Phase 3/4. Full design (still current, not implementation-specific):
+  `rfp-extraction-pipeline-design.md`; original phase briefs (now in
+  `archive/`, superseded by the current module's own docs):
+  `BRIEF-rfp-extraction-phase1.md`, `BRIEF-rfp-extraction-phase2.md`.
   - **Phase 1** (ingest + admin-field regex: due date, NAICS, set-aside,
     contract type, page limit, solicitation number): tested against a
     real fixture pulled from the actual `RFP-2026-0847-JANI` submission
@@ -1312,8 +1442,10 @@ non-action (see Known Issues / Recently Fixed, which includes real
     a field-free input returns null on all six fields (no false
     positives), and a genuinely image-only page (confirmed via an
     empty-text precheck) correctly triggers Tesseract OCR fallback with
-    every result flagged `low` confidence. Full evidence:
-    `rfp-extraction/evidence/NOTES.md`.
+    every result flagged `low` confidence. Full evidence was at
+    `rfp-extraction/evidence/NOTES.md` — gone along with the rest of
+    the old module (see note above); the current module's own Phase 1
+    evidence is `rfp-extractor/evidence/README.md`.
   - **Phase 2** (section segmentation: heading detection + a
     data-driven `SECTION_SYNONYMS` canonical taxonomy + an actually-
     surfaced `unclassified_headings` report, not just a JSON field
@@ -1333,8 +1465,12 @@ non-action (see Known Issues / Recently Fixed, which includes real
     on a short document with only 2 distinct sizes; and multi-column
     reordering was a **complete no-op on every input**, an off-by-one
     in the column-split index having silently swallowed both columns
-    into "left" every single time. Full evidence:
-    `rfp-extraction/evidence/phase2/NOTES.md`. **Stated limitation, not
+    into "left" every single time. Full evidence was at
+    `rfp-extraction/evidence/phase2/NOTES.md` — gone along with the
+    rest of the old module (see note above); the current module's own
+    Phase 2 evidence is `rfp-extractor/evidence/phase2/README.md`,
+    which independently found the same title-swallowing bug as its
+    first listed issue. **Stated limitation, not
     glossed over:** the synonym map is validated against synthetic
     fixtures only — no real agency solicitation was available to test
     against in this environment. First draft, needs a real
@@ -1592,6 +1728,15 @@ non-action (see Known Issues / Recently Fixed, which includes real
 
 
 ## Business/Naming Note
+**Resolved, 2026-09-19 (see the Deploy status note at the top of this
+file): the product is now named "First Coast Bids," not "BidPulse."**
+The trademark question below was the original motivation for
+reconsidering the name; it's effectively moot now that the rename
+already happened. Kept below as real history of the reasoning, and
+because the old name still lingers in a few places (the GitHub repo,
+`bidpulse.co`, `package.json`) that a future session may need this
+context to understand.
+
 A different company (ad-tech, Boston, bidpulse.io) already uses the name
 "BidPulse" — different industry, likely low trademark risk, but Mike was
 advised this isn't a legal opinion and to check the USPTO database or consult
@@ -1621,15 +1766,26 @@ worth flagging that the trademark question is still open, so this
 represents committing real design/engineering time to a name that might
 still change.
 
-## Package Pricing (target, internal only — set 2026-09-16)
+## Package Pricing (set 2026-09-16; **publication status changed since —
+see flag below, not independently re-verified this pass**)
 **One-off: $399/bid. Retainer: $649/mo (up to 2 bids/month, ~$325/bid
-effective).** These are the actual numbers to quote when confirming
+effective).** These were the actual numbers to quote when confirming
 pricing directly with a real client through the existing manual-invoicing
 flow — deliberately **not** published on the public pricing page
-(`app/(marketing)/pricing/page.tsx`), which by design shows no dollar
+(`app/(marketing)/pricing/page.tsx`), which by design showed no dollar
 amounts ("we confirm exact pricing with you directly before any work
 starts"). Mike explicitly chose to keep it that way rather than publish
-these figures.
+these figures, **at the time this was written.**
+
+**Flag: `git log` shows a later commit, `deb8fdd feat: publish real
+starting prices, cap Pilot's free offer, fix fabricated Most Popular
+badge`, that sounds like it directly reverses the "deliberately not
+published" decision above.** `PRODUCT.md` (current, 2026-09-19) also
+states real starting prices as public-facing facts: Pilot free for the
+first 10 clients, One-off starting at $399, Retainer starting at
+$649/mo. Trust `PRODUCT.md` over the paragraph above for current pricing
+language; this section is kept for the *reasoning* behind the numbers,
+which is likely still valid, not for whether they're published.
 
 **Not a modeled number — a starting bet, by design.** BidPulse is
 pre-revenue with zero completed bids, so there's no real labor-hours data
@@ -1658,3 +1814,51 @@ into a real, measured cost floor worth re-pricing against.
   researching it himself and bringing back real domain knowledge to build in
 - Solo operator with a day job — features that catch problems automatically
   (digest emails, SLA tracking) are treated as essential, not nice-to-have
+- **Codespace idle-timeout is a real recurring nuisance** (carried over
+  from `CODESPACE-REBUILD-HANDOFF.md`, archived, folded in here): the
+  codespace auto-stops between exchanges, which wipes the running dev
+  server and resets port 3000's forwarding back to private. If a
+  forwarded URL 404s, check whether the codespace/dev server are still
+  running before assuming anything else is wrong — re-run `npm run dev`
+  and `gh codespace ports visibility 3000:public --codespace <name>`
+  after any restart. Worth raising the idle-timeout setting at
+  github.com/settings/codespaces if this keeps interrupting real work.
+- **This file itself has gone stale for a week or more at a stretch at
+  least twice now** (see the 2026-09-22 and 2026-09-15 Deploy status
+  notes, each describing the previous entry as no longer trustworthy) —
+  updating it is easy to skip under real work pressure, but a status doc
+  that silently drifts behind `origin/main` is worse than no doc, since
+  it actively misleads. Worth treating "update PROJECT-STATUS.md" as
+  part of finishing a session's work, not an optional last step.
+
+## Related docs
+This file and `PRODUCT.md`/`DESIGN.md` are the three canonical,
+actively-maintained docs for this project — status/history here, product
+positioning and brand/visual identity there. Everything else:
+- **Still active, kept separate on purpose (different job, not status
+  history):** `CLAUDE.md` (process/convention lessons, auto-loaded every
+  session), `CODESPACE-REBUILD-BRIEF.md` (how to rebuild the dev
+  environment from scratch), `Admin-Review-Rubric.md` (the live
+  per-deliverable review checklist), `rfp-extraction-pipeline-design.md`
+  (the RFP-extraction design — still the right reference for building
+  Phase 3/4, even though Phase 1/2's actual implementation has since
+  moved to `rfp-extractor/`, see the note near the top of this file),
+  `rfp-extractor/README.md` and its `evidence/` docs (the current
+  RFP-extraction module's own docs), `scripts/README.md`,
+  `test-fixtures/README.md`, and the `mockups-reference/` docs.
+- **Moved to `archive/`, 2026-09-22, with their unique content folded
+  into this file where it was genuinely missing** (each archived file
+  still exists in full at that path — this was a move, not a deletion):
+  `BUILD-ORDER-BIDPULSE.md` (had gone stale in lockstep with this file,
+  substantially duplicated this file's own Currently Open list; its two
+  genuinely-missing items are now items #14-15 above and the
+  RequestInfoForm entry under Confirmed Working), `CODESPACE-REBUILD-
+  HANDOFF.md` (a single dated session snapshot from 2026-09-05,
+  superseded by this file's own ongoing narrative; its one genuinely
+  new fact — the codespace idle-timeout nuisance — is folded in above),
+  `MIGRATION-TO-BIDPULSE.md` (the original self-serve → done-for-you
+  business-model migration plan; fully executed, purely historical now),
+  `BRIEF-rfp-extraction-phase1.md` and `BRIEF-rfp-extraction-phase2.md`
+  (specs for the original Phase 1+2 build under the now-gone
+  `rfp-extraction/` path; the current `rfp-extractor/` module has its
+  own, more accurate docs).
