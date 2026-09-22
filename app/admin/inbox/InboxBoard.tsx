@@ -229,7 +229,7 @@ export function InboxBoard({
             than a normal scrolling page on a ~380px phone); side-by-side with
             horizontal scroll from sm up, where reaching a column is a single
             swipe/scroll instead of the whole page's only scroll direction. */}
-        <div className="flex flex-col sm:flex-row gap-4 sm:overflow-x-auto pb-2">
+        <div className="animate-view-swap flex flex-col sm:flex-row gap-4 sm:overflow-x-auto pb-2">
           {visibleStages.map((stage) => {
             const cards = filtered.filter((s) => s.stage === stage);
             return (
@@ -339,7 +339,7 @@ export function InboxBoard({
           of real content (long agency names, badges) without cutting
           anything off. Below that, a stacked card per submission instead —
           see the xl:hidden block below. */}
-      <div className="hidden xl:block bg-surface-container-lowest border border-outline-variant rounded-xl">
+      <div className="animate-view-swap hidden xl:block bg-surface-container-lowest border border-outline-variant rounded-xl">
         <table className="w-full text-body-md table-fixed">
           <thead className="bg-surface-container-low">
             <tr>
@@ -415,7 +415,7 @@ export function InboxBoard({
       {/* Card list — narrower than xl (laptop widths with less room, and
           mobile). Same data, stacked instead of columned, so nothing is
           ever cut off or forces sideways scrolling. */}
-      <div className="xl:hidden bg-surface-container-lowest border border-outline-variant rounded-xl divide-y divide-outline-variant">
+      <div className="animate-view-swap xl:hidden bg-surface-container-lowest border border-outline-variant rounded-xl divide-y divide-outline-variant">
         {filtered.map((sub) => (
           <Link
             key={sub.id}

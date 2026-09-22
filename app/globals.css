@@ -147,6 +147,128 @@ body {
   }
 }
 
+/* ---- Motion system -------------------------------------------------------
+   One curve for every arrival (a confident exponential ease-out); every
+   effect below is one-shot, transform/opacity/background-size only, and has
+   a reduced-motion path at the bottom of this block. Default state is
+   always the finished, visible one -- keyframes animate *from* hidden, so a
+   stalled or skipped animation never leaves content invisible. */
+:root {
+  --ease-arrive: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Intake: a new step arrives from the direction the wizard moves (forward
+   only -- there's no back button), so the swap reads as progress rather
+   than a page reload. */
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+.animate-step-in {
+  animation: step-in 0.28s var(--ease-arrive);
+}
+
+/* Disclosure content (bid card details): drops in from under its header. */
+@keyframes disclose {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.animate-disclose {
+  animation: disclose 0.22s var(--ease-arrive);
+}
+
+/* Admin inbox Board/List swap: a quick crossfade-in so the switch reads
+   as the same data re-arranged, not a page reload. Opacity only, and fast --
+   an ops screen should never make anyone wait on it. */
+.animate-view-swap {
+  animation: fade-in-opacity 0.15s ease-out;
+}
+
+/* Progress rails (lifecycle stepper, intake segments): the filled portion
+   draws from the left to where the bid actually is. */
+@keyframes rail-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+.animate-rail-draw {
+  transform-origin: left center;
+  animation: rail-draw 0.6s var(--ease-arrive) 0.1s both;
+}
+
+/* Landing focal moment -- the review, rehearsed once. `.motion-sequence`
+   is set to data-played="true" by InViewSequence when the comparison
+   scrolls into view; until then (server render, JS off, reduced motion)
+   nothing here applies and every mark and stamp is simply shown.
+   1) A highlighter swipes across each flagged requirement on the RFP. */
+@keyframes highlighter-swipe {
+  from {
+    background-size: 0% 100%;
+  }
+}
+.motion-sequence[data-played="false"] .highlight-swipe {
+  background-size: 0% 100%;
+}
+.highlight-swipe {
+  /* The mark's tint is a sized gradient rather than a background-color so
+     it can be drawn left-to-right like a real pen stroke. currentColor is
+     the mark's own text color, at the same 20% strength the old Tailwind
+     "/20" background utility used. */
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  background-image: linear-gradient(
+    color-mix(in srgb, currentColor 20%, transparent),
+    color-mix(in srgb, currentColor 20%, transparent)
+  );
+}
+.motion-sequence[data-played="true"] .highlight-swipe {
+  animation: highlighter-swipe 0.5s cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation-delay: calc(0.45s + var(--seq, 0) * 0.3s);
+}
+
+/* 2) Then each deliverable's "Ready" stamp lands, in order. */
+@keyframes stamp-land {
+  from {
+    opacity: 0;
+    transform: scale(1.35) rotate(-6deg);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+.motion-sequence[data-played="false"] .stamp-land {
+  opacity: 0;
+}
+.motion-sequence[data-played="true"] .stamp-land {
+  animation: stamp-land 0.32s var(--ease-arrive) both;
+  animation-delay: calc(1.3s + var(--seq, 0) * 0.14s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step-in,
+  .animate-disclose {
+    animation-name: fade-in-opacity;
+  }
+  .animate-rail-draw {
+    animation: none;
+  }
+  .motion-sequence[data-played] .highlight-swipe {
+    animation: none;
+    background-size: 100% 100%;
+  }
+  .motion-sequence[data-played] .stamp-land {
+    animation: fade-in-opacity 0.3s ease-out both;
+    animation-delay: calc(0.3s + var(--seq, 0) * 0.14s);
+  }
+}
+
 
 /* Per-tier font family for the named type scale (tailwind.config.ts
    fontSize) — see the comment there: Tailwind's text-* utility can't carry

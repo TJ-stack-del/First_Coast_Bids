@@ -19,8 +19,23 @@ export function stageNumber(stage: string): number {
 export function LifecycleStepper({ currentStage }: { currentStage: number }) {
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
-      <div className="flex items-center justify-between relative">
-        <div className="absolute top-1/2 left-0 w-full h-[2px] bg-outline-variant -translate-y-1/2 z-0" />
+      {/* Equal columns (not justify-between) so every dot center sits at a
+          known fraction of the width -- that's what lets the filled rail
+          end exactly on the current stage's dot instead of wherever a long
+          label pushed it. The rail runs through the dots' centers (top-4 =
+          half the 32px dot), from the first dot's center to the last's. */}
+      <div className="grid grid-cols-5 relative">
+        <div className="absolute top-4 left-[10%] right-[10%] h-[2px] bg-outline-variant -translate-y-1/2 z-0" />
+        {currentStage > 1 && (
+          <div className="absolute top-4 left-[10%] right-[10%] h-[2px] -translate-y-1/2 z-0" aria-hidden="true">
+            {/* Draws from Submitted to the current stage on load: shows how
+                far along the bid is, not just which box is highlighted. */}
+            <div
+              className="animate-rail-draw h-full bg-primary"
+              style={{ width: `${((Math.min(currentStage, STAGES.length) - 1) / (STAGES.length - 1)) * 100}%` }}
+            />
+          </div>
+        )}
         {STAGES.map((label, i) => {
           const stageNum = i + 1;
           const isDone = stageNum < currentStage;
@@ -39,7 +54,7 @@ export function LifecycleStepper({ currentStage }: { currentStage: number }) {
                 {stageNum}
               </div>
               <span
-                className={`text-label-md ${
+                className={`text-label-md text-center ${
                   isActive ? "text-primary font-bold" : "text-on-surface-variant"
                 }`}
               >

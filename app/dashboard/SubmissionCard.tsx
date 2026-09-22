@@ -82,9 +82,18 @@ export function SubmissionCard({
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               aria-label={open ? "Collapse bid details" : "Expand bid details"}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
             >
-              <span className="material-symbols-outlined text-[20px]">{open ? "expand_less" : "expand_more"}</span>
+              {/* One chevron that turns, rather than two glyphs swapped -- the
+                  rotation is the acknowledgment that the card heard the click. */}
+              <span
+                className={`material-symbols-outlined text-[20px] transition-transform duration-200 ease-out motion-reduce:transition-none ${
+                  open ? "rotate-180" : ""
+                }`}
+                aria-hidden="true"
+              >
+                expand_more
+              </span>
             </button>
           </div>
         </div>
@@ -118,8 +127,10 @@ export function SubmissionCard({
           )}
         </div>
 
+        {/* Opening drops the details in from under the header; closing is
+            instant (exits faster than entrances, and nothing is left to read). */}
         {open && (
-          <>
+          <div className="animate-disclose flex flex-col gap-space-base">
             {!tradeKnown && (
               <div className="bg-surface-container-high border border-tertiary/30 rounded-xl p-space-base flex gap-space-md">
                 <span className="material-symbols-outlined text-tertiary text-[20px] shrink-0">info</span>
@@ -198,7 +209,7 @@ export function SubmissionCard({
               senderName={senderName}
               senderEmail={senderEmail}
             />
-          </>
+          </div>
         )}
       </div>
     </div>

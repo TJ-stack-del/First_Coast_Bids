@@ -788,13 +788,17 @@ export function IntakeWizard() {
           Step {step + 1} of {steps.length}: {steps[step]}
         </span>
         <div className={`grid ${gridColsClass} gap-space-xs w-full`}>
+          {/* Each segment fills left-to-right as its step is reached (a
+              scaleX on the fill, not a color swap), so moving forward reads
+              as progress being made rather than a box changing color. */}
           {steps.map((label, i) => (
-            <div
-              key={label}
-              className={`h-2 rounded-full transition-colors duration-300 ${
-                i <= step ? "bg-primary" : "bg-surface-container-highest"
-              }`}
-            />
+            <div key={label} className="h-2 rounded-full overflow-hidden bg-surface-container-highest">
+              <div
+                className={`h-full bg-primary origin-left transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+                  i <= step ? "scale-x-100" : "scale-x-0"
+                }`}
+              />
+            </div>
           ))}
         </div>
         <div className={`grid ${gridColsClass} text-center`}>
@@ -814,7 +818,7 @@ export function IntakeWizard() {
       {error && <p className="text-body-md text-error">{error}</p>}
 
       {step === 0 && showProfileUpload && (
-        <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+        <section className="animate-step-in bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
           <div className="flex items-center gap-space-xs">
             <span className="material-symbols-outlined text-primary text-[20px]">bolt</span>
             <h2 className="font-headline text-[18px] text-on-surface font-bold">Want to save some typing?</h2>
@@ -839,7 +843,7 @@ export function IntakeWizard() {
       )}
 
       {step === 0 && !showProfileUpload && (
-        <form onSubmit={handleAboutYouNext} className="flex flex-col gap-space-lg">
+        <form onSubmit={handleAboutYouNext} className="animate-step-in flex flex-col gap-space-lg">
           <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
             <div className="flex items-center gap-space-xs">
               <span className="material-symbols-outlined text-primary text-[20px]">badge</span>
@@ -876,7 +880,7 @@ export function IntakeWizard() {
       )}
 
       {step === 1 && !isRetainer && showBidUpload && (
-        <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+        <section className="animate-step-in bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
           <div className="flex items-center gap-space-xs">
             <span className="material-symbols-outlined text-primary text-[20px]">bolt</span>
             <h2 className="font-headline text-[18px] text-on-surface font-bold">Want to save some typing?</h2>
@@ -909,7 +913,7 @@ export function IntakeWizard() {
       )}
 
       {step === 1 && !isRetainer && !showBidUpload && (
-        <form onSubmit={handleAboutBidNext} className="flex flex-col gap-space-lg">
+        <form onSubmit={handleAboutBidNext} className="animate-step-in flex flex-col gap-space-lg">
           <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
             <div className="flex items-center gap-space-xs">
               <span className="material-symbols-outlined text-primary text-[20px]">account_balance</span>
@@ -979,7 +983,7 @@ export function IntakeWizard() {
           (handleRetainerProfileNext sets `submitted` itself); step index 2
           is never reached on this path. */}
       {step === 1 && isRetainer && (
-        <form onSubmit={handleRetainerProfileNext} className="flex flex-col gap-space-lg">
+        <form onSubmit={handleRetainerProfileNext} className="animate-step-in flex flex-col gap-space-lg">
           <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
             <div className="flex items-center gap-space-xs">
               <span className="material-symbols-outlined text-primary text-[20px]">business_center</span>
@@ -1068,7 +1072,7 @@ export function IntakeWizard() {
       )}
 
       {step === 2 && submissionId && clientId && (
-        <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+        <section className="animate-step-in bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
           <div className="flex items-center gap-space-xs">
             <span className="material-symbols-outlined text-primary text-[20px]">folder_zip</span>
             <h2 className="font-headline text-[18px] text-on-surface font-bold">Your bid file</h2>

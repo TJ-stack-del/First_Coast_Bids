@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PipelineArrow } from "./PipelineArrow";
 import { Reveal } from "./Reveal";
+import { InViewSequence } from "./InViewSequence";
 
 // Same three deliverable types, same icons DeliverablesSection.tsx already
 // uses for them on the client dashboard -- reusing the exact mapping here
@@ -71,7 +72,12 @@ export function TransformationPipeline() {
         </span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-space-lg lg:gap-8 items-center">
+      {/* The one authored motion moment on this page: once the comparison
+          scrolls into view, a highlighter swipes across each flagged
+          requirement on the RFP, then each deliverable's "Ready" stamp
+          lands in order -- flagged, prepared, ready, in about 1.5s, once.
+          Everything is fully visible without it (see InViewSequence). */}
+      <InViewSequence className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-space-lg lg:gap-8 items-center">
         {/* Left: incoming RFP, rendered as an actual sheet of paper (sharp
             corners, a faint stack of pages behind it, a slight lie-on-the-
             desk tilt) rather than a bordered dashboard card -- a stamped
@@ -108,11 +114,11 @@ export function TransformationPipeline() {
             <p className="text-xs leading-relaxed text-on-surface-variant">
               Contractor shall maintain commercial general liability coverage of not less than
               $2,000,000 per occurrence. All work performed under this agreement is subject to{" "}
-              <mark className="rounded-sm bg-error/20 px-1 py-0.5 text-error font-semibold">
+              <mark className="highlight-swipe rounded-sm px-1 py-0.5 text-error font-semibold" style={{ "--seq": 0 } as React.CSSProperties}>
                 prevailing wage determinations
               </mark>{" "}
               issued by the Department of Labor. Contractor shall furnish a{" "}
-              <mark className="rounded-sm bg-primary/20 px-1 py-0.5 text-primary font-semibold">
+              <mark className="highlight-swipe rounded-sm px-1 py-0.5 text-primary font-semibold" style={{ "--seq": 1 } as React.CSSProperties}>
                 100% performance and payment bond
               </mark>{" "}
               prior to notice to proceed. Bidders shall submit all forms listed in Section 4 no
@@ -174,7 +180,7 @@ export function TransformationPipeline() {
                 the same manifest/ledger convention the Trades and Pricing
                 sections use elsewhere on this page. */}
             <div className="flex flex-col divide-y divide-outline-variant">
-              {DELIVERABLES.map((d) => (
+              {DELIVERABLES.map((d, i) => (
                 <div key={d.label} className="flex items-center justify-between gap-2 py-2.5 text-xs">
                   <span className="flex items-start gap-2 min-w-0">
                     <span className="material-symbols-outlined text-primary text-[16px] mt-0.5" aria-hidden="true">
@@ -185,7 +191,10 @@ export function TransformationPipeline() {
                       <span className="text-[10px] text-on-surface-variant">{d.gloss}</span>
                     </span>
                   </span>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded px-2 py-0.5 text-[10px] font-bold bg-secondary-container text-on-secondary-container">
+                  <span
+                    className="stamp-land inline-flex shrink-0 items-center gap-1 rounded px-2 py-0.5 text-[10px] font-bold bg-secondary-container text-on-secondary-container"
+                    style={{ "--seq": i } as React.CSSProperties}
+                  >
                     <span className="material-symbols-outlined text-[12px]" aria-hidden="true">
                       check
                     </span>
@@ -205,7 +214,7 @@ export function TransformationPipeline() {
             </div>
           </div>
         </Reveal>
-      </div>
+      </InViewSequence>
 
       {/* An impeccable critique pass (2026-09-16) flagged this as the
           homepage's strongest concrete proof point with nowhere for a
