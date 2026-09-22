@@ -27,11 +27,18 @@ v0.4 applied a second, 5-point critique (scored 7.7/10 before the fixes): packet
 
 v0.5 applied a third, 4-point critique (7.9/10 before the fixes): on phones the packet comes before the sheet so the sheet and its notes stay together, the sheet stays in view beside the notes on desktop, plan names aligned, the 48-hour line out of monospace. Further critique rounds were judged to be past the point of useful returns; next is building it into the site.
 
+## Decided
+
+- **Plan buttons** (2026-09-22): "Start a pilot bid", "Start a one-off bid", "Ask about a retainer".
+- **Gold**: only the packet foil (plus the logo).
+
+v0.6 completed the page using the live site's own copy: a hero proof line, the founding-clients row, trades, a six-question FAQ, a final call to action, the real footer, and the real top navigation (the v0 nav had invented links).
+
 ## Open decisions
 
-- The plan buttons say "Start a pilot bid", "Start a one-off bid" and "Ask about a retainer" instead of three identical "Get started" buttons. This copy change hasn't been approved yet.
+- Section headings such as "Every line traced to the RFP" and "Plain prices, confirmed with you before work starts" are new draft copy, not from the live site. They need approving or swapping before the build.
+- The live pricing heading ("No subscriptions. We invoice after the work's done.") conflicts with the $649/mo Retainer. Flagged, not changed.
 - The packet cover is drawn. It needs a real photo of a printed sample packet.
-- Not drafted yet: the "Now accepting founding clients" row, trade descriptions, FAQ teaser, footer.
 - Next step: build into the real site on a branch (tokens in `app/globals.css` / `tailwind.config.ts`, then DESIGN.md).
 
 ## The other directions, for reference

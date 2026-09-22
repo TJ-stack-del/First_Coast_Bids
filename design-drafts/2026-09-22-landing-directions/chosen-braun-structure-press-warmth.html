@@ -60,11 +60,11 @@
   .brand img { width: 44px; height: 44px; }
   .wordmark { font-weight: 500; line-height: 1.1; letter-spacing: 0.06em; font-size: 15px; color: var(--navy); }
   .wordmark span { display: block; color: var(--brass); }
-  nav { display: flex; gap: 24px; align-items: center; }
+  nav { display: flex; gap: 20px; align-items: center; }
   nav a { text-decoration: none; font-size: 15px; color: var(--ink-2); transition: color 100ms var(--ease); }
   nav a:hover { color: var(--ink); }
   nav .signin { color: var(--navy); }
-  @media (max-width: 720px) { nav a:not(.signin) { display: none; } }
+  @media (max-width: 860px) { nav a:not(.signin) { display: none; } }
 
   /* ---- controls ---- */
   .btn {
@@ -236,6 +236,48 @@
   .foil .s { font-family: var(--sans); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; }
   .caption { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink-2); text-align: center; max-width: 30em; }
   .caption .todo { display: block; margin-top: 6px; font-family: var(--mono); font-style: normal; font-size: 12px; color: var(--flag); }
+
+  /* ---- v0.6 sections ---- */
+  .proofline { font-size: 15px; color: var(--ink-2); text-decoration: none; max-width: 40em; }
+  .proofline span { color: var(--navy); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; white-space: nowrap; }
+  .proofline:hover span { text-decoration-thickness: 2px; }
+
+  .benefits { display: grid; grid-template-columns: 1fr; border-top: 2px solid var(--ink); }
+  @media (min-width: 800px) { .benefits { grid-template-columns: repeat(3, 1fr); } .benefits article + article { border-left: 1px solid var(--rule); padding-left: 24px; } }
+  .benefits article { padding: 24px 24px 24px 0; border-bottom: 1px solid var(--rule); display: grid; gap: 8px; align-content: start; }
+  .benefits h3 { font-family: var(--serif); font-weight: 400; font-size: 24px; }
+  .benefits p { color: var(--ink-2); }
+
+  .tradelist { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
+  .tradelist li { display: grid; grid-template-columns: 1fr; gap: 4px 32px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  @media (min-width: 720px) { .tradelist li { grid-template-columns: 240px 1fr; align-items: baseline; } }
+  .tradelist h3 { font-family: var(--serif); font-weight: 400; font-size: 22px; }
+  .tradelist p { color: var(--ink-2); }
+  .aside-note { margin-top: 20px; max-width: 44em; color: var(--ink-2); font-size: 15px; }
+  .aside-note a, .faq-more a { color: var(--navy); font-weight: 500; text-underline-offset: 3px; }
+
+  .faq { margin: 0; border-top: 2px solid var(--ink); }
+  .faq div { display: grid; grid-template-columns: 1fr; gap: 6px 48px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+  @media (min-width: 860px) { .faq div { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+  .faq dt { font-family: var(--serif); font-size: 22px; line-height: 1.3; }
+  .faq dd { margin: 0; color: var(--ink-2); max-width: 38em; }
+  .faq-more { margin-top: 20px; font-size: 15px; }
+
+  /* Final CTA: the page's one full navy band, mirroring the packet cover. */
+  .final { background: var(--navy); color: #fff; }
+  .final .wrap { padding-block: 72px; display: grid; justify-items: center; text-align: center; gap: 16px; }
+  .final h2 { font-family: var(--serif); font-weight: 400; font-size: calc(var(--t-40) * 1.1); line-height: 1.1; max-width: 18ch; }
+  .final h2 em { font-style: italic; color: #fff; }
+  .final p { color: rgba(255,255,255,.78); font-size: 18px; }
+  .final .btn { margin-top: 8px; background: var(--panel); color: var(--navy); border-color: var(--panel); }
+  .final .btn:hover { background: #fff; }
+  .final .risk { font-size: 14px; color: rgba(255,255,255,.7); }
+  .final :focus-visible { outline-color: #fff; }
+
+  .site-foot { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: baseline; }
+  .site-foot nav { gap: 16px; flex-wrap: wrap; }
+  .site-foot nav a { font-size: 14px; }
+  @media (max-width: 860px) { .site-foot nav a:not(.signin) { display: inline; } }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
     .btn:active { transform: none; }
@@ -243,7 +285,7 @@
 </style>
 <div class="draft">
   <div class="wrap">
-    <span class="label">v0.5 draft</span>
+    <span class="label">v0.6 draft</span>
     <span style="font-size:14px;color:var(--ink-2)">Braun structure with Stripe Press warmth. Real copy, placeholders marked, no live links.</span>
   </div>
 </div>
@@ -255,9 +297,11 @@
       <span class="wordmark">FIRST COAST<span>BIDS</span></span>
     </a>
     <nav aria-label="Main">
-      <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
-      <a href="#sample">Sample packet</a>
+      <a href="#top">Fit-Score Quiz</a>
+      <a href="#top">Gallery</a>
+      <a href="#faq">FAQ</a>
+      <a href="#top">Blog</a>
       <a class="signin" href="#top">Sign in</a>
     </nav>
   </div>
@@ -271,6 +315,7 @@
       <a class="btn btn-primary" href="#pricing">Get started</a>
       <a class="btn btn-quiet" href="#how">See how it works</a>
     </div>
+    <a class="proofline" href="#sample">Every requirement cites its page in the RFP. Anything we don't know stays a visible blank. <span>See a sample sheet</span></a>
     <div class="trades" aria-label="Trades we work with">
       <ul>
         <li>HVAC</li><li>Janitorial</li><li>Landscaping</li><li>IT / Computer Support</li><li>Electrical</li>
@@ -351,6 +396,19 @@
     </div>
   </section>
 
+  <section class="block" id="founding">
+    <div class="wrap">
+      <div class="head">
+        <h2>Now accepting <em>founding clients.</em></h2>
+      </div>
+      <div class="benefits">
+        <article><h3>Plain-language process</h3><p>No confusing paperwork jargon. We explain everything in plain English.</p></article>
+        <article><h3>You focus on the job</h3><p>We handle the writing so you can keep running your business.</p></article>
+        <article><h3>Built for small trades</h3><p>Not a big consulting firm, made for HVAC, janitorial, landscaping, IT / computer support, and electrical contractors.</p></article>
+      </div>
+    </div>
+  </section>
+
   <section class="block" id="how">
     <div class="wrap">
       <div class="head">
@@ -366,6 +424,23 @@
           </tbody>
         </table>
       </div>
+    </div>
+  </section>
+
+  <section class="block" id="trades">
+    <div class="wrap">
+      <div class="head">
+        <h2>Trades we <em>work with.</em></h2>
+        <p>We're set up for the kind of bids small trade businesses actually deal with.</p>
+      </div>
+      <ul class="tradelist">
+        <li><h3>HVAC</h3><p>Installation, maintenance, and repair contracts for public buildings.</p></li>
+        <li><h3>Janitorial</h3><p>Cleaning and facility-upkeep contracts for schools, offices, and public spaces.</p></li>
+        <li><h3>Landscaping</h3><p>Grounds maintenance and lawn care contracts for cities, parks, and school districts.</p></li>
+        <li><h3>IT / Computer Support</h3><p>Help desk, network support, and technical-service contracts for schools, agencies, and public offices.</p></li>
+        <li><h3>Electrical</h3><p>Panel upgrades, lighting retrofits, and wiring contracts for municipal and school facilities.</p></li>
+      </ul>
+      <p class="aside-note">We're deepest in these five, but if you're in a related trade, go ahead and <a href="#top">start your bid</a>. You'll get an honest heads-up right away if something's outside our sweet spot (a trade outside these five gets less tailored compliance guidance, but we'll tell you that up front, not after you've paid). Prefer to ask first? <a href="#top">Contact us</a>.</p>
     </div>
   </section>
 
@@ -429,16 +504,42 @@
     </div>
   </section>
 
+  <section class="block" id="faq">
+    <div class="wrap">
+      <div class="head">
+        <h2>Questions contractors <em>actually ask.</em></h2>
+      </div>
+      <dl class="faq">
+        <div><dt>What is First Coast Bids?</dt><dd>A done-for-you bid prep service. You send us your RFP; our team prepares the capability statement, compliance matrix, and technical narrative for you.</dd></div>
+        <div><dt>Do you guarantee I'll win the bid?</dt><dd>No one can guarantee an award. What we guarantee is a complete, compliant submission prepared by people who've done this before.</dd></div>
+        <div><dt>Why do I submit the bid myself instead of First Coast Bids submitting it?</dt><dd>You hold the reins. Government procurement portals tie submissions to your own company's registered vendor credentials, so you're the one who uploads and hits submit. We prepare the package, you stay in control of your own account.</dd></div>
+        <div><dt>How does pricing work?</dt><dd>One-off starts at $399, Retainer starts at $649/mo, and Pilot is free for our first 10 clients. We confirm the exact number with you directly before any work starts. No card is required to get started, and every deliverable is free to preview before anything's due.</dd></div>
+        <div><dt>What do I need to get started?</dt><dd>Just the RFP itself (or a link to it) and basic company info: NAICS codes, small-business status, and set-asides if you have them.</dd></div>
+        <div><dt>Is my data secure?</dt><dd>Your submission and files are tied to your account only, and every status change on your bid is recorded in an audit trail.</dd></div>
+      </dl>
+      <p class="faq-more"><a href="#top">Read the full FAQ</a></p>
+    </div>
+  </section>
+
+  <section class="final" aria-labelledby="final-h">
+    <div class="wrap">
+      <h2 id="final-h">Ready to send in a <em>strong bid?</em></h2>
+      <p>Tell us about your bid. It only takes a few minutes.</p>
+      <a class="btn" href="#pricing">Get started</a>
+      <span class="risk">No card required to get started.</span>
+    </div>
+  </section>
+
   <section class="block">
     <div class="wrap">
       <div class="assume">
-        <span class="label">v0.5: changes from the third critique</span>
+        <span class="label">v0.6: the rest of the page</span>
         <ul>
-          <li>On phones, the packet now comes before the sample sheet, so the sheet and its numbered notes sit together.</li>
-          <li>On desktop, the sample sheet stays in view while you read the notes beside it.</li>
-          <li>Plan names in the pricing table share one line.</li>
-          <li>"Most bids ready in 48 hours" is out of monospace.</li>
-          <li>Still open: plan button labels ("Start a pilot bid" etc.) are a copy change for you to approve.</li>
+          <li>Plan buttons confirmed: "Start a pilot bid", "Start a one-off bid", "Ask about a retainer".</li>
+          <li>Added, with the live site's own copy: a proof line in the hero, the founding-clients row, trades, a six-question FAQ, a final call to action, and the real footer.</li>
+          <li>Top navigation restored to the live site's real links (Pricing, Fit-Score Quiz, Gallery, FAQ, Blog, Sign in). The v0 nav had invented ones.</li>
+          <li>Section headings like "Every line traced to the RFP" and "Plain prices, confirmed with you before work starts" are new draft copy, not from the live site. Approve or swap before the build.</li>
+          <li>Heads-up, not changed here: the live pricing heading says "No subscriptions. We invoice after the work's done.", which sits awkwardly next to a $649/mo Retainer.</li>
         </ul>
       </div>
     </div>
@@ -446,7 +547,12 @@
 </main>
 
 <footer>
-  <div class="wrap">First Coast Bids · Draft v0.5, Braun + Press</div>
+  <div class="wrap site-foot">
+    <span>© 2026 First Coast Bids</span>
+    <nav aria-label="Footer">
+      <a href="#pricing">Pricing</a><a href="#top">Fit-Score Quiz</a><a href="#top">Gallery</a><a href="#faq">FAQ</a><a href="#top">Blog</a><a href="#top">Privacy</a><a href="#top">Terms</a>
+    </nav>
+  </div>
 </footer>
 
 <script>
