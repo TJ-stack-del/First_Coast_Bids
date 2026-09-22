@@ -6,6 +6,7 @@ import { scrapeCojForecast } from "@/lib/scrapers/coj-forecast";
 import { scrapeSamGov } from "@/lib/scrapers/sam-gov";
 import { scrapeJaxBeach } from "@/lib/scrapers/jax-beach";
 import { findBestMatchingClient } from "@/lib/sam-gov/match-scoring";
+import { expiryCutoff } from "@/lib/matches/rules";
 
 // coj.ts no longer needs a real browser (see that file's own comment —
 // the "JS-rendered" table turned out to be a plain Oracle ADF loopback
@@ -179,5 +180,56 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, results });
+  // Expire untouched matches whose deadline has passed, so the admin
+  // queue's default "New" view only holds live leads. Only ever
+  // status = 'new' -> 'expired': assigned and dismissed rows are never
+  // touched, nothing is deleted, and an admin can Restore an expired match
+  // from the Matches page. The 24h grace in expiryCutoff keeps date-only
+  // deadlines (stored as midnight UTC) from expiring the evening before
+  // they're due. Runs even if every scraper above failed -- it doesn't
+  // depend on them. Every run that changes anything leaves one audit_log
+  // row with the exact count and ids.
+  const expiry = await expireStaleMatches(supabase, org.id);
+
+  return NextResponse.json({ ok: true, results, expiry });
+}
+
+async function expireStaleMatches(
+  supabase: ReturnType<typeof serviceClient>,
+  orgId: string
+): Promise<{ expired: number; error?: string }> {
+  const { data, error } = await supabase
+    .from("matched_opportunities")
+    .update({ status: "expired" })
+    .eq("org_id", orgId)
+    .eq("status", "new")
+    .not("due_date", "is", null)
+    .lt("due_date", expiryCutoff(new Date()))
+    .select("id, source_title");
+
+  if (error) {
+    console.error("[scrape] failed to expire stale matches", { message: error.message });
+    return { expired: 0, error: error.message };
+  }
+
+  const expired = data ?? [];
+  if (expired.length > 0) {
+    const { error: auditError } = await supabase.from("audit_log").insert({
+      org_id: orgId,
+      actor_id: null,
+      event_type: "matched_opportunities_expired",
+      event_detail: {
+        count: expired.length,
+        matched_opportunity_ids: expired.map((m) => m.id),
+      },
+    });
+    if (auditError) {
+      console.error("[scrape] expired matches but failed to write the audit entry", {
+        count: expired.length,
+        message: auditError.message,
+      });
+    }
+  }
+
+  return { expired: expired.length };
 }
