@@ -294,9 +294,19 @@ export function IntakeWizard() {
         return;
       }
 
+      // emailRedirectTo routes the confirmation link through this app's
+      // own /auth/callback (already handles this exact `?code=` PKCE
+      // shape -- see that route) instead of Supabase's default, which
+      // lands on the bare site_url with no memory of the in-progress
+      // signup. `next=/intake` means the wizard's own mount-effect (which
+      // already resumes correctly once both a session AND a `clients`
+      // row exist -- the latter now guaranteed by create-pending-client
+      // above, confirmed or not) picks them back up automatically instead
+      // of dumping them on the marketing homepage.
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: contact,
         password: form.password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/intake` },
       });
 
       if (signUpError || !signUpData.user) {
@@ -334,9 +344,12 @@ export function IntakeWizard() {
       // false, confirmed the same way as above) -- a real link just went
       // out. Without a session, auth.uid() is null and the clients insert
       // further below would just fail RLS, so this has to stop here
-      // instead of pushing forward.
+      // instead of pushing forward. Message doesn't say "come back and
+      // sign in" anymore -- emailRedirectTo above means clicking the link
+      // itself lands them back on /intake already authenticated, so a
+      // separate manual sign-in step is no longer real.
       if (!signUpData.session) {
-        setError("Check your email to confirm your account, then come back and sign in to finish.");
+        setError("Almost there — check your email and tap the confirmation link. It'll bring you right back here to finish.");
         setSaving(false);
         return;
       }
