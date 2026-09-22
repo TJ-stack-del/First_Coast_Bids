@@ -187,10 +187,15 @@ redirect links, webhook calls). Status as of this pass:
   process-stage-email-outbox`, confirmed the correct one via a real
   `curl -sI` test (`www.` returns 200 with no redirect; the bare domain
   308-redirects to it, which would have broken the exact-match audience
-  check). **Not independently verified against a real triggered cron
-  run** — worth confirming the next scheduled run (`7,22,37,52 * * * *`)
-  actually succeeds once this is deployed, not just that the values
-  look right.
+  check). **CLOSED, verified 2026-09-22** — after fast-forwarding
+  `main` to include this and every other fix from this pass (Vercel
+  redeployed), manually triggered a real run of the "Process stage
+  email outbox" workflow via `workflow_dispatch` and it completed
+  green. (A same-commit `Re-run jobs` on the *previous* failing run was
+  tried first and still failed — GitHub replays a re-run against the
+  exact commit the original run used, not current `main`, so that
+  wasn't a real test; a fresh `Run workflow` dispatch against current
+  `main` was the actual verification.)
 - **Done, 2026-09-22, via the Supabase dashboard directly (previously
   the single highest-risk item here):** `bidpulse-production`'s Site URL
   moved from `https://bidpulse.co` to `https://www.firstcoastbids.com`
