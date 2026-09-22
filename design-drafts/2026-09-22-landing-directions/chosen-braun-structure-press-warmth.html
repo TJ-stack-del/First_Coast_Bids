@@ -166,7 +166,7 @@
   .sub, td .sub { display: block; color: var(--ink-2); font-size: 14px; margin-top: 2px; }
 
   .pricing { min-width: 640px; }
-  .pricing thead th { vertical-align: bottom; padding-top: 16px; }
+  .pricing thead th { vertical-align: top; padding-top: 16px; }
   .pricing thead th.col-live, .pricing td.col-live { padding-left: 12px; }
   /* Phones: the spec table becomes one spec block per plan, same rows. */
   .plans-m { display: none; }
@@ -188,6 +188,7 @@
   .pricing .btn { min-height: 44px; padding: 0 16px; width: 100%; }
   .col-live { background: var(--panel); }
   .pricing thead th.col-live { box-shadow: inset 0 2px 0 var(--navy); }
+  .promise { font-size: 14px; font-weight: 500; }
   .fineprint { margin-top: 16px; color: var(--ink-2); font-size: 14px; max-width: 60em; }
 
   /* ---- assumptions ---- */
@@ -205,6 +206,11 @@
   .intro { margin-bottom: 40px; }
   .intro .head { margin-bottom: 0; }
   .aside { display: grid; gap: 32px; align-content: start; }
+  /* Desktop: the sheet stays in view while the notes beside it scroll, so
+     hovering note 3 still shows row 3. Phones: the packet moves ahead of
+     the sheet, keeping the sheet and its numbered notes together. */
+  @media (min-width: 900px) { .bed { position: sticky; top: 24px; } }
+  @media (max-width: 899px) { .aside { display: contents; } .object { order: -1; } }
   .object { display: grid; justify-items: center; gap: 16px; padding-block: 8px 0; }
   .caption { max-width: 20em; }
   .packet { position: relative; width: min(220px, 64vw); transform: rotate(-1.5deg); padding-top: 72px; }
@@ -237,7 +243,7 @@
 </style>
 <div class="draft">
   <div class="wrap">
-    <span class="label">v0.4 draft</span>
+    <span class="label">v0.5 draft</span>
     <span style="font-size:14px;color:var(--ink-2)">Braun structure with Stripe Press warmth. Real copy, placeholders marked, no live links.</span>
   </div>
 </div>
@@ -355,7 +361,7 @@
           <thead><tr><th scope="col">Step</th><th scope="col">Who</th><th scope="col">What happens</th></tr></thead>
           <tbody>
             <tr><th scope="row">Tell us about the bid</th><td class="who">You</td><td>A three-step form: your company info, the agency and job details, and the bid file itself.</td></tr>
-            <tr><th scope="row">We do the work</th><td class="who">Our team</td><td>Our team writes the paperwork about your company, checks it against the agency's rules, and writes up the technical part.<span class="sub mono">Most bids ready in 48 hours</span></td></tr>
+            <tr><th scope="row">We do the work</th><td class="who">Our team</td><td>Our team writes the paperwork about your company, checks it against the agency's rules, and writes up the technical part.<span class="sub promise">Most bids ready in 48 hours</span></td></tr>
             <tr><th scope="row">You review and send it</th><td class="who">You</td><td>You check everything over. We confirm once it's actually sent in to the agency.</td></tr>
           </tbody>
         </table>
@@ -426,13 +432,12 @@
   <section class="block">
     <div class="wrap">
       <div class="assume">
-        <span class="label">v0.4: changes from the second critique</span>
+        <span class="label">v0.5: changes from the third critique</span>
         <ul>
-          <li>The packet now heads the right-hand column above the numbered notes, beside the sheet it introduces. No more empty block under the intro.</li>
-          <li>On phones, each "How it works" step stacks (name, who, what happens) instead of crushing into three columns.</li>
-          <li>Table headers and "Start here" are out of monospace. Monospace is now only on page numbers, prices and the solicitation number.</li>
-          <li>The Pilot column uses the lighter panel colour with its navy top rule, so it reads as lifted rather than greyed.</li>
-          <li>"On us" matches the other prices' weight and colour.</li>
+          <li>On phones, the packet now comes before the sample sheet, so the sheet and its numbered notes sit together.</li>
+          <li>On desktop, the sample sheet stays in view while you read the notes beside it.</li>
+          <li>Plan names in the pricing table share one line.</li>
+          <li>"Most bids ready in 48 hours" is out of monospace.</li>
           <li>Still open: plan button labels ("Start a pilot bid" etc.) are a copy change for you to approve.</li>
         </ul>
       </div>
@@ -441,7 +446,7 @@
 </main>
 
 <footer>
-  <div class="wrap">First Coast Bids · Draft v0.4, Braun + Press</div>
+  <div class="wrap">First Coast Bids · Draft v0.5, Braun + Press</div>
 </footer>
 
 <script>

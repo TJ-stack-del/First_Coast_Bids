@@ -25,6 +25,8 @@ v0.3 (2026-09-22) applied a 7-point critique (scored 7.0/10 before the fixes): s
 
 v0.4 applied a second, 5-point critique (scored 7.7/10 before the fixes): packet moved above the numbered notes to remove a dead block, "How it works" stacks on phones, table headers out of monospace, Pilot column on the lighter panel colour, "On us" matched to the other prices.
 
+v0.5 applied a third, 4-point critique (7.9/10 before the fixes): on phones the packet comes before the sheet so the sheet and its notes stay together, the sheet stays in view beside the notes on desktop, plan names aligned, the 48-hour line out of monospace. Further critique rounds were judged to be past the point of useful returns; next is building it into the site.
+
 ## Open decisions
 
 - The plan buttons say "Start a pilot bid", "Start a one-off bid" and "Ask about a retainer" instead of three identical "Get started" buttons. This copy change hasn't been approved yet.
