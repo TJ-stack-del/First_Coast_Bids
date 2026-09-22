@@ -391,11 +391,10 @@ function Home() {
       {/* ---------- Pricing (rate sheet, not a card grid) ---------- */}
       <section id="pricing" className="flex flex-col gap-gutter">
         <div className="flex flex-col gap-2 max-w-2xl">
-          <h2 className="text-headline-lg text-primary">No subscriptions. We invoice after the work&apos;s done.</h2>
+          <h2 className="text-headline-lg text-primary">Plain prices, confirmed with you before work starts.</h2>
           <p className="text-body-md text-on-surface-variant">
             Every deliverable is free to preview before anything&apos;s due: real
-            excerpts from your actual bid, not a mockup. Starting prices below;
-            we confirm the exact number with you directly before any work starts.
+            excerpts from your actual bid, not a mockup. Starting prices are below.
           </p>
         </div>
         {/* One bordered ledger, not three floating cards: tiers are columns

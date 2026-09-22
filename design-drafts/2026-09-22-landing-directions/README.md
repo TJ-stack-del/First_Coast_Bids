@@ -31,13 +31,13 @@ v0.5 applied a third, 4-point critique (7.9/10 before the fixes): on phones the 
 
 - **Plan buttons** (2026-09-22): "Start a pilot bid", "Start a one-off bid", "Ask about a retainer".
 - **Gold**: only the packet foil (plus the logo).
+- **Draft section headings** (2026-09-22): approved as written.
+- **Live pricing heading** (2026-09-22): "No subscriptions. We invoice after the work's done." replaced on the live landing page with "Plain prices, confirmed with you before work starts.", since it contradicted the $649/mo Retainer.
 
 v0.6 completed the page using the live site's own copy: a hero proof line, the founding-clients row, trades, a six-question FAQ, a final call to action, the real footer, and the real top navigation (the v0 nav had invented links).
 
 ## Open decisions
 
-- Section headings such as "Every line traced to the RFP" and "Plain prices, confirmed with you before work starts" are new draft copy, not from the live site. They need approving or swapping before the build.
-- The live pricing heading ("No subscriptions. We invoice after the work's done.") conflicts with the $649/mo Retainer. Flagged, not changed.
 - The packet cover is drawn. It needs a real photo of a printed sample packet.
 - Next step: build into the real site on a branch (tokens in `app/globals.css` / `tailwind.config.ts`, then DESIGN.md).
 
