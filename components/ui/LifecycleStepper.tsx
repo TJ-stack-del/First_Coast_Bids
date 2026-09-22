@@ -54,8 +54,13 @@ export function LifecycleStepper({ currentStage }: { currentStage: number }) {
                 {stageNum}
               </div>
               <span
+                // Phones: five equal columns are ~60px wide, too narrow for
+                // "Deliverables" -- labels overlapped their neighbours. Only
+                // the current stage is named there (the dots still show the
+                // position); all five labels return from xl up (at lg, 1024px, the
+                // closest pair sat only 3px apart; at xl the gap is ~21px).
                 className={`text-label-md text-center ${
-                  isActive ? "text-primary font-bold" : "text-on-surface-variant"
+                  isActive ? "text-primary font-bold" : "hidden xl:block text-on-surface-variant"
                 }`}
               >
                 {label}
