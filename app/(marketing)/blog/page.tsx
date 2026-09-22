@@ -44,7 +44,12 @@ export default function BlogPage() {
             key={post.title}
             as="article"
             delay={i * 0.1}
-            className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50"
+            // No hover lift/shadow: these cards aren't links (no post routes
+            // yet), so a hover affordance would promise a click that does
+            // nothing. It also never worked -- Reveal's motion.article writes
+            // an inline `transform: none` that beats `hover:-translate-y-1`.
+            // If posts get routes, put the hover on an inner <Link>, not here.
+            className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col gap-3"
           >
             <div className="flex items-center justify-between text-label-sm text-on-surface-variant uppercase tracking-wider">
               <span className="text-primary font-bold">{post.category}</span>

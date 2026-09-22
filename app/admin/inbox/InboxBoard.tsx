@@ -257,7 +257,7 @@ export function InboxBoard({
                       <Link
                         key={sub.id}
                         href={`/admin/inbox/${sub.id}`}
-                        className={`bg-surface-container p-3 rounded-lg shadow-sm hover:bg-surface-container-high transition-all flex flex-col gap-2 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                        className={`bg-surface-container p-3 rounded-lg shadow-sm hover:bg-surface-container-high transition-colors flex flex-col gap-2 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                           sub.is_test ? "opacity-80" : ""
                         }`}
                       >

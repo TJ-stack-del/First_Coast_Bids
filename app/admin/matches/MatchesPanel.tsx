@@ -391,7 +391,7 @@ export function MatchesPanel({
         <button
           type="submit"
           disabled={logging}
-          className="self-end px-space-lg py-space-sm bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[14px] font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center gap-space-sm active:scale-[0.99] transition-all disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="self-end px-space-lg py-space-sm bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[14px] font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           {logging && <Spinner />}
           {logging ? "Logging…" : "Log opportunity"}

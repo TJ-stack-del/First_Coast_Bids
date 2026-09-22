@@ -62,7 +62,7 @@ export function RfpDocumentUpload({ onExtracted }: { onExtracted: (data: Extract
         find below. Review it before continuing, especially the due date.
       </p>
       <div className="flex items-center gap-3">
-        <label className="w-full min-h-[52px] bg-primary-fixed hover:bg-primary-fixed-dim text-on-primary-fixed font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg cursor-pointer active:scale-[0.99] transition-all flex items-center justify-center gap-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
+        <label className="w-full min-h-[52px] bg-primary-fixed hover:bg-primary-fixed-dim text-on-primary-fixed font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg cursor-pointer active:scale-[0.99] transition-[background-color,opacity,transform] flex items-center justify-center gap-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
           {uploading && <Spinner />}
           {uploading ? "Reading document…" : "Upload RFP / Solicitation"}
           <input

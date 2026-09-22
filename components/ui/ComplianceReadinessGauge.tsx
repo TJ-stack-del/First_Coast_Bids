@@ -23,7 +23,7 @@ export function ComplianceReadinessGauge({
       </div>
       <div className="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
         <div
-          className="bg-primary-container h-2 rounded-full transition-all duration-500 ease-in-out"
+          className="bg-primary-container h-2 rounded-full transition-[width] duration-300 ease-in-out"
           style={{ width: `${percent}%` }}
         />
       </div>

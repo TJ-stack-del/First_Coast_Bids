@@ -132,6 +132,20 @@ body {
 .animate-fade-in {
   animation: fade-in 0.25s ease-out;
 }
+/* Reduced motion: keep the fade (opacity isn't motion), drop the drift. */
+@keyframes fade-in-opacity {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in {
+    animation-name: fade-in-opacity;
+  }
+}
 
 
 /* Per-tier font family for the named type scale (tailwind.config.ts

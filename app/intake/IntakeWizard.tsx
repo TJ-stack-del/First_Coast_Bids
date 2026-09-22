@@ -791,7 +791,7 @@ export function IntakeWizard() {
           {steps.map((label, i) => (
             <div
               key={label}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-colors duration-300 ${
                 i <= step ? "bg-primary" : "bg-surface-container-highest"
               }`}
             />
@@ -830,7 +830,7 @@ export function IntakeWizard() {
           <button
             type="button"
             onClick={() => setStep(1)}
-            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {profileUploadDone ? "Continue" : "Skip for now"}
             <span className="material-symbols-outlined font-bold">arrow_forward</span>
@@ -866,7 +866,7 @@ export function IntakeWizard() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-all disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {saving && <Spinner />}
             {saving ? "Saving…" : "Next"}
@@ -892,7 +892,7 @@ export function IntakeWizard() {
             onClick={() => setShowBidUpload(false)}
             className={
               bidUploadDone
-                ? "w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                ? "w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 : "w-full py-2 text-body-md text-on-surface-variant hover:text-primary underline underline-offset-2 flex items-center justify-center gap-1 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             }
           >
@@ -962,7 +962,7 @@ export function IntakeWizard() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-all disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {saving && <Spinner />}
             {saving ? "Saving…" : "Next"}
@@ -1058,7 +1058,7 @@ export function IntakeWizard() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-all disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {saving && <Spinner />}
             {saving ? "Saving…" : "Next"}
