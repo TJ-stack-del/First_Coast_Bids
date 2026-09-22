@@ -123,7 +123,7 @@ export function AdminGuide() {
               <GuideSection title="Messages" icon="mail">
                 <GuideList
                   items={[
-                    "This is the general contact form from bidpulse.co/contact, not client-submission messaging (that lives on each submission's own detail page).",
+                    "This is the general contact form from firstcoastbids.com/contact, not client-submission messaging (that lives on each submission's own detail page).",
                     "Mark read/unread to track what you've handled. There's no reply button here; reply using the sender's own email address shown on each message.",
                   ]}
                 />

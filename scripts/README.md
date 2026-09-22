@@ -11,13 +11,17 @@ UI, no separate review flow.
 
 ## What Mike needs to do (outside this repo)
 
-1. **IONOS forwarding.** Point `bids@bidpulse.co` (or whatever the real
-   inbound address is) at a real Gmail inbox/alias — this repo has no
-   access to IONOS's mail settings.
+1. **IONOS forwarding.** Point `bids@firstcoastbids.com` (the current
+   brand domain — `bidpulse.co` is being fully decommissioned, 30-day
+   sunset as of 2026-09-22, do not set up anything new against it) at a
+   real Gmail inbox/alias — this repo has no access to IONOS's mail
+   settings.
 2. **Gmail label + filter.** In that Gmail account: create a label named
-   `BidPulse/Inbound`, then a filter that applies it to mail arriving at
-   the forwarded address, so the script only ever looks at real bid
-   notifications, not everything in the inbox.
+   `BidPulse/Inbound` (or rename it to match the current brand if you
+   prefer — the label name only needs to match `LABEL_NAME` in
+   `gmail-inbound-bid-trigger.gs`), then a filter that applies it to mail
+   arriving at the forwarded address, so the script only ever looks at
+   real bid notifications, not everything in the inbox.
 3. **Apps Script project.** At script.google.com, create a new project
    under that same Gmail account, paste in
    `gmail-inbound-bid-trigger.gs`'s contents.

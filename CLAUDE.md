@@ -281,3 +281,29 @@ path before trusting the negative result. A quick `console.log` of the
 real server component's actual query result (temporary, server-side
 only, removed after) settled this in one request — faster and more
 certain than reconstructing a session to run a hand-written proxy query.
+
+## Renaming the GitHub repo silently breaks anything that hardcodes its old slug — GitHub OIDC token claims included
+
+**What happened (2026-09-22):** the repo was renamed on GitHub from
+`TJ-stack-del/Bidpulse` to `TJ-stack-del/First_Coast_Bids` (GitHub keeps
+the old URL as a redirect, so `git push`/`git fetch` against the old URL
+kept working, masking the rename for a while). `lib/auth/github-actions-
+oidc.ts`, which verifies the scheduled stage-email-outbox cron's GitHub
+OIDC token, hardcoded `REPOSITORY = "TJ-stack-del/Bidpulse"` and a
+matching `WORKFLOW_REF` string. GitHub's own OIDC token claims
+(`repository`, `workflow_ref`) reflect the *current* repo name at the
+moment the token is issued, not whatever name existed when the workflow
+was written — so the moment the rename took effect, this equality check
+started failing on every run, with no error surfaced anywhere except a
+Vercel function returning 401 to a GitHub Actions log nobody was
+watching. Caught only incidentally, while doing unrelated domain-
+decommissioning work, not because anything alerted on it.
+
+**The rule going forward:** a GitHub repo rename is not just a cosmetic
+URL change. Grep the whole codebase for the old `owner/repo` slug
+(`grep -rn "TJ-stack-del/<old-name>"`) in the same session as any repo
+rename, not as a followup — anywhere it's used for git-push URLs it'll
+silently redirect and never surface as broken; anywhere it's compared
+against a live value (OIDC claims, webhook payloads, API responses) it
+breaks with no visible error until someone happens to check that
+specific code path.

@@ -4,10 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   // Required for opengraph-image.tsx's generated image to resolve to an
   // absolute URL in production rather than falling back to localhost.
-  // firstcoastbids.com is the new brand domain (acquired 2026-09-19) --
-  // do not deploy this change until Vercel/DNS actually serve the app
-  // there, or social-preview scrapers will fetch a dead URL for the OG
-  // image instead of the real one still live at bidpulse.co.
+  // firstcoastbids.com is the live brand domain, confirmed serving via
+  // Vercel. bidpulse.co is being fully decommissioned (30-day sunset as
+  // of 2026-09-22, no longer owned after that) -- do not reintroduce it
+  // here or anywhere else in this app.
   metadataBase: new URL("https://firstcoastbids.com"),
   title: {
     default: "First Coast Bids",

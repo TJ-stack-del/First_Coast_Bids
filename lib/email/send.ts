@@ -40,11 +40,9 @@ export async function sendEmail({
         ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
       },
       body: JSON.stringify({
-        // firstcoastbids.com is the new brand domain (acquired 2026-09-19),
-        // but NOT YET a verified Resend sending domain -- bidpulse.co still
-        // is, per the comment this replaced. Do not deploy this change
-        // until firstcoastbids.com's SPF/DKIM records are added and
-        // verified in Resend, or every outgoing email will start bouncing.
+        // firstcoastbids.com is the brand domain, confirmed verified
+        // (SPF/DKIM) in Resend. bidpulse.co is being fully decommissioned
+        // (30-day sunset as of 2026-09-22) -- do not send from it again.
         from: "First Coast Bids <notifications@firstcoastbids.com>",
         to: to.trim().toLowerCase(),
         subject,

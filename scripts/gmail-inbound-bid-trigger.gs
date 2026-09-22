@@ -1,19 +1,21 @@
 // Google Apps Script — polls a Gmail label for new bid-notification emails
-// (forwarded from IONOS to bids@bidpulse.co, which should point at a real
-// Gmail inbox/alias) and POSTs each one to BidPulse's inbound-bid-email
-// webhook. Runs on a time-driven trigger, not a real-time push — Apps
-// Script has no native "new email arrived" event for a plain Gmail label.
+// (forwarded from IONOS to bids@firstcoastbids.com, which should point at a
+// real Gmail inbox/alias -- bidpulse.co is being fully decommissioned,
+// 30-day sunset as of 2026-09-22, do not set up anything new against it)
+// and POSTs each one to First Coast Bids' inbound-bid-email webhook. Runs
+// on a time-driven trigger, not a real-time push — Apps Script has no
+// native "new email arrived" event for a plain Gmail label.
 //
 // Setup (see README.md in this same directory for the full walkthrough):
 //   1. Paste this file's contents into script.google.com as a new project
-//      bound to the Gmail account that receives bids@bidpulse.co mail.
+//      bound to the Gmail account that receives bids@firstcoastbids.com mail.
 //   2. Set the two script properties below (File > Project properties >
 //      Script properties, or Apps Script's PropertiesService UI):
 //        WEBHOOK_URL    -> https://<your-vercel-domain>/api/inbound-bid-email
 //        WEBHOOK_SECRET -> same value as Vercel's INBOUND_BID_EMAIL_SECRET
 //   3. Create a Gmail label named "BidPulse/Inbound" (or change LABEL_NAME
 //      below) and a Gmail filter that applies it to mail landing at
-//      bids@bidpulse.co.
+//      bids@firstcoastbids.com.
 //   4. Add a time-driven trigger for processInboundBidEmails, e.g. every
 //      15 minutes (Apps Script editor: Triggers > Add Trigger).
 

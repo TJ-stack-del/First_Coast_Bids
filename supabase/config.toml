@@ -273,8 +273,8 @@ host = "smtp.resend.com"
 port = 465
 user = "resend"
 pass = "env(RESEND_API_KEY)"
-admin_email = "notifications@bidpulse.co"
-sender_name = "BidPulse"
+admin_email = "notifications@firstcoastbids.com"
+sender_name = "First Coast Bids"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]

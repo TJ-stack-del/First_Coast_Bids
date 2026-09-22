@@ -162,6 +162,50 @@ either fully closed (see Confirmed Working) or a deliberate, decided
 non-action (see Known Issues / Recently Fixed, which includes real
 "investigated and decided not to build" entries, not just bug fixes).
 
+**⚠️ URGENT, hard deadline — `bidpulse.co` will no longer belong to
+Mike in 30 days from 2026-09-22 (i.e. by ~2026-10-22) and must be fully
+disassociated before then, not just partially migrated.** Once the
+domain lapses, anything still pointed at it either breaks outright or —
+worse — could be silently caught by whoever registers it next (auth
+redirect links, webhook calls). Status as of this pass:
+- **Done in code, this pass:** the Resend sender address
+  (`lib/email/send.ts`, confirmed verified in Resend), `metadataBase`/OG
+  image (`app/layout.tsx`), the admin-facing contact-form copy
+  (`AdminGuide.tsx`), the inbound-bid-email docs/script
+  (`scripts/README.md`, `scripts/gmail-inbound-bid-trigger.gs` — now
+  reference `bids@firstcoastbids.com`, confirmed same IONOS account),
+  and the local dev Supabase SMTP config (`supabase/config.toml`).
+- **Also fixed this pass, a separate but related bug the GitHub repo
+  rename surfaced:** `lib/auth/github-actions-oidc.ts` hardcoded the
+  pre-rename repo slug (`TJ-stack-del/Bidpulse`) — GitHub's OIDC token
+  claims reflect the *current* repo name, so this was silently failing
+  the scheduled stage-email-outbox cron's auth check since the rename.
+  Fixed to `TJ-stack-del/First_Coast_Bids`.
+- **Not done yet, needs a decision + dashboard access this repo doesn't
+  have:** the OIDC `AUDIENCE` constant (same file) and
+  `.github/workflows/process-stage-email-outbox.yml`'s matching
+  `OIDC_AUDIENCE` still say `bidpulse.co` — blocked on confirming which
+  of `www.firstcoastbids.com` / `firstcoastbids.com` actually serves
+  without a redirect (an exact match is required for the JWT audience
+  check; a redirect breaks the server-to-server call even though it's
+  fine for browsers).
+- **Not touched at all yet, needs Mike in each dashboard directly —
+  the single highest-risk item here:** Supabase Auth's **Site URL** and
+  **Redirect URLs** for both `bidpulse-dev` and `bidpulse-production`
+  currently point at `bidpulse.co` (see `CLAUDE.md`'s own incident
+  history on this exact setting). If not moved to `firstcoastbids.com`
+  before the domain lapses, every password-reset/magic-link email stops
+  working — or if the new owner points DNS at a real server before
+  anyone notices, could send real users' auth links to a domain Mike no
+  longer controls. This is the one item on this list that should not
+  wait.
+- **Also not yet done:** removing `bidpulse.co` as an assigned domain in
+  Vercel (safe to leave until closer to the deadline, but shouldn't be
+  the *last* thing checked — do it with enough runway to catch any
+  fallout), and a check of anywhere outside this repo entirely
+  (Google Business Profile, social accounts, business cards, USPTO/
+  trademark filings if any exist) that might still list `bidpulse.co`.
+
 1. **Four SECURITY DEFINER functions still directly callable via
    `/rest/v1/rpc/<name>` by anon and authenticated — deliberately not
    locked down yet.** Supabase's own security linter flags `is_admin`,
