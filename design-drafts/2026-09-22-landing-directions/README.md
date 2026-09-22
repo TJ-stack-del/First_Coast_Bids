@@ -17,11 +17,13 @@ Live copy: https://claude.ai/artifact/XxN25pUWJUFHNyRQ5KasWA (pinned in the clau
   - bone paper `#F0EBDD`
   - Newsreader serif headings with the second half in italic navy
   - a soft real shadow under the document sheet only
-  - the packet object: navy cloth cover with a gold foil title, the three documents fanned behind it, caption "Three documents, bound as one packet, ready for your signature." Since v0.3 it sits beside the "Every line traced to the RFP" heading.
+  - the packet object: navy cloth cover with a gold foil title, the three documents fanned behind it, caption "Three documents, bound as one packet, ready for your signature." Since v0.4 it heads the right-hand column, above the numbered notes and beside the sample sheet.
 - **Type:** Newsreader (headings, call-out titles, plan names, packet caption only), Archivo 400/500 (all running text, UI, tables), JetBrains Mono (real figures only: page numbers, prices, solicitation numbers).
 - **Colour:** navy `#0C2D52` is the one strong colour. Gold `#C19349` appears once, as the packet foil (plus the logo). Pilot is marked by a navy top rule and a light navy tint. Green and red are for status only.
 
 v0.3 (2026-09-22) applied a 7-point critique (scored 7.0/10 before the fixes): smaller flat packet showing three documents, one body typeface, monospace only for figures, gold used once, unbreakable placeholders, phone call-outs in a left margin, one-line sheet caption.
+
+v0.4 applied a second, 5-point critique (scored 7.7/10 before the fixes): packet moved above the numbered notes to remove a dead block, "How it works" stacks on phones, table headers out of monospace, Pilot column on the lighter panel colour, "On us" matched to the other prices.
 
 ## Open decisions
 

@@ -150,9 +150,18 @@
   .scroll { overflow-x: auto; border-top: 2px solid var(--ink); }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
   th, td { text-align: left; vertical-align: top; padding: 14px 16px 14px 0; border-bottom: 1px solid var(--rule); }
-  thead th { font-family: var(--mono); font-size: var(--t-13); font-weight: 500; color: var(--ink-2); letter-spacing: 0.04em; }
+  thead th { font-size: var(--t-13); font-weight: 500; color: var(--ink-2); }
   tbody th { font-weight: 500; width: 22%; }
   #how tbody th { font-family: var(--serif); font-size: 19px; font-weight: 400; }
+  /* Phones: each step becomes a stack (name, who, what happens) instead of
+     three columns crushing the step name onto three lines. */
+  @media (max-width: 639px) {
+    #how thead { display: none; }
+    #how table, #how tbody, #how tr, #how th, #how td { display: block; width: auto; }
+    #how tr { padding: 16px 0; border-bottom: 1px solid var(--rule); }
+    #how th, #how td { border: 0; padding: 0; }
+    #how td.who { font-size: 13px; font-weight: 500; color: var(--ink-2); margin: 2px 0 6px; }
+  }
   td { color: var(--ink); }
   .sub, td .sub { display: block; color: var(--ink-2); font-size: 14px; margin-top: 2px; }
 
@@ -165,19 +174,19 @@
     .pricing-wrap { display: none; }
     .plans-m { display: grid; gap: 0; border-top: 2px solid var(--ink); }
     .plans-m article { padding: 20px 0; border-bottom: 1px solid var(--rule); display: grid; gap: 12px; }
-    .plans-m article.live { border-top: 2px solid var(--navy); background: rgba(12,45,82,.04); padding-inline: 12px; margin-inline: -12px; }
+    .plans-m article.live { border-top: 2px solid var(--navy); background: var(--panel); padding-inline: 12px; margin-inline: -12px; }
     .plans-m dl { display: grid; grid-template-columns: 88px 1fr; gap: 8px 16px; margin: 0; font-size: 15px; }
     .plans-m dt { font-weight: 500; }
     .plans-m dd { margin: 0; }
   }
   .plan { display: flex; align-items: center; gap: 8px; font-family: var(--serif); font-size: 26px; font-weight: 400; color: var(--ink); letter-spacing: 0; }
-  .plan-note { display: block; font-size: 13px; font-weight: 500; color: var(--navy); margin-top: 4px; }
+  .plan-note { display: block; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--navy); margin-top: 4px; }
   .price { font-family: var(--mono); font-size: var(--t-20); font-weight: 500; color: var(--navy); }
-  .price.word { font-family: var(--serif); font-size: 24px; font-weight: 400; line-height: 1.1; }
+  .price.word { font-family: var(--sans); }
   .pricing td:first-of-type { /* first plan column */ }
   .pricing tr.cta td, .pricing tr.cta th { border-bottom: 0; padding-top: 20px; }
   .pricing .btn { min-height: 44px; padding: 0 16px; width: 100%; }
-  .col-live { background: rgba(12,45,82,.04); }
+  .col-live { background: var(--panel); }
   .pricing thead th.col-live { box-shadow: inset 0 2px 0 var(--navy); }
   .fineprint { margin-top: 16px; color: var(--ink-2); font-size: 14px; max-width: 60em; }
 
@@ -191,13 +200,13 @@
      foil stamp. Lies flat on the desk (a slight tilt, no 3D), smaller than
      v0.2 so the sample sheet below still reaches a laptop's first screen.
      A drawn stand-in for the photograph it wants. */
-  /* Packet sits beside the proof heading on desktop, so the hero leads
-     straight into the evidence; on phones it falls between them. */
-  .intro { display: grid; gap: 8px 48px; margin-bottom: 40px; }
+  /* Packet heads the right-hand column, above the numbered notes, so it
+     sits beside the sheet it introduces and the intro stays full width. */
+  .intro { margin-bottom: 40px; }
   .intro .head { margin-bottom: 0; }
-  @media (min-width: 900px) { .intro { grid-template-columns: minmax(0, 1fr) auto; align-items: start; } }
+  .aside { display: grid; gap: 32px; align-content: start; }
   .object { display: grid; justify-items: center; gap: 16px; padding-block: 8px 0; }
-  .caption { max-width: 17em !important; }
+  .caption { max-width: 20em; }
   .packet { position: relative; width: min(220px, 64vw); transform: rotate(-1.5deg); padding-top: 72px; }
   .doc {
     position: absolute; left: 0; right: 0; bottom: 0; background: var(--panel);
@@ -228,7 +237,7 @@
 </style>
 <div class="draft">
   <div class="wrap">
-    <span class="label">v0.3 draft</span>
+    <span class="label">v0.4 draft</span>
     <span style="font-size:14px;color:var(--ink-2)">Braun structure with Stripe Press warmth. Real copy, placeholders marked, no live links.</span>
   </div>
 </div>
@@ -272,17 +281,6 @@
         <h2>Every line traced to the RFP. <em>Nothing made up.</em></h2>
         <p>Here's part of a compliance matrix, labelled the way you'd label a part. Each numbered point is something our team does on every bid.</p>
       </div>
-        <div class="object">
-          <div class="packet" role="img" aria-label="A sample bid submission package: capability statement, compliance matrix and technical narrative behind a navy cover">
-            <div class="doc">Technical narrative</div>
-            <div class="doc">Compliance matrix</div>
-            <div class="doc">Capability statement</div>
-            <div class="cover">
-              <div class="foil"><span class="rule"></span><span class="t">Bid Submission Package</span><span class="s">Sample · Synthetic</span><span class="rule"></span></div>
-            </div>
-          </div>
-          <p class="caption">Three documents, bound as one packet, ready for your signature.<span class="todo">[Photo needed: a real printed sample packet, side-lit on paper]</span></p>
-        </div>
       </div>
 
       <div class="specimen">
@@ -324,12 +322,25 @@
           </div>
         </div>
 
+        <div class="aside">
+          <div class="object">
+            <div class="packet" role="img" aria-label="A sample bid submission package: capability statement, compliance matrix and technical narrative behind a navy cover">
+              <div class="doc">Technical narrative</div>
+              <div class="doc">Compliance matrix</div>
+              <div class="doc">Capability statement</div>
+              <div class="cover">
+                <div class="foil"><span class="rule"></span><span class="t">Bid Submission Package</span><span class="s">Sample · Synthetic</span><span class="rule"></span></div>
+              </div>
+            </div>
+            <p class="caption">Three documents, bound as one packet, ready for your signature.<span class="todo">[Photo needed: a real printed sample packet, side-lit on paper]</span></p>
+          </div>
         <ol class="key" id="key">
           <li data-k="1"><span class="n">1</span><div><h3>Page and quote for every requirement</h3><p>Each row shows the page number and the exact sentence it came from, so you can check it against the real RFP without rereading the whole thing.</p></div></li>
           <li data-k="2"><span class="n">2</span><div><h3>Missing details stay visible</h3><p>If you haven't given us a fact, it shows as a bracketed placeholder. We never fill one in with a guess, and you can't download the packet until every placeholder is filled.</p></div></li>
           <li data-k="3"><span class="n">3</span><div><h3>Rules specific to the agency</h3><p>Schools mean background checks. Airports mean SIDA badges. Transit means DBE goals. We check what this agency actually asks for, not a generic list.</p></div></li>
           <li data-k="4"><span class="n">4</span><div><h3>You sign it and send it</h3><p>You submit through your own portal account. We never touch your login and never submit on your behalf.</p></div></li>
         </ol>
+        </div>
       </div>
     </div>
   </section>
@@ -343,9 +354,9 @@
         <table>
           <thead><tr><th scope="col">Step</th><th scope="col">Who</th><th scope="col">What happens</th></tr></thead>
           <tbody>
-            <tr><th scope="row">Tell us about the bid</th><td>You</td><td>A three-step form: your company info, the agency and job details, and the bid file itself.</td></tr>
-            <tr><th scope="row">We do the work</th><td>Our team</td><td>Our team writes the paperwork about your company, checks it against the agency's rules, and writes up the technical part.<span class="sub mono">Most bids ready in 48 hours</span></td></tr>
-            <tr><th scope="row">You review and send it</th><td>You</td><td>You check everything over. We confirm once it's actually sent in to the agency.</td></tr>
+            <tr><th scope="row">Tell us about the bid</th><td class="who">You</td><td>A three-step form: your company info, the agency and job details, and the bid file itself.</td></tr>
+            <tr><th scope="row">We do the work</th><td class="who">Our team</td><td>Our team writes the paperwork about your company, checks it against the agency's rules, and writes up the technical part.<span class="sub mono">Most bids ready in 48 hours</span></td></tr>
+            <tr><th scope="row">You review and send it</th><td class="who">You</td><td>You check everything over. We confirm once it's actually sent in to the agency.</td></tr>
           </tbody>
         </table>
       </div>
@@ -415,13 +426,13 @@
   <section class="block">
     <div class="wrap">
       <div class="assume">
-        <span class="label">v0.3: changes from the critique</span>
+        <span class="label">v0.4: changes from the second critique</span>
         <ul>
-          <li>Packet is smaller and lies flat, with the three documents fanned behind the cover so it visibly holds three things. It now sits beside the "Every line traced" heading, so the hero leads straight into the proof.</li>
-          <li>One reading face: all running text is Archivo. The serif is only for headings, call-out titles, plan names and the packet caption.</li>
-          <li>Monospace only for real figures: page numbers, prices, solicitation numbers. Trades, status tags and "On us" moved out of it.</li>
-          <li>Gold appears once, as the packet's foil. Pilot is marked by a navy top rule and a light navy tint.</li>
-          <li>Placeholders never break across lines. On phones the numbered circles sit in a left margin instead of colliding with status tags.</li>
+          <li>The packet now heads the right-hand column above the numbered notes, beside the sheet it introduces. No more empty block under the intro.</li>
+          <li>On phones, each "How it works" step stacks (name, who, what happens) instead of crushing into three columns.</li>
+          <li>Table headers and "Start here" are out of monospace. Monospace is now only on page numbers, prices and the solicitation number.</li>
+          <li>The Pilot column uses the lighter panel colour with its navy top rule, so it reads as lifted rather than greyed.</li>
+          <li>"On us" matches the other prices' weight and colour.</li>
           <li>Still open: plan button labels ("Start a pilot bid" etc.) are a copy change for you to approve.</li>
         </ul>
       </div>
@@ -430,7 +441,7 @@
 </main>
 
 <footer>
-  <div class="wrap">First Coast Bids · Draft v0.3, Braun + Press</div>
+  <div class="wrap">First Coast Bids · Draft v0.4, Braun + Press</div>
 </footer>
 
 <script>
