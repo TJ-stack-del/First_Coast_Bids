@@ -22,6 +22,7 @@ type CompanyInfo = {
   naics_codes: string[];
   small_business_statuses: string[];
   set_asides: string[];
+  sam_uei: string | null;
 };
 
 // Existing rows may hold values that predate these checkbox lists (e.g. a
@@ -46,6 +47,7 @@ const FIELDS: { key: keyof CompanyInfo; label: string; type?: string; area?: boo
   { key: "general_liability_coverage", label: "General liability coverage (e.g. $1M/$2M)" },
   { key: "workers_comp_coverage", label: "Workers' comp coverage" },
   { key: "commercial_auto_coverage", label: "Commercial auto coverage" },
+  { key: "sam_uei", label: "SAM.gov Unique Entity ID (UEI) — only if you plan to bid on federal work" },
 ];
 
 // Filled in once, reused as facts across every future bid (app/api/
@@ -76,9 +78,21 @@ export function CompanyInfoForm({
   const supabase = createClient();
 
   function setField(key: keyof CompanyInfo, value: string) {
+    // Trimmed before the empty-check, not after -- a value that's only
+    // whitespace must become null like a truly empty field would, and a
+    // value with stray leading/trailing whitespace (e.g. a pasted SAM.gov
+    // UEI with a leading space) must not persist verbatim. Found as a real
+    // bug on sam_uei specifically: a padded UEI still round-trips through
+    // Supabase's own JS client's whitespace handling unchanged, and the SAM
+    // Entity API returns a normal empty (not error) response for a padded
+    // UEI, so the daily cron writes a false "not_registered" for a real,
+    // actively-registered business with no error anywhere to catch it.
+    // Fixed here rather than only for sam_uei since every field this
+    // function handles is free text with the same risk.
+    const trimmed = value.trim();
     setValues((v) => ({
       ...v,
-      [key]: key === "years_in_business" ? (value === "" ? null : Number(value)) : value === "" ? null : value,
+      [key]: key === "years_in_business" ? (trimmed === "" ? null : Number(trimmed)) : trimmed === "" ? null : trimmed,
     }));
     setSaved(false);
   }

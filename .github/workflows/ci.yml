@@ -41,6 +41,9 @@ jobs:
           CRON_SECRET: ci-placeholder-cron-secret
           ADMIN_DIGEST_EMAIL: admin@example.com
 
+      - name: Run unit tests
+        run: npm test
+
   rfp-extractor:
     runs-on: ubuntu-latest
     strategy:

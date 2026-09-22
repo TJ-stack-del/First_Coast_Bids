@@ -937,6 +937,11 @@ CREATE TABLE IF NOT EXISTS "public"."clients" (
     "differentiators" "text",
     "business_registration_number" "text",
     "commercial_auto_coverage" "text",
+    "requested_package" "text",
+    "sam_uei" "text",
+    "sam_registration_status" "text",
+    "sam_registration_expires_at" "date",
+    "sam_status_checked_at" timestamp with time zone,
     CONSTRAINT "clients_has_a_contact_method" CHECK ((("email" IS NOT NULL) OR ("phone" IS NOT NULL)))
 );
 
@@ -1806,8 +1811,68 @@ GRANT ALL ON TABLE "public"."client_past_performance" TO "service_role";
 
 
 GRANT ALL ON TABLE "public"."clients" TO "anon";
-GRANT ALL ON TABLE "public"."clients" TO "authenticated";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,MAINTAIN ON TABLE "public"."clients" TO "authenticated";
 GRANT ALL ON TABLE "public"."clients" TO "service_role";
+
+
+
+GRANT UPDATE("naics_codes") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("small_business_statuses") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("set_asides") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("license_number") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("years_in_business") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("business_address") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("business_phone") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("insurance_provider") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("insurance_policy_number") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("general_liability_coverage") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("workers_comp_coverage") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("differentiators") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("business_registration_number") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("commercial_auto_coverage") ON TABLE "public"."clients" TO "authenticated";
+
+
+
+GRANT UPDATE("sam_uei") ON TABLE "public"."clients" TO "authenticated";
 
 
 
