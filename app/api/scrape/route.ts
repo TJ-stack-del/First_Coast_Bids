@@ -4,6 +4,7 @@ import { scrapeJaa, type ScrapedOpportunity } from "@/lib/scrapers/jaa";
 import { scrapeCoj } from "@/lib/scrapers/coj";
 import { scrapeCojForecast } from "@/lib/scrapers/coj-forecast";
 import { scrapeSamGov } from "@/lib/scrapers/sam-gov";
+import { scrapeJaxBeach } from "@/lib/scrapers/jax-beach";
 import { findBestMatchingClient } from "@/lib/sam-gov/match-scoring";
 
 // coj.ts no longer needs a real browser (see that file's own comment —
@@ -33,6 +34,7 @@ const SCRAPERS: { name: string; run: () => Promise<ScrapedOpportunity[]> }[] = [
   { name: "coj", run: scrapeCoj },
   { name: "coj-forecast", run: scrapeCojForecast },
   { name: "sam-gov", run: scrapeSamGov },
+  { name: "jax-beach", run: scrapeJaxBeach },
 ];
 
 function isAuthorized(request: NextRequest): boolean {
