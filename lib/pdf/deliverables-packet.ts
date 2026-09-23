@@ -6,11 +6,12 @@ import autoTable from "jspdf-autotable";
 // statement conventions (short bullets and real tables, never long
 // flowing paragraphs) instead of dumping everything as wrapped text.
 //
-// Visual identity matches the marketing site's palette exactly (same
-// hex values as mockups-reference/bidpulse_homepage/code.html's :root
-// block) so the deliverable a client hands to a contracting officer
-// looks like it came from the same company as the site that sold them
-// on the service. jsPDF only ships Helvetica/Times/Courier, so those
+// Visual identity matches the First Coast Bids brand (navy #0C2D52 and
+// gold #C19349, the same values as app/globals.css and DESIGN.md) so the
+// deliverable a client hands to a contracting officer looks like it came
+// from the same company as the site that sold them on the service.
+// Updated 2026-09-23 from the pre-rebrand BidPulse palette (an orange
+// accent and a lighter navy), which no longer matched the site. jsPDF only ships Helvetica/Times/Courier, so those
 // stand in for Inter/Fraunces/IBM Plex Mono respectively — same
 // typographic roles, closest available match.
 
@@ -40,26 +41,28 @@ const DELIVERABLE_LABELS: Record<string, string> = {
 const FULL_ORDER = ["capability_statement", "compliance_matrix", "technical_narrative"];
 const LEAN_ORDER = ["rate_sheet", "executive_cover", "certificate_of_insurance"];
 
-// Same hex values as :root in mockups-reference/bidpulse_homepage/code.html,
-// converted to the RGB triplets jsPDF's color setters expect.
+// Brand colors as the RGB triplets jsPDF's color setters expect. Navy is
+// for section bars, table headers and headings; gold is for thin rules and
+// bullets (fills only -- true gold fails contrast as text, so the one gold
+// text label uses the darker brand brass, the site's gold-text color).
 const COLOR = {
-  navy: [27, 42, 74] as [number, number, number],
+  navy: [12, 45, 82] as [number, number, number], // #0C2D52
   navySoft: [46, 59, 78] as [number, number, number],
-  orange: [239, 91, 37] as [number, number, number],
-  orangeDark: [200, 72, 26] as [number, number, number],
+  gold: [193, 147, 73] as [number, number, number], // #C19349
+  brass: [138, 105, 52] as [number, number, number], // #8A6934
   line: [201, 194, 180] as [number, number, number],
   paperDim: [239, 235, 226] as [number, number, number],
   green: [15, 122, 76] as [number, number, number],
 };
 
-// Thin orange top bar + "First Coast Bids — Page N" footer, stamped on every
+// Thin gold top rule + "First Coast Bids — Page N" footer, stamped on every
 // page including the cover. Keeps every page identifiably branded even
 // if a page gets printed or forwarded on its own.
 function stampChrome(doc: jsPDF) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  doc.setFillColor(...COLOR.orange);
+  doc.setFillColor(...COLOR.gold);
   doc.rect(0, 0, pageWidth, 2.5, "F");
 
   doc.setDrawColor(...COLOR.line);
@@ -75,18 +78,17 @@ function stampChrome(doc: jsPDF) {
   });
 }
 
-// A short orange rule under a section heading — same visual device as
-// .section-bar on the marketing site.
+// A short navy bar under a section heading.
 function sectionBar(doc: jsPDF, marginX: number, y: number) {
-  doc.setFillColor(...COLOR.orange);
+  doc.setFillColor(...COLOR.navy);
   doc.rect(marginX, y, 16, 1.4, "F");
 }
 
 // Renders plain text as real bullets and properly spaced paragraphs,
 // instead of one long wrapped block. Recognizes lines starting with
 // "- " or "•" as bullet items; blank lines start a new paragraph.
-// Bullets are drawn as small orange dots (matching .rate-feature on the
-// site) rather than a printed "•" character, so they carry brand color.
+// Bullets are drawn as small gold dots rather than a printed "•"
+// character, so they carry brand color.
 function renderStructuredText(doc: jsPDF, text: string, marginX: number, startY: number): number {
   let y = startY;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -121,7 +123,7 @@ function renderStructuredText(doc: jsPDF, text: string, marginX: number, startY:
     for (let i = 0; i < wrapped.length; i++) {
       checkPageBreak(6.5);
       if (isBullet && i === 0) {
-        doc.setFillColor(...COLOR.orange);
+        doc.setFillColor(...COLOR.gold);
         doc.circle(marginX + 1.6, y - 1.3, 0.9, "F");
       }
       doc.text(wrapped[i], indent, y);
@@ -154,7 +156,7 @@ export function generateDeliverablesPacket(
   // ---------- Cover ----------
   doc.setFont("courier", "normal");
   doc.setFontSize(9);
-  doc.setTextColor(...COLOR.orangeDark);
+  doc.setTextColor(...COLOR.brass);
   doc.text("BID PACKAGE", marginX, y);
   y += 10;
 
