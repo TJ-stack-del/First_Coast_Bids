@@ -39,7 +39,7 @@ v0.6 completed the page using the live site's own copy: a hero proof line, the f
 ## Open decisions
 
 - The packet cover is drawn. It needs a real photo of a printed sample packet.
-- Next step: build into the real site on a branch (tokens in `app/globals.css` / `tailwind.config.ts`, then DESIGN.md).
+- Built 2026-09-22 on branch `landing-redesign`, scoped to the public marketing pages only (the dashboard, intake and admin are unchanged). See DESIGN.md, "Marketing theme". Not merged or deployed yet.
 
 ## The other directions, for reference
 
