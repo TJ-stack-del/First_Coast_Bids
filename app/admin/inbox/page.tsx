@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { InboxBoard } from "./InboxBoard";
+import { WaitingOnClient, type WaitingDraft } from "./WaitingOnClient";
 
 // This replaces the old self-serve /bids list — now shows every client's
 // submissions, not just one contractor's own.
@@ -49,6 +50,53 @@ export default async function AdminInboxPage() {
   // rate_sheet/executive_cover/certificate_of_insurance rows would never
   // reach 3/3 against this denominator, so they're excluded rather than
   // shown as permanently incomplete).
+  // Drafts created by assigning a match (see WaitingOnClient). Identified by
+  // their submission_created_from_match audit row, so a visitor's abandoned
+  // intake draft never shows up here. Newest assignment wins if a
+  // submission somehow has more than one.
+  const { data: assignedRows } = await supabase
+    .from("audit_log")
+    .select("submission_id, created_at")
+    .eq("event_type", "submission_created_from_match")
+    .not("submission_id", "is", null)
+    .order("created_at", { ascending: false });
+  const assignedAt = new Map<string, string>();
+  for (const row of assignedRows ?? []) {
+    if (row.submission_id && !assignedAt.has(row.submission_id)) assignedAt.set(row.submission_id, row.created_at);
+  }
+  let waitingDrafts: WaitingDraft[] = [];
+  if (assignedAt.size > 0) {
+    const ids = [...assignedAt.keys()];
+    const [{ data: draftRows }, { data: emailRows }] = await Promise.all([
+      supabase
+        .from("submissions")
+        .select("id, agency, solicitation_number, due_date, clients!submissions_client_id_fkey(company_name)")
+        .in("id", ids)
+        .eq("draft", true),
+      supabase
+        .from("audit_log")
+        .select("submission_id, created_at")
+        .eq("event_type", "matched_opportunity_email_sent")
+        .in("submission_id", ids)
+        .order("created_at", { ascending: false }),
+    ]);
+    const emailedAt = new Map<string, string>();
+    for (const row of emailRows ?? []) {
+      if (row.submission_id && !emailedAt.has(row.submission_id)) emailedAt.set(row.submission_id, row.created_at);
+    }
+    waitingDrafts = (draftRows ?? [])
+      .map((d: any) => ({
+        id: d.id,
+        company_name: d.clients?.company_name ?? "Unknown client",
+        agency: d.agency,
+        solicitation_number: d.solicitation_number,
+        due_date: d.due_date,
+        assigned_at: assignedAt.get(d.id)!,
+        email_sent_at: emailedAt.get(d.id) ?? null,
+      }))
+      .sort((a, b) => b.assigned_at.localeCompare(a.assigned_at));
+  }
+
   const CORE_DELIVERABLE_TYPES = new Set(["capability_statement", "compliance_matrix", "technical_narrative"]);
   const submissionIds = (rawSubmissions ?? []).map((s: any) => s.id);
   const deliverablesCountBySubmission = new Map<string, number>();
@@ -140,6 +188,8 @@ export default async function AdminInboxPage() {
           Every client submission, across every stage.
         </p>
       </div>
+
+      <WaitingOnClient drafts={waitingDrafts} />
 
       <InboxBoard
         submissions={submissions as any}
