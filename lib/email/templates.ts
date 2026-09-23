@@ -90,6 +90,23 @@ export function getMatchedOpportunityEmail(agency: string, companyName: string) 
   };
 }
 
+// Sent when an admin withdraws a bid they assigned from Matches -- the
+// agency closed or cancelled it, or it turned out not to be biddable
+// (2026-09-23: a Jacksonville Beach RFP was assigned a week after its
+// deadline). Says plainly that nothing is needed from the client.
+export function getMatchWithdrawnEmail(agency: string, companyName: string, solicitationNumber: string | null) {
+  const bid = solicitationNumber ? `${agency} bid (${solicitationNumber})` : `${agency} bid`;
+  return {
+    subject: `Update on the ${agency} bid`,
+    html: `
+      <p>Hi ${companyName},</p>
+      <p>The ${bid} we sent you is no longer open. The agency closed or withdrew it, so we've taken it off your dashboard.</p>
+      <p>You don't need to do anything. Sorry for the mix-up. We'll let you know when we find the next one that fits.</p>
+      <p>— First Coast Bids</p>
+    `,
+  };
+}
+
 export function getContactMessageEmail(name: string, email: string, message: string) {
   return {
     subject: `New contact form message from ${name}`,

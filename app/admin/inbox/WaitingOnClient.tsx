@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { notifyClientOfMatch } from "@/lib/matches/notify-client";
+import { withdrawAssignedMatch } from "@/lib/matches/withdraw";
 
 export type WaitingDraft = {
   id: string;
@@ -22,13 +24,26 @@ export type WaitingDraft = {
 // these used to be invisible from the inbox -- an assigned RFP looked lost
 // (2026-09-23 production report). Only drafts created by an assignment are
 // listed, never a visitor's abandoned intake form. Each row shows whether
-// the client was actually emailed, with a resend.
+// the client was actually emailed, with a resend, and a Withdraw for when
+// the agency closes or cancels the bid before the client acts on it.
 export function WaitingOnClient({ drafts }: { drafts: WaitingDraft[] }) {
   const router = useRouter();
   const { showToast } = useToast();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [withdrawing, setWithdrawing] = useState<WaitingDraft | null>(null);
 
   if (drafts.length === 0) return null;
+
+  async function withdraw(d: WaitingDraft) {
+    setWithdrawing(null);
+    setBusyId(d.id);
+    const result = await withdrawAssignedMatch(d.id);
+    setBusyId(null);
+    // A withdrawal whose email failed is still shown as an error, so the
+    // admin knows to reach the client some other way.
+    showToast(result.message, result.complete ? "success" : "error");
+    if (result.withdrawn) router.refresh();
+  }
 
   async function resend(id: string) {
     setBusyId(id);
@@ -79,10 +94,30 @@ export function WaitingOnClient({ drafts }: { drafts: WaitingDraft[] }) {
                 {busyId === d.id && <Spinner />}
                 {d.email_sent_at ? "Resend email" : "Send email"}
               </button>
+              <button
+                type="button"
+                onClick={() => setWithdrawing(d)}
+                disabled={busyId === d.id}
+                className="px-3 py-1.5 rounded-lg border border-error text-error text-label-sm uppercase tracking-wider font-bold hover:bg-error-container/20 transition-colors active:scale-[0.97] disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error"
+              >
+                Withdraw
+              </button>
             </div>
           </li>
         ))}
       </ul>
+      <ConfirmDialog
+        open={withdrawing !== null}
+        onClose={() => setWithdrawing(null)}
+        onConfirm={() => withdrawing && withdraw(withdrawing)}
+        title="Withdraw this bid?"
+        description={
+          withdrawing
+            ? `This takes the ${withdrawing.agency} bid off ${withdrawing.company_name}'s dashboard and emails them that it's no longer open and nothing is needed. The match is marked dismissed.`
+            : ""
+        }
+        confirmLabel="Withdraw and email client"
+      />
     </section>
   );
 }
