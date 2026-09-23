@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/ui/Spinner";
 import { FadeMessage } from "@/components/ui/FadeMessage";
 import { CheckboxGroup } from "@/components/ui/CheckboxGroup";
-import { SMALL_BUSINESS_STATUSES, COMMON_SET_ASIDES, COMMON_NAICS_CODES } from "@/lib/business-options";
+import { SMALL_BUSINESS_STATUSES, COMMON_SET_ASIDES } from "@/lib/business-options";
+import { naicsOptionsWithSelected, type NaicsOption } from "@/lib/trades/naics-options";
 
 type CompanyInfo = {
   license_number: string | null;
@@ -56,12 +57,16 @@ const FIELDS: { key: keyof CompanyInfo; label: string; type?: string; area?: boo
 export function CompanyInfoForm({
   clientId,
   initialInfo,
+  offeredNaics,
 }: {
   clientId: string;
   initialInfo: CompanyInfo;
+  offeredNaics: NaicsOption[];
 }) {
-  const naicsKnownCodes = COMMON_NAICS_CODES.map((n) => n.code);
-  const initialNaics = splitKnown(initialInfo.naics_codes, naicsKnownCodes);
+  // Every code the client already saved stays a checked option, even if
+  // that trade was switched off since (see naicsOptionsWithSelected).
+  const naicsOptions = naicsOptionsWithSelected(offeredNaics, initialInfo.naics_codes);
+  const initialNaics = splitKnown(initialInfo.naics_codes, naicsOptions.map((o) => o.value));
   const initialSetAsides = splitKnown(initialInfo.set_asides, COMMON_SET_ASIDES);
 
   const [values, setValues] = useState<CompanyInfo>(initialInfo);
@@ -166,7 +171,7 @@ export function CompanyInfoForm({
 
       <CheckboxGroup
         legend="NAICS codes that apply"
-        options={COMMON_NAICS_CODES.map((n) => ({ value: n.code, label: `${n.code}: ${n.label}` }))}
+        options={naicsOptions}
         selected={naicsCodes}
         onChange={(v) => {
           setNaicsCodes(v);

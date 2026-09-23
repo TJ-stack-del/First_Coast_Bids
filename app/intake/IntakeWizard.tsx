@@ -10,7 +10,7 @@ import { BidProcessNotices } from "@/components/ui/BidProcessNotices";
 import { CompanyProfileUpload, type ExtractedCompanyProfile } from "@/components/ui/CompanyProfileUpload";
 import { RfpDocumentUpload, type ExtractedBidFields } from "@/components/ui/RfpDocumentUpload";
 import { CheckboxGroup } from "@/components/ui/CheckboxGroup";
-import { COMMON_NAICS_CODES } from "@/lib/business-options";
+import { naicsOptionsWithSelected, type NaicsOption } from "@/lib/trades/naics-options";
 import { isEmail } from "@/lib/phone";
 import { RETAINER_PLACEHOLDER_AGENCY, type FitCheckResult } from "@/lib/submissions";
 import { computeProfileCompleteness } from "@/lib/compliance/profile-completeness";
@@ -89,7 +89,7 @@ async function withRetry<T>(
   return last;
 }
 
-export function IntakeWizard() {
+export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) {
   const [step, setStep] = useState(0);
   const [clientId, setClientId] = useState<string | null>(null);
   // Set once in handleAboutYouNext (which already looks up the org for the
@@ -1008,7 +1008,7 @@ export function IntakeWizard() {
 
             <CheckboxGroup
               legend="NAICS codes that apply"
-              options={COMMON_NAICS_CODES.map((n) => ({ value: n.code, label: `${n.code}: ${n.label}` }))}
+              options={naicsOptionsWithSelected(offeredNaics, retainerProfile.naicsCodes)}
               selected={retainerProfile.naicsCodes}
               onChange={(v) => setRetainerProfile((p) => ({ ...p, naicsCodes: v }))}
             />
