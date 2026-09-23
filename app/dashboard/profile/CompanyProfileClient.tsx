@@ -7,6 +7,7 @@ import { CompanyProfileUpload, type ExtractedCompanyProfile } from "@/components
 import { useToast } from "@/components/Toast";
 import { uploadRfpDocument } from "@/lib/storage";
 import { CompanyInfoForm } from "./CompanyInfoForm";
+import type { NaicsOption } from "@/lib/trades/naics-options";
 
 type CompanyInfo = {
   license_number: string | null;
@@ -36,9 +37,11 @@ type CompanyInfo = {
 export function CompanyProfileClient({
   clientId,
   initialInfo,
+  offeredNaics,
 }: {
   clientId: string;
   initialInfo: CompanyInfo;
+  offeredNaics: NaicsOption[];
 }) {
   const [info, setInfo] = useState(initialInfo);
   const [version, setVersion] = useState(0);
@@ -110,7 +113,7 @@ export function CompanyProfileClient({
     <div className="flex flex-col gap-4">
       <CompanyProfileUpload onExtracted={handleExtracted} />
       {savingCerts && <p className="text-body-md text-on-surface-variant">Saving certifications…</p>}
-      <CompanyInfoForm key={version} clientId={clientId} initialInfo={info} />
+      <CompanyInfoForm key={version} clientId={clientId} initialInfo={info} offeredNaics={offeredNaics} />
     </div>
   );
 }

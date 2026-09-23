@@ -6,34 +6,12 @@ import { SAM_BIDDABLE_PTYPES, shouldKeepSamNotice } from "../matches/rules.ts";
 // Quota shape (decided 2026-09-23): the public API key allows only a
 // handful of requests a day (it hit its limit at 13 on 2026-09-22), so the
 // daily run makes ONE request -- recent Florida postings of biddable types
-// across every NAICS code, with our trade codes picked out locally from each
-// row's naicsCode. Florida-only is a product decision: clients are Northeast
+// across every NAICS code, with the offered trades' codes (public.trades)
+// picked out locally from each row's naicsCode. Florida-only is a product decision: clients are Northeast
 // Florida trade businesses. Measured 2026-09-23: nationwide volume (~925
 // biddable postings/day) would not fit one 1,000-row request; Florida does.
 // A one-time backfill of older still-open postings goes one NAICS code per
 // request instead, run by hand across a few days.
-
-// The full, real set of NAICS codes a First Coast Bids client could
-// plausibly have on file: lib/business-options.ts's COMMON_NAICS_CODES
-// checkbox list, plus lib/compliance/known-trades.ts's IT/computer-support
-// codes (only ever entered via the intake form's free-text "Other NAICS
-// code" field, never a checkbox). 238220 is included even though
-// KNOWN_TRADES' own HVAC entry excludes it as a *compliance-coverage*
-// signal -- that exclusion serves a different feature (scope-text
-// compliance flagging) and doesn't apply here.
-export const SAM_NAICS_CODES = [
-  "561720", // Janitorial Services
-  "561790", // Other Services to Buildings and Dwellings
-  "561740", // Carpet and Upholstery Cleaning Services
-  "561730", // Landscaping Services
-  "238220", // Plumbing, Heating, and Air-Conditioning Contractors
-  "238290", // Other Building Equipment Contractors
-  "561210", // Facilities Support Services
-  "238210", // Electrical Contractors
-  "541512", // Computer Systems Design Services
-  "541519", // Other Computer Related Services
-  "518210", // Data Processing, Hosting, and Related Services
-] as const;
 
 export const SAM_STATE = "FL";
 export const SAM_PAGE_LIMIT = 1000; // the API's documented maximum
@@ -86,20 +64,21 @@ export type SamRow = {
   responseDeadLine?: string | null;
 };
 
-// Keep rows in one of our trade codes that are biddable and still open
-// (lib/matches/rules.ts decides "biddable" and "still open").
-export function selectSamRows<T extends SamRow>(rows: T[], now: Date): T[] {
-  const codes = new Set<string>(SAM_NAICS_CODES);
-  return rows.filter((r) => !!r.naicsCode && codes.has(r.naicsCode) && shouldKeepSamNotice(r, now));
+// Keep rows in one of the offered trade codes (the active trades in
+// public.trades, passed in by the scrape route) that are biddable and still
+// open (lib/matches/rules.ts decides "biddable" and "still open").
+export function selectSamRows<T extends SamRow>(rows: T[], now: Date, codes: readonly string[]): T[] {
+  const wanted = new Set<string>(codes);
+  return rows.filter((r) => !!r.naicsCode && wanted.has(r.naicsCode) && shouldKeepSamNotice(r, now));
 }
 
 // The daily run's rolling catch-up (decided 2026-09-23): each UTC day it
-// also runs the 12-month backfill for ONE trade code, rotating through all
-// 11, so older still-open Florida postings are caught without anyone
-// calling the route by hand (the production CRON_SECRET is a Vercel
-// sensitive variable nobody can read back). Costs one extra request a day;
-// title+agency dedup makes repeats free. A full cycle takes 11 days.
-export function backfillCodeForDate(now: Date): string {
+// also runs the 12-month backfill for ONE offered trade code, rotating
+// through all of them, so older still-open Florida postings are caught
+// without anyone calling the route by hand. Costs one extra request a day;
+// title+agency dedup makes repeats free. Null when no trade has a code.
+export function backfillCodeForDate(now: Date, codes: readonly string[]): string | null {
+  if (codes.length === 0) return null;
   const utcDay = Math.floor(now.getTime() / DAY_MS);
-  return SAM_NAICS_CODES[utcDay % SAM_NAICS_CODES.length];
+  return codes[utcDay % codes.length];
 }

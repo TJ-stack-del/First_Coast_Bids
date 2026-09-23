@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ThresholdSettingsForm } from "./ThresholdSettingsForm";
+import { TradesSettings } from "./TradesSettings";
+import { loadTrades } from "@/lib/trades/server";
+import type { Trade } from "@/lib/trades/types";
 
 export default async function AdminSettingsPage() {
   const supabase = await createClient();
@@ -23,6 +26,14 @@ export default async function AdminSettingsPage() {
     .select("id, lean_package_threshold")
     .eq("id", member.org_id)
     .single();
+
+  let trades: Trade[] = [];
+  let tradesError: string | null = null;
+  try {
+    trades = await loadTrades(supabase, member.org_id);
+  } catch (err) {
+    tradesError = err instanceof Error ? err.message : "Couldn't load trades.";
+  }
 
   return (
     <>
@@ -48,6 +59,19 @@ export default async function AdminSettingsPage() {
         ) : (
           <p className="text-body-md text-error">Couldn&apos;t load organization settings.</p>
         )}
+      </div>
+
+      <div className="mt-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 max-w-3xl">
+        <h2 className="text-title-lg text-primary mb-2 flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-[20px]">construction</span>
+          Trades
+        </h2>
+        <p className="text-body-md text-on-surface-variant mb-4">
+          The trades you offer. The daily scrape searches SAM.gov for these NAICS codes and sorts every new match
+          into a trade by its codes or title. Anything else goes to Other trades on the Matches page. Clients pick
+          from these NAICS codes when they sign up.
+        </p>
+        {tradesError ? <p className="text-body-md text-error">{tradesError}</p> : <TradesSettings trades={trades} />}
       </div>
     </>
   );

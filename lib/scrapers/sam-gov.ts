@@ -46,7 +46,12 @@ function apiKeyOrThrow(caller: string): string {
   return apiKey;
 }
 
-async function fetchAndSelect(params: URLSearchParams, now: Date, label: string): Promise<ScrapedOpportunity[]> {
+async function fetchAndSelect(
+  params: URLSearchParams,
+  now: Date,
+  label: string,
+  codes: readonly string[]
+): Promise<ScrapedOpportunity[]> {
   const res = await fetch(`${OPPORTUNITIES_API_BASE}?${params.toString()}`);
   if (!res.ok) {
     // Include SAM.gov's own message (e.g. quota exhausted, bad date range):
@@ -61,23 +66,24 @@ async function fetchAndSelect(params: URLSearchParams, now: Date, label: string)
   if (typeof raw.totalRecords === "number" && raw.totalRecords > rows.length) {
     console.warn(`[sam-gov] ${label}: ${raw.totalRecords} postings matched but only ${rows.length} were returned`);
   }
-  return selectSamRows(rows, now)
+  return selectSamRows(rows, now, codes)
     .filter((r): r is RawOpportunity & { title: string } => !!r.title)
     .map(toScraped);
 }
 
-// The daily cron's SAM.gov step: one request.
-export async function scrapeSamGov(): Promise<ScrapedOpportunity[]> {
+// The daily cron's SAM.gov step: one request. `codes` are the active
+// trades' NAICS codes (public.trades), passed in by app/api/scrape.
+export async function scrapeSamGov(codes: readonly string[]): Promise<ScrapedOpportunity[]> {
   const apiKey = apiKeyOrThrow("scrapeSamGov");
   const now = new Date();
-  return fetchAndSelect(buildSamDailyParams(apiKey, now), now, "daily");
+  return fetchAndSelect(buildSamDailyParams(apiKey, now), now, "daily", codes);
 }
 
 // One-time catch-up, one NAICS code per call, run by hand (see
 // app/api/scrape's samBackfill param) across a few days to stay inside the
 // daily quota. Picks up older Florida postings that are still open.
-export async function scrapeSamGovBackfill(naicsCode: string): Promise<ScrapedOpportunity[]> {
+export async function scrapeSamGovBackfill(naicsCode: string, codes: readonly string[]): Promise<ScrapedOpportunity[]> {
   const apiKey = apiKeyOrThrow("scrapeSamGovBackfill");
   const now = new Date();
-  return fetchAndSelect(buildSamBackfillParams(apiKey, now, naicsCode), now, `backfill ${naicsCode}`);
+  return fetchAndSelect(buildSamBackfillParams(apiKey, now, naicsCode), now, `backfill ${naicsCode}`, codes);
 }

@@ -22,6 +22,10 @@ export type ScrapedOpportunity = {
   // listing pages have an equivalent). Used downstream to compute a
   // suggested-client match against clients.naics_codes.
   naics_code?: string | null;
+  // Optional -- for portal scrapers whose listings carry NIGP commodity
+  // codes (OpenGov, DemandStar, Bonfire). Used to sort the bid into a trade
+  // (lib/trades/classify.ts) and stored on matched_opportunities.nigp_codes.
+  nigp_codes?: string[] | null;
 };
 
 // flyjacksonville.com/bids.aspx is a plain server-rendered ASP.NET page —

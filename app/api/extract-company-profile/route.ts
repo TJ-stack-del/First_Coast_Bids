@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
-import { COMMON_NAICS_CODES } from "@/lib/business-options";
+import { loadActiveTrades } from "@/lib/trades/server";
+import { offeredNaicsCodes } from "@/lib/trades/classify";
 import { detectDocumentKind, buildDocumentContent, UNSUPPORTED_FILE_TYPE_MESSAGE } from "@/lib/document-parsing";
 import { parseLlmJson } from "@/lib/llm-json";
 
@@ -33,7 +34,10 @@ const CERT_TYPES = ["8(a)", "WOSB", "EDWOSB", "HUBZone", "SDVOSB", "VOSB", "JSEB
 // Number could tempt a model into filling license_number with it just
 // because "some number" was found. The prompt is deliberately explicit
 // about the two being different things, not just differently named.
-const SYSTEM_PROMPT = `You extract structured company-profile information from documents a small-business government contractor provides about their OWN company (capability statements, business license packets, insurance certificates, certification letters, corporate filings) — not from an agency's solicitation.
+// Built per request: the NAICS codes listed are the offered trades' codes
+// (public.trades), which an admin can change at any time.
+function systemPrompt(knownNaics: string[]): string {
+  return `You extract structured company-profile information from documents a small-business government contractor provides about their OWN company (capability statements, business license packets, insurance certificates, certification letters, corporate filings) — not from an agency's solicitation.
 
 Read the provided document and respond with ONLY a single JSON object with exactly these keys:
 - "companyName": the company's legal/business name, or null if not found
@@ -41,7 +45,7 @@ Read the provided document and respond with ONLY a single JSON object with exact
 - "businessPhone": the business phone number, or null if not found
 - "businessAddress": the full business address, or null if not found
 - "yearsInBusiness": a number, or null if not stated or not calculable from a founding date
-- "naicsCodes": an array of JSON strings (e.g. "561720", not the bare number) for each NAICS code explicitly stated that exactly matches one of these codes: ${COMMON_NAICS_CODES.map((n) => n.code).join(", ")}. Empty array if none match.
+- "naicsCodes": an array of JSON strings (e.g. "561720", not the bare number) for each NAICS code explicitly stated that exactly matches one of these codes: ${knownNaics.join(", ") || "(none)"}. Empty array if none match.
 - "naicsOther": if the document states a NAICS code NOT in that list, that one code as a string, otherwise null.
 - "licenseNumber": the company's TRADE or OCCUPATIONAL license number (e.g. a contractor's license, a specialty trade license) — this is DIFFERENT from a state business-registration/incorporation number. Only fill this if the document explicitly labels a number as a trade/occupational/contractor license. Null if not found — do NOT put a Sunbiz Document Number, corporate filing number, or any other kind of registration number here.
 - "businessRegistrationNumber": the company's STATE business-registration or corporate-filing number (e.g. a Florida Sunbiz Document Number, a Secretary of State filing number) — this is DIFFERENT from a trade license. Null if not found — do NOT put a trade/occupational license number here.
@@ -61,6 +65,7 @@ Read the provided document and respond with ONLY a single JSON object with exact
   Empty array if none are mentioned. Include EVERY license/certification actually stated — a document commonly lists more than one.
 
 Only fill a field if the document actually states it — never guess or infer from context. Respond with nothing but that JSON object — no markdown code fences, no commentary.`;
+}
 
 const RECORD_TYPES = ["trade_license", "small_business_cert", "field_certification"] as const;
 
@@ -96,12 +101,11 @@ type ExtractedProfile = {
   certifications: ExtractedCertification[];
 };
 
-function coerceFields(parsed: unknown): ExtractedProfile {
+function coerceFields(parsed: unknown, knownNaics: string[]): ExtractedProfile {
   const obj = (parsed ?? {}) as Record<string, unknown>;
   const asString = (v: unknown) =>
     typeof v === "string" && v.trim() ? v.trim() : typeof v === "number" ? String(v) : null;
   const asNumber = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
-  const knownNaics = COMMON_NAICS_CODES.map((n) => n.code);
   const asKnownArray = (v: unknown, known: readonly string[]) =>
     Array.isArray(v)
       ? v
@@ -171,6 +175,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
+  // Codes the reader may return: the offered trades' codes. If the list
+  // can't be loaded, no codes are prefilled (the client can still tick
+  // them), rather than accepting anything the model says.
+  let knownNaics: string[] = [];
+  try {
+    knownNaics = offeredNaicsCodes(await loadActiveTrades(supabase));
+  } catch (err) {
+    console.error("[extract-company-profile] failed to load trades", { message: err instanceof Error ? err.message : err });
+  }
+
   const formData = await request.formData().catch(() => null);
   const file = formData?.get("file");
   if (!(file instanceof File)) {
@@ -198,7 +212,7 @@ export async function POST(request: Request) {
       model: "claude-opus-5",
       max_tokens: 1536,
       output_config: { effort: "low" },
-      system: SYSTEM_PROMPT,
+      system: systemPrompt(knownNaics),
       messages: [{ role: "user", content: built.content }],
     });
   } catch (err) {
@@ -224,5 +238,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Couldn't parse the extraction result." }, { status: 502 });
   }
 
-  return NextResponse.json(coerceFields(parsed));
+  return NextResponse.json(coerceFields(parsed, knownNaics));
 }

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CompanyProfileClient } from "./CompanyProfileClient";
+import { loadActiveTrades } from "@/lib/trades/server";
+import { offeredNaicsOptions, type NaicsOption } from "@/lib/trades/naics-options";
 
 // Same cookies()-forces-dynamic reasoning as app/dashboard/page.tsx.
 export const dynamic = "force-dynamic";
@@ -26,6 +28,13 @@ export default async function CompanyProfilePage() {
     .eq("auth_user_id", user.id)
     .maybeSingle();
 
+  let offeredNaics: NaicsOption[] = [];
+  try {
+    offeredNaics = offeredNaicsOptions(await loadActiveTrades(supabase));
+  } catch (err) {
+    console.error("[profile] failed to load trades", { message: err instanceof Error ? err.message : err });
+  }
+
   if (!client) redirect("/");
 
   return (
@@ -46,6 +55,7 @@ export default async function CompanyProfilePage() {
         </p>
         <CompanyProfileClient
           clientId={client.id}
+          offeredNaics={offeredNaics}
           initialInfo={{
             license_number: client.license_number,
             business_registration_number: client.business_registration_number,

@@ -12,7 +12,9 @@ import { ConfirmDeleteDialog } from "@/components/ui/ConfirmDeleteDialog";
 import { RfpDocumentUpload, type ExtractedBidFields } from "@/components/ui/RfpDocumentUpload";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { opportunityTradeTag } from "@/lib/opportunity-trade-tag";
-import { clientTradeLabel } from "@/lib/business-options";
+import { clientTradeLabel, clientTradeIds } from "@/lib/trades/naics-options";
+import type { Trade } from "@/lib/trades/types";
+import { tradeFieldsForInsert } from "@/lib/trades/classify";
 import { useToast } from "@/components/Toast";
 
 type Match = {
@@ -27,6 +29,7 @@ type Match = {
   status: string;
   assigned_client_id: string | null;
   naics_code: string | null;
+  trade_id: string | null;
   suggested_client_id: string | null;
   created_at: string;
 };
@@ -40,8 +43,8 @@ type Client = { id: string; company_name: string; naics_codes: string[] };
 // alone) when a client's own Company Profile never set a NAICS code, so
 // an incomplete profile is visible instead of looking the same as "no
 // trade info available at all."
-function clientOptionLabel(client: Client): string {
-  const trade = clientTradeLabel(client.naics_codes);
+function clientOptionLabel(client: Client, trades: Trade[]): string {
+  const trade = clientTradeLabel(client.naics_codes, trades);
   return trade ? `${client.company_name} — ${trade}` : `${client.company_name} (no trade set)`;
 }
 
@@ -80,6 +83,7 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 const DEFAULT_FILTERS: MatchFilters = {
+  view: "trades",
   status: "new",
   deadline: "any",
   source: "all",
@@ -93,6 +97,7 @@ const DEFAULT_FILTERS: MatchFilters = {
 // the default view and shared links stay short.
 function filtersHref(pathname: string, f: MatchFilters): string {
   const params = new URLSearchParams();
+  if (f.view !== DEFAULT_FILTERS.view) params.set("view", f.view);
   if (f.status !== DEFAULT_FILTERS.status) params.set("status", f.status);
   if (f.deadline !== DEFAULT_FILTERS.deadline) params.set("deadline", f.deadline);
   if (f.source !== DEFAULT_FILTERS.source) params.set("source", f.source);
@@ -115,6 +120,8 @@ export function MatchesPanel({
   actorId,
   initialMatches,
   clients,
+  trades,
+  viewCounts,
   filters,
   counts,
   totalForView,
@@ -125,6 +132,8 @@ export function MatchesPanel({
   actorId: string;
   initialMatches: Match[];
   clients: Client[];
+  trades: Trade[];
+  viewCounts: { trades: number; other: number };
   filters: MatchFilters;
   counts: Record<TabKey, number>;
   totalForView: number;
@@ -286,6 +295,9 @@ export function MatchesPanel({
         solicitation_number: solicitationNumber.trim() || null,
         due_date: dueDate || null,
         status: "new",
+        // Sorted like a scraped bid, so it stays in "Your trades" when its
+        // title names an offered trade.
+        ...tradeFieldsForInsert({ title }, trades),
       })
       .select()
       .single();
@@ -324,11 +336,18 @@ export function MatchesPanel({
     const client = clients.find((c) => c.id === clientId);
     if (!match || !client) return;
 
-    const opportunityTrade = opportunityTradeTag({ title: match.source_title, scope: match.scope });
-    const clientTrade = clientTradeLabel(client.naics_codes);
-    if (opportunityTrade && clientTrade && opportunityTrade !== clientTrade) {
-      setMismatchTarget({ matchId, opportunityTrade, clientTrade });
-      return;
+    // Warn when the match's trade isn't one of the client's trades. Other
+    // trades rows have no trade to compare, so no warning.
+    if (match.trade_id) {
+      const clientTrades = clientTradeIds(client.naics_codes, trades);
+      if (clientTrades.length > 0 && !clientTrades.includes(match.trade_id)) {
+        setMismatchTarget({
+          matchId,
+          opportunityTrade: trades.find((t) => t.id === match.trade_id)?.label ?? "Unknown trade",
+          clientTrade: clientTradeLabel(client.naics_codes, trades) ?? "",
+        });
+        return;
+      }
     }
 
     performAssign(matchId);
@@ -561,6 +580,8 @@ export function MatchesPanel({
         onSearchDraft={setSearchDraft}
         onApply={applyFilters}
         tabHref={(status) => filtersHref(pathname, { ...filters, status, page: 1 })}
+        viewCounts={viewCounts}
+        viewHref={(view) => filtersHref(pathname, { ...filters, view, page: 1 })}
       />
 
       {loadError && <p className="text-body-md text-error">{loadError}</p>}
@@ -637,7 +658,13 @@ export function MatchesPanel({
                     <span className="inline-flex items-center gap-space-xs flex-wrap">
                       <span className="material-symbols-outlined text-outline text-[16px]">account_balance</span>
                       {m.source_agency}
-                      <TradeTagBadge title={m.source_title} scope={m.scope} />
+                      {m.trade_id ? (
+                        <span className="inline-flex px-2 py-0.5 rounded text-label-sm font-bold uppercase tracking-wider bg-secondary-container text-on-secondary-container">
+                          {trades.find((t) => t.id === m.trade_id)?.label ?? "Trade"}
+                        </span>
+                      ) : (
+                        <TradeTagBadge title={m.source_title} scope={m.scope} />
+                      )}
                     </span>
                   </td>
                   <td className={`px-space-base py-space-base font-code ${due.className}`}>{due.label}</td>
@@ -651,6 +678,7 @@ export function MatchesPanel({
                         <AssignControls
                           match={m}
                           clients={clients}
+                          trades={trades}
                           // Falls back to the computed suggestion only when the admin
                   // hasn't touched this row's dropdown yet -- once they pick
                   // anything, assignSelections[m.id] takes over. The admin
@@ -716,7 +744,13 @@ export function MatchesPanel({
                   <p className="text-label-md text-on-surface-variant break-words flex items-center gap-1 flex-wrap mt-0.5">
                     <span className="material-symbols-outlined text-outline text-[14px]">account_balance</span>
                     {m.source_agency}
-                    <TradeTagBadge title={m.source_title} scope={m.scope} />
+                    {m.trade_id ? (
+                      <span className="inline-flex px-2 py-0.5 rounded text-label-sm font-bold uppercase tracking-wider bg-secondary-container text-on-secondary-container">
+                        {trades.find((t) => t.id === m.trade_id)?.label ?? "Trade"}
+                      </span>
+                    ) : (
+                      <TradeTagBadge title={m.source_title} scope={m.scope} />
+                    )}
                   </p>
                 </div>
                 <StatusPill match={m} clientName={clientName} className="shrink-0" />
@@ -729,6 +763,7 @@ export function MatchesPanel({
                 <AssignControls
                   match={m}
                   clients={clients}
+                  trades={trades}
                   // Falls back to the computed suggestion only when the admin
                   // hasn't touched this row's dropdown yet -- once they pick
                   // anything, assignSelections[m.id] takes over. The admin
@@ -870,6 +905,7 @@ function StatusPill({
 function AssignControls({
   match,
   clients,
+  trades,
   selected,
   onSelect,
   onAssign,
@@ -880,6 +916,7 @@ function AssignControls({
 }: {
   match: Match;
   clients: Client[];
+  trades: Trade[];
   selected: string;
   onSelect: (value: string) => void;
   onAssign: () => void;
@@ -894,7 +931,7 @@ function AssignControls({
   return (
     <div className={`flex ${stacked ? "flex-col" : "items-center"} gap-2 min-w-0`}>
       <Combobox
-        options={clients.map((c) => ({ id: c.id, label: clientOptionLabel(c) }))}
+        options={clients.map((c) => ({ id: c.id, label: clientOptionLabel(c, trades) }))}
         value={selected}
         onChange={onSelect}
         placeholder="Assign to…"
@@ -963,6 +1000,8 @@ function MatchesToolbar({
   onSearchDraft,
   onApply,
   tabHref,
+  viewCounts,
+  viewHref,
 }: {
   filters: MatchFilters;
   counts: Record<TabKey, number>;
@@ -970,9 +1009,32 @@ function MatchesToolbar({
   onSearchDraft: (v: string) => void;
   onApply: (patch: Partial<MatchFilters>) => void;
   tabHref: (status: TabKey) => string;
+  viewCounts: { trades: number; other: number };
+  viewHref: (view: MatchFilters["view"]) => string;
 }) {
   return (
     <div className="flex flex-col gap-3">
+      <nav aria-label="Trade view" className="flex flex-wrap gap-2">
+        {([
+          ["trades", "Your trades"],
+          ["other", "Other trades"],
+        ] as const).map(([key, label]) => {
+          const active = filters.view === key;
+          return (
+            <Link
+              key={key}
+              href={viewHref(key)}
+              aria-current={active ? "page" : undefined}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-label-md font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                active ? "bg-primary text-on-primary" : "bg-surface-container-low text-on-surface hover:bg-surface-container-high"
+              }`}
+            >
+              {label}
+              <span className="font-code text-body-sm">{viewCounts[key]}</span>
+            </Link>
+          );
+        })}
+      </nav>
       <nav aria-label="Match status" className="flex flex-wrap gap-2">
         {TABS.map((tab) => {
           const active = filters.status === tab.key;
