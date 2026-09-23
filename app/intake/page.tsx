@@ -30,7 +30,7 @@ export default function IntakePage() {
           </Link>
         </div>
       </header>
-      <main className="animate-fade-in max-w-2xl mx-auto px-margin-mobile md:px-margin-desktop py-space-2xl">
+      <main className="max-w-2xl mx-auto px-margin-mobile md:px-margin-desktop py-space-2xl">
         <IntakeWizard />
       </main>
     </div>

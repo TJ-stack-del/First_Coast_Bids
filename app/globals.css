@@ -197,7 +197,7 @@ body {
 }
 .animate-rail-draw {
   transform-origin: left center;
-  animation: rail-draw 0.6s var(--ease-arrive) 0.1s both;
+  animation: rail-draw 0.3s var(--ease-arrive) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

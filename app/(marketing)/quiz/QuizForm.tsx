@@ -51,7 +51,7 @@ export function QuizForm() {
   return (
     <div className={`${s.formSheet} grid gap-8`}>
       <div className={s.progress} role="progressbar" aria-valuemin={1} aria-valuemax={QUESTIONS.length} aria-valuenow={step + 1}>
-        <div className={s.progressFill} style={{ width: `${((step + 1) / QUESTIONS.length) * 100}%` }} />
+        <div className={s.progressFill} style={{ transform: `scaleX(${(step + 1) / QUESTIONS.length})` }} />
       </div>
 
       {/* A state transition, not decoration: each question is a distinct
@@ -65,7 +65,7 @@ export function QuizForm() {
           key={step}
           initial={reduceMotion ? false : { opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={reduceMotion ? undefined : { opacity: 0, x: -16 }}
+          exit={reduceMotion ? undefined : { opacity: 0, x: -16, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         >
           <span className={`${s.meta} mb-2`}>

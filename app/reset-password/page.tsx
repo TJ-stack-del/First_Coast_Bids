@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 // point, not a reason to bounce away.
 export default function ResetPasswordPage() {
   return (
-    <main className="animate-fade-in min-h-screen flex items-center justify-center bg-surface px-margin-mobile py-12">
+    <main className="min-h-screen flex items-center justify-center bg-surface px-margin-mobile py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link
