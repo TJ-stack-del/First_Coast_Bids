@@ -75,6 +75,7 @@ test("matchSource classifies SAM.gov, local Jacksonville sources, and everything
 
 test("parseMatchFilters defaults to live matches, soonest deadline first, page 1", () => {
   assert.deepEqual(parseMatchFilters({}), {
+    view: "trades",
     status: "new",
     deadline: "any",
     source: "all",
@@ -88,7 +89,7 @@ test("parseMatchFilters defaults to live matches, soonest deadline first, page 1
 test("parseMatchFilters accepts valid values and ignores unknown ones", () => {
   assert.deepEqual(
     parseMatchFilters({ status: "expired", deadline: "7", source: "sam", suggested: "1", q: " hvac ", sort: "score", page: "3" }),
-    { status: "expired", deadline: "7", source: "sam", suggested: true, q: "hvac", sort: "score", page: 3 }
+    { view: "trades", status: "expired", deadline: "7", source: "sam", suggested: true, q: "hvac", sort: "score", page: 3 }
   );
   const junk = parseMatchFilters({ status: "deleted", deadline: "999", source: "ftp", sort: "random", page: "-4" });
   assert.equal(junk.status, "new");
@@ -106,4 +107,9 @@ test("sanitizeSearch strips characters that would break a PostgREST or() filter"
   assert.equal(sanitizeSearch("hvac, (roof)*\\ repair"), "hvac roof repair");
   assert.equal(sanitizeSearch("  "), "");
   assert.equal(sanitizeSearch("a".repeat(300)).length, 100);
+});
+test("view defaults to trades and only accepts trades or other", () => {
+  assert.equal(parseMatchFilters({}).view, "trades");
+  assert.equal(parseMatchFilters({ view: "other" }).view, "other");
+  assert.equal(parseMatchFilters({ view: "drop table" }).view, "trades");
 });

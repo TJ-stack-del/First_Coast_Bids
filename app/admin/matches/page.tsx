@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MatchesPanel } from "./MatchesPanel";
+import { loadTrades } from "@/lib/trades/server";
+import type { Trade } from "@/lib/trades/types";
 import {
   parseMatchFilters,
   MATCH_STATUSES,
@@ -48,13 +50,19 @@ export default async function AdminMatchesPage({
   // a reload and can be bookmarked.
   const now = new Date();
   const columns =
-    "id, source_title, source_agency, source_url, scope, solicitation_number, due_date, match_score, status, assigned_client_id, naics_code, suggested_client_id, created_at";
+    "id, source_title, source_agency, source_url, scope, solicitation_number, due_date, match_score, status, assigned_client_id, naics_code, trade_id, suggested_client_id, created_at";
 
   // One builder for both the page query and the per-tab counts, so the
   // counts always describe exactly what each tab would show.
-  function filtered(select: string, options: { count?: "exact"; head?: boolean }, status: MatchFilters["status"]) {
+  function filtered(
+    select: string,
+    options: { count?: "exact"; head?: boolean },
+    status: MatchFilters["status"],
+    view: MatchFilters["view"] = filters.view
+  ) {
     let q = supabase.from("matched_opportunities").select(select, options).eq("org_id", member!.org_id);
     if (status !== "all") q = q.eq("status", status);
+    q = view === "trades" ? q.not("trade_id", "is", null) : q.is("trade_id", null);
 
     if (filters.deadline === "7" || filters.deadline === "30") {
       const days = Number(filters.deadline);
@@ -97,10 +105,13 @@ export default async function AdminMatchesPage({
   const from = (filters.page - 1) * MATCHES_PAGE_SIZE;
   const tabs = [...MATCH_STATUSES, "all"] as const;
 
-  const [pageResult, ...countResults] = await Promise.all([
+  const [pageResult, tradesViewCount, otherViewCount, ...countResults] = await Promise.all([
     pageQuery.range(from, from + MATCHES_PAGE_SIZE - 1),
+    filtered("id", { count: "exact", head: true }, filters.status, "trades"),
+    filtered("id", { count: "exact", head: true }, filters.status, "other"),
     ...tabs.map((status) => filtered("id", { count: "exact", head: true }, status)),
   ]);
+  const viewCounts = { trades: tradesViewCount.count ?? 0, other: otherViewCount.count ?? 0 };
 
   if (pageResult.error) {
     console.error("[admin/matches] failed to load matches", { message: pageResult.error.message });
@@ -138,6 +149,13 @@ export default async function AdminMatchesPage({
     .sort((a, b) => a.company_name.trim().localeCompare(b.company_name.trim()))
     .map((c) => ({ id: c.id, company_name: c.company_name, naics_codes: c.naics_codes ?? [] }));
 
+  let trades: Trade[] = [];
+  try {
+    trades = await loadTrades(supabase, member.org_id);
+  } catch (err) {
+    console.error("[admin/matches] failed to load trades", { message: err instanceof Error ? err.message : err });
+  }
+
   return (
     <>
       <div className="mt-6">
@@ -156,6 +174,8 @@ export default async function AdminMatchesPage({
         actorId={member.id}
         initialMatches={matches}
         clients={clients}
+        trades={trades}
+        viewCounts={viewCounts}
         filters={filters}
         counts={counts}
         totalForView={totalForView}

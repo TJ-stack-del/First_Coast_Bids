@@ -87,6 +87,7 @@ export const MATCH_STATUSES = ["new", "assigned", "dismissed", "expired"] as con
 export type MatchStatus = (typeof MATCH_STATUSES)[number];
 
 export type MatchFilters = {
+  view: "trades" | "other";
   status: MatchStatus | "all";
   deadline: "any" | "7" | "30" | "none";
   source: "all" | MatchSource;
@@ -113,6 +114,7 @@ function oneOf<T extends string>(value: string | undefined, allowed: readonly T[
 export function parseMatchFilters(sp: SearchParams): MatchFilters {
   const page = Number.parseInt(first(sp.page) ?? "", 10);
   return {
+    view: oneOf(first(sp.view), ["trades", "other"] as const, "trades"),
     status: oneOf(first(sp.status), [...MATCH_STATUSES, "all"] as const, "new"),
     deadline: oneOf(first(sp.deadline), ["any", "7", "30", "none"] as const, "any"),
     source: oneOf(first(sp.source), ["all", "sam", "local", "other"] as const, "all"),
