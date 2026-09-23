@@ -1,4 +1,5 @@
 import type { ScrapedOpportunity } from "./jaa";
+import { SAM_BIDDABLE_PTYPES, shouldKeepSamNotice } from "../matches/rules";
 
 // SAM.gov's public Get Opportunities API -- a real typed REST client, not
 // HTML scraping like jaa.ts/coj.ts. Confirmed against GSA's own published
@@ -46,14 +47,21 @@ type RawOpportunity = {
   responseDeadLine?: string;
   naicsCode?: string;
   uiLink?: string;
+  type?: string;
 };
 
 type RawOpportunitiesResponse = {
   opportunitiesData?: RawOpportunity[];
 };
 
-function parseOpportunity(raw: RawOpportunity): ScrapedOpportunity | null {
+function parseOpportunity(raw: RawOpportunity, now: Date): ScrapedOpportunity | null {
   if (!raw.title) return null; // no usable title -- skip rather than insert a blank row
+  // Backstop for the `ptype` request filter below, plus the deadline check
+  // the API can't do for us without also dropping deadline-less
+  // presolicitations (see lib/matches/rules.ts). Without this, the
+  // 12-month lookback imported award notices and long-closed bids by the
+  // hundred into the admin Matches queue.
+  if (!shouldKeepSamNotice(raw, now)) return null;
   return {
     source_title: raw.title,
     source_agency: raw.fullParentPathName || SOURCE_AGENCY_FALLBACK,
@@ -66,12 +74,17 @@ function parseOpportunity(raw: RawOpportunity): ScrapedOpportunity | null {
 
 async function fetchOpportunitiesForNaicsCode(naicsCode: string, apiKey: string): Promise<ScrapedOpportunity[]> {
   const today = new Date();
+  // One day short of a year back. SAM.gov counts both end dates, so the
+  // same calendar date last year to today (e.g. 09/23/2025 -> 09/23/2026)
+  // is rejected with 400 "Date range must be no more than 1 year apart" --
+  // confirmed with a live call on 2026-09-23; every SAM.gov request this
+  // scraper made before then failed that way. Using the full window every
+  // run rather than tracking a high-water mark, since the existing
+  // dedup-by-title-and-agency logic in app/api/scrape/route.ts already
+  // prevents re-inserting anything still posted from a prior run.
   const oneYearAgo = new Date(today);
   oneYearAgo.setFullYear(today.getFullYear() - 1);
-  // postedFrom/postedTo max range is exactly 1 year -- use "one year ago"
-  // to "today" every run rather than tracking a high-water mark, since
-  // the existing dedup-by-title-and-agency logic in app/api/scrape/route.ts
-  // already prevents re-inserting anything still posted from a prior run.
+  oneYearAgo.setDate(oneYearAgo.getDate() + 1);
   const params = new URLSearchParams({
     api_key: apiKey,
     ncode: naicsCode,
@@ -79,6 +92,9 @@ async function fetchOpportunitiesForNaicsCode(naicsCode: string, apiKey: string)
     postedTo: formatDate(today),
     limit: "100",
   });
+  // Repeated `ptype` params (the API's documented multi-value format), not
+  // a comma-joined one.
+  for (const code of SAM_BIDDABLE_PTYPES) params.append("ptype", code);
 
   const res = await fetch(`${OPPORTUNITIES_API_BASE}?${params.toString()}`);
   if (!res.ok) {
@@ -87,7 +103,7 @@ async function fetchOpportunitiesForNaicsCode(naicsCode: string, apiKey: string)
 
   const raw = (await res.json()) as RawOpportunitiesResponse;
   return (raw.opportunitiesData ?? [])
-    .map(parseOpportunity)
+    .map((o) => parseOpportunity(o, today))
     .filter((o): o is ScrapedOpportunity => o !== null);
 }
 

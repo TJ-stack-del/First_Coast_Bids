@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type { MatchFilters, MatchStatus } from "@/lib/matches/rules";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/ui/Spinner";
 import { Combobox } from "@/components/ui/Combobox";
@@ -49,15 +52,15 @@ function clientOptionLabel(client: Client): string {
 // the list had no visual way to tell a dead lead from a fine one. Only
 // flagged for `status === "new"`: an expired row that's already been
 // assigned or dismissed has been handled, so calling it out again would
-// be noise, not signal. There's still no automatic dismiss/cleanup of
-// these rows -- this only makes the existing manual triage possible to
-// do at a glance instead of requiring date-math in your head.
+// be noise, not signal. Since 2026-09-22 the daily scrape also moves these
+// to "expired" 24h after their deadline (app/api/scrape, lib/matches/rules),
+// so "Past due" is only ever shown for that last day.
 function dueDateInfo(dueDate: string | null, status: string): { label: string; className: string } {
   if (!dueDate) return { label: "—", className: "text-on-surface-variant" };
   const days = Math.ceil((new Date(dueDate).getTime() - Date.now()) / (24 * 60 * 60 * 1000));
   const date = new Date(dueDate).toLocaleDateString();
   if (days < 0) {
-    if (status === "new") return { label: `${date} · Expired`, className: "text-error font-bold" };
+    if (status === "new") return { label: `${date} · Past due`, className: "text-error font-bold" };
     return { label: date, className: "text-on-surface-variant" };
   }
   if (days <= 3) return { label: `${date} · ${days}d left`, className: "text-error font-bold" };
@@ -65,18 +68,78 @@ function dueDateInfo(dueDate: string | null, status: string): { label: string; c
   return { label: date, className: "text-on-surface-variant" };
 }
 
+type TabKey = MatchStatus | "all";
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "new", label: "New" },
+  { key: "assigned", label: "Assigned" },
+  { key: "dismissed", label: "Dismissed" },
+  { key: "expired", label: "Expired" },
+  { key: "all", label: "All" },
+];
+
+const DEFAULT_FILTERS: MatchFilters = {
+  status: "new",
+  deadline: "any",
+  source: "all",
+  suggested: false,
+  q: "",
+  sort: "deadline",
+  page: 1,
+};
+
+// Serializes only non-default values, so the plain /admin/matches URL is
+// the default view and shared links stay short.
+function filtersHref(pathname: string, f: MatchFilters): string {
+  const params = new URLSearchParams();
+  if (f.status !== DEFAULT_FILTERS.status) params.set("status", f.status);
+  if (f.deadline !== DEFAULT_FILTERS.deadline) params.set("deadline", f.deadline);
+  if (f.source !== DEFAULT_FILTERS.source) params.set("source", f.source);
+  if (f.suggested) params.set("suggested", "1");
+  if (f.q) params.set("q", f.q);
+  if (f.sort !== DEFAULT_FILTERS.sort) params.set("sort", f.sort);
+  if (f.page > 1) params.set("page", String(f.page));
+  const qs = params.toString();
+  return qs ? `${pathname}?${qs}` : pathname;
+}
+
+// Only live rows can be bulk-dismissed; assigned ones are real client work
+// and dismissed ones are already out of the queue.
+function isSelectable(m: Match): boolean {
+  return m.status === "new" || m.status === "expired";
+}
+
 export function MatchesPanel({
   orgId,
   actorId,
   initialMatches,
   clients,
+  filters,
+  counts,
+  totalForView,
+  pageSize,
+  loadError,
 }: {
   orgId: string;
   actorId: string;
   initialMatches: Match[];
   clients: Client[];
+  filters: MatchFilters;
+  counts: Record<TabKey, number>;
+  totalForView: number;
+  pageSize: number;
+  loadError: string | null;
 }) {
   const [matches, setMatches] = useState(initialMatches);
+  // router.refresh() (after bulk actions, logging, restoring) re-renders
+  // the server page with the same filters, so this component isn't
+  // remounted -- sync the fresh rows in explicitly.
+  useEffect(() => setMatches(initialMatches), [initialMatches]);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
   const [assignSelections, setAssignSelections] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Match | null>(null);
@@ -95,7 +158,7 @@ export function MatchesPanel({
   const [scope, setScope] = useState("");
   const [solicitationNumber, setSolicitationNumber] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [search, setSearch] = useState("");
+  const [searchDraft, setSearchDraft] = useState(filters.q);
 
   const supabase = createClient();
   const { showToast } = useToast();
@@ -104,12 +167,91 @@ export function MatchesPanel({
     return clients.find((c) => c.id === clientId)?.company_name ?? "—";
   }
 
-  const filteredMatches = search.trim()
-    ? matches.filter((m) => {
-        const q = search.trim().toLowerCase();
-        return m.source_title.toLowerCase().includes(q) || m.source_agency.toLowerCase().includes(q);
-      })
-    : matches;
+  // Filtering now happens server-side (see page.tsx); this list is exactly
+  // the current page of the current view.
+  const filteredMatches = matches;
+  const selectableIds = matches.filter(isSelectable).map((m) => m.id);
+  const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.has(id));
+
+  // Any filter change goes back to page 1 -- page 4 of the old view means
+  // nothing in the new one.
+  function applyFilters(patch: Partial<MatchFilters>) {
+    router.push(filtersHref(pathname, { ...filters, page: 1, ...patch }));
+  }
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(selectableIds));
+  }
+
+  // Scoped to the exact ids an admin checked on screen AND still in a
+  // dismissible state, then verified by count -- the confirm dialog showed
+  // that same count before anything ran (see CLAUDE.md's bulk-modify rule).
+  async function handleBulkDismiss() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+
+    const { data, error } = await supabase
+      .from("matched_opportunities")
+      .update({ status: "dismissed" })
+      .eq("org_id", orgId)
+      .in("id", ids)
+      .in("status", ["new", "expired"])
+      .select("id");
+
+    setBulkBusy(false);
+    setBulkConfirmOpen(false);
+
+    if (error) {
+      showToast(error.message, "error");
+      return;
+    }
+
+    const changed = data ?? [];
+    await supabase.from("audit_log").insert({
+      org_id: orgId,
+      actor_id: actorId,
+      event_type: "matched_opportunities_bulk_dismissed",
+      event_detail: { count: changed.length, matched_opportunity_ids: changed.map((m) => m.id) },
+    });
+
+    setSelected(new Set());
+    showToast(
+      changed.length === ids.length
+        ? `Dismissed ${changed.length} ${changed.length === 1 ? "match" : "matches"}.`
+        : `Dismissed ${changed.length} of ${ids.length}; the rest had already changed.`,
+      "success"
+    );
+    router.refresh();
+  }
+
+  // An expired match someone still wants goes back to the New queue. If its
+  // deadline really has passed, the next daily run will expire it again --
+  // this is for a lead that's still live (e.g. an extended deadline).
+  async function handleRestore(matchId: string) {
+    setBusyId(matchId);
+    const { error } = await supabase
+      .from("matched_opportunities")
+      .update({ status: "new" })
+      .eq("id", matchId)
+      .eq("status", "expired");
+    setBusyId(null);
+    if (error) {
+      showToast(error.message, "error");
+      return;
+    }
+    showToast("Restored to New.", "success");
+    router.refresh();
+  }
 
   // Reuses the same extract-from-document route/component already built and
   // verified for the intake wizard's "About the bid" step -- an admin
@@ -155,6 +297,7 @@ export function MatchesPanel({
     }
 
     setMatches((m) => [data, ...m]);
+    router.refresh();
     setTitle("");
     setAgency("");
     setScope("");
@@ -296,6 +439,7 @@ export function MatchesPanel({
 
     setMatches((m) => m.map((x) => (x.id === matchId ? { ...x, status: "dismissed" } : x)));
     setBusyId(null);
+    router.refresh();
   }
 
   // Works regardless of assignment status, including the common case of a
@@ -398,17 +542,34 @@ export function MatchesPanel({
         </button>
       </form>
 
-      {/* Real search over the actual title/agency fields -- no fabricated
-          Source/Trade filters (matched_opportunities has no such columns). */}
-      <div className="relative flex items-center max-w-md">
-        <span className="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-[20px] pointer-events-none">search</span>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search title or agency…"
-          className="w-full border-0 bg-surface-container-low text-on-surface text-body-md pl-11 pr-space-md py-space-sm rounded-lg placeholder:text-outline outline-none focus:bg-surface-container-highest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
-        />
-      </div>
+      <MatchesToolbar
+        filters={filters}
+        counts={counts}
+        searchDraft={searchDraft}
+        onSearchDraft={setSearchDraft}
+        onApply={applyFilters}
+        tabHref={(status) => filtersHref(pathname, { ...filters, status, page: 1 })}
+      />
+
+      {loadError && <p className="text-body-md text-error">{loadError}</p>}
+
+      {selectableIds.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 -mb-2">
+          <label className="inline-flex items-center gap-2 text-label-md text-on-surface-variant cursor-pointer">
+            <input type="checkbox" checked={allSelected} onChange={toggleAll} className="rounded" />
+            Select all on this page
+          </label>
+          {selected.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setBulkConfirmOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-label-sm uppercase tracking-wider font-bold hover:opacity-90 transition active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              Dismiss selected ({selected.size})
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Table — needs real width for the title/agency/status columns plus
           an inline assign-to select and two buttons in the last one, so
@@ -418,6 +579,7 @@ export function MatchesPanel({
         <table className="w-full text-body-md table-fixed">
           <thead className="bg-surface-container-high">
             <tr>
+              <th className="w-10 px-space-sm py-space-sm"><span className="sr-only">Select</span></th>
               <th className="text-left px-space-base py-space-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold w-[24%]">Bid title</th>
               <th className="text-left px-space-base py-space-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold w-[16%]">Agency</th>
               <th className="text-left px-space-base py-space-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold w-[16%]">Deadline</th>
@@ -434,6 +596,17 @@ export function MatchesPanel({
                   key={m.id}
                   className="border-t border-outline-variant align-top hover:bg-surface-container-high transition"
                 >
+                  <td className="px-space-sm py-space-base">
+                    {isSelectable(m) && (
+                      <input
+                        type="checkbox"
+                        checked={selected.has(m.id)}
+                        onChange={() => toggleSelected(m.id)}
+                        aria-label={`Select ${m.source_title}`}
+                        className="rounded mt-1"
+                      />
+                    )}
+                  </td>
                   <td className="px-space-base py-space-base text-on-surface font-bold break-words">
                     {m.source_url ? (
                       <a
@@ -478,6 +651,8 @@ export function MatchesPanel({
                           onDelete={() => setDeleteTarget(m)}
                           busy={busyId === m.id}
                         />
+                      ) : m.status === "expired" ? (
+                        <RestoreControls onRestore={() => handleRestore(m.id)} onDelete={() => setDeleteTarget(m)} busy={busyId === m.id} />
                       ) : (
                         <DeleteIconButton onClick={() => setDeleteTarget(m)} />
                       )}
@@ -488,8 +663,8 @@ export function MatchesPanel({
             })}
             {filteredMatches.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-on-surface-variant">
-                  {matches.length === 0 ? "No opportunities logged yet." : "No opportunities match your search."}
+                <td colSpan={7} className="px-4 py-6 text-center text-on-surface-variant">
+                  {emptyMessage(filters, counts)}
                 </td>
               </tr>
             )}
@@ -507,7 +682,16 @@ export function MatchesPanel({
               className="flex flex-col gap-3 px-space-base py-space-base"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
+                {isSelectable(m) && (
+                  <input
+                    type="checkbox"
+                    checked={selected.has(m.id)}
+                    onChange={() => toggleSelected(m.id)}
+                    aria-label={`Select ${m.source_title}`}
+                    className="rounded mt-1 shrink-0"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
                   <p className="text-on-surface font-bold break-words">
                     {m.source_url ? (
                       <a href={m.source_url} target="_blank" rel="noreferrer" className="text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm">
@@ -546,6 +730,10 @@ export function MatchesPanel({
                   busy={busyId === m.id}
                   stacked
                 />
+              ) : m.status === "expired" ? (
+                <div className="flex justify-end">
+                  <RestoreControls onRestore={() => handleRestore(m.id)} onDelete={() => setDeleteTarget(m)} busy={busyId === m.id} />
+                </div>
               ) : (
                 <div className="flex justify-end">
                   <DeleteIconButton onClick={() => setDeleteTarget(m)} />
@@ -555,11 +743,25 @@ export function MatchesPanel({
           );
         })}
         {filteredMatches.length === 0 && (
-          <p className="px-4 py-6 text-center text-on-surface-variant">
-            {matches.length === 0 ? "No opportunities logged yet." : "No opportunities match your search."}
-          </p>
+          <p className="px-4 py-6 text-center text-on-surface-variant">{emptyMessage(filters, counts)}</p>
         )}
       </div>
+
+      <Pagination
+        page={filters.page}
+        pageSize={pageSize}
+        total={totalForView}
+        hrefFor={(page) => filtersHref(pathname, { ...filters, page })}
+      />
+
+      <ConfirmDialog
+        open={bulkConfirmOpen}
+        onClose={() => setBulkConfirmOpen(false)}
+        onConfirm={handleBulkDismiss}
+        title={`Dismiss ${selected.size} ${selected.size === 1 ? "match" : "matches"}?`}
+        description={`This moves the ${selected.size} selected ${selected.size === 1 ? "match" : "matches"} to Dismissed. Nothing is deleted, and you can still find them under the Dismissed tab.`}
+        confirmLabel={bulkBusy ? "Dismissing…" : `Dismiss ${selected.size}`}
+      />
 
       <ConfirmDeleteDialog
         open={deleteTarget !== null}
@@ -629,6 +831,13 @@ function StatusPill({
     return (
       <span className="text-body-md text-on-surface-variant break-words min-w-0">
         Assigned to {clientName(match.assigned_client_id)}
+      </span>
+    );
+  }
+  if (match.status === "expired") {
+    return (
+      <span className={`inline-flex px-2.5 py-1 rounded text-label-sm font-bold uppercase tracking-wider bg-error-container text-on-error-container ${className}`}>
+        Expired
       </span>
     );
   }
@@ -721,5 +930,193 @@ function DeleteIconButton({ onClick }: { onClick: () => void }) {
     >
       <span className="material-symbols-outlined text-[18px]">delete</span>
     </button>
+  );
+}
+
+function emptyMessage(filters: MatchFilters, counts: Record<TabKey, number>): string {
+  const narrowed = filters.deadline !== "any" || filters.source !== "all" || filters.suggested || !!filters.q;
+  if (narrowed) return "Nothing matches these filters.";
+  if (counts.all === 0) return "No opportunities logged yet.";
+  if (filters.status === "new") return "No new matches right now. You're caught up.";
+  return `No ${filters.status === "all" ? "" : filters.status + " "}matches.`;
+}
+
+const selectClass =
+  "border-0 bg-surface-container-low text-on-surface text-label-md px-space-sm py-1.5 rounded-lg outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary";
+
+function MatchesToolbar({
+  filters,
+  counts,
+  searchDraft,
+  onSearchDraft,
+  onApply,
+  tabHref,
+}: {
+  filters: MatchFilters;
+  counts: Record<TabKey, number>;
+  searchDraft: string;
+  onSearchDraft: (v: string) => void;
+  onApply: (patch: Partial<MatchFilters>) => void;
+  tabHref: (status: TabKey) => string;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <nav aria-label="Match status" className="flex flex-wrap gap-2">
+        {TABS.map((tab) => {
+          const active = filters.status === tab.key;
+          return (
+            <Link
+              key={tab.key}
+              href={tabHref(tab.key)}
+              aria-current={active ? "page" : undefined}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-label-md font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                active ? "bg-primary-container text-on-primary-container" : "bg-surface-container-low text-on-surface hover:bg-surface-container-high"
+              }`}
+            >
+              {tab.label}
+              <span className="font-code text-body-sm">{counts[tab.key]}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <form
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onApply({ q: searchDraft.trim() });
+          }}
+          className="relative flex items-center w-full sm:w-72"
+        >
+          <span className="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-[20px] pointer-events-none">search</span>
+          <input
+            value={searchDraft}
+            onChange={(e) => onSearchDraft(e.target.value)}
+            placeholder="Search title, agency, solicitation #…"
+            aria-label="Search matches"
+            className="w-full border-0 bg-surface-container-low text-on-surface text-body-md pl-11 pr-space-md py-space-sm rounded-lg placeholder:text-outline outline-none focus:bg-surface-container-highest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+          />
+        </form>
+
+        <label className="inline-flex items-center gap-2 text-label-md text-on-surface-variant">
+          Deadline
+          <select
+            value={filters.deadline}
+            onChange={(e) => onApply({ deadline: e.target.value as MatchFilters["deadline"] })}
+            className={selectClass}
+          >
+            <option value="any">Any</option>
+            <option value="7">Closing in 7 days</option>
+            <option value="30">Closing in 30 days</option>
+            <option value="none">No deadline</option>
+          </select>
+        </label>
+
+        <label className="inline-flex items-center gap-2 text-label-md text-on-surface-variant">
+          Source
+          <select
+            value={filters.source}
+            onChange={(e) => onApply({ source: e.target.value as MatchFilters["source"] })}
+            className={selectClass}
+          >
+            <option value="all">All</option>
+            <option value="sam">SAM.gov</option>
+            <option value="local">Local (JAA, City)</option>
+            <option value="other">Email &amp; manual</option>
+          </select>
+        </label>
+
+        <label className="inline-flex items-center gap-2 text-label-md text-on-surface-variant cursor-pointer">
+          <input
+            type="checkbox"
+            checked={filters.suggested}
+            onChange={(e) => onApply({ suggested: e.target.checked })}
+            className="rounded"
+          />
+          Has a suggested client
+        </label>
+
+        <label className="inline-flex items-center gap-2 text-label-md text-on-surface-variant sm:ml-auto">
+          Sort
+          <select
+            value={filters.sort}
+            onChange={(e) => onApply({ sort: e.target.value as MatchFilters["sort"] })}
+            className={selectClass}
+          >
+            <option value="deadline">Deadline, soonest first</option>
+            <option value="score">Best match score</option>
+            <option value="newest">Newest</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function Pagination({
+  page,
+  pageSize,
+  total,
+  hrefFor,
+}: {
+  page: number;
+  pageSize: number;
+  total: number;
+  hrefFor: (page: number) => string;
+}) {
+  if (total <= pageSize && page === 1) return null;
+  const lastPage = Math.max(1, Math.ceil(total / pageSize));
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(total, page * pageSize);
+  const linkClass =
+    "px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface text-label-md font-semibold hover:bg-surface-container-high transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  return (
+    <nav aria-label="Pages" className="flex items-center justify-between gap-3 flex-wrap">
+      <span className="text-label-md text-on-surface-variant font-code">
+        {from}–{to} of {total}
+      </span>
+      <div className="flex items-center gap-2">
+        {page > 1 ? (
+          <Link href={hrefFor(page - 1)} className={linkClass}>
+            Previous
+          </Link>
+        ) : (
+          <span className={`${linkClass} opacity-40 pointer-events-none`} aria-disabled="true">
+            Previous
+          </span>
+        )}
+        <span className="text-label-md text-on-surface-variant">
+          Page {page} of {lastPage}
+        </span>
+        {page < lastPage ? (
+          <Link href={hrefFor(page + 1)} className={linkClass}>
+            Next
+          </Link>
+        ) : (
+          <span className={`${linkClass} opacity-40 pointer-events-none`} aria-disabled="true">
+            Next
+          </span>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+function RestoreControls({ onRestore, onDelete, busy }: { onRestore: () => void; onDelete: () => void; busy: boolean }) {
+  return (
+    <div className="flex items-center gap-2 shrink-0">
+      <button
+        type="button"
+        onClick={onRestore}
+        disabled={busy}
+        title="Move back to New, e.g. if the deadline was extended"
+        className="px-3 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-label-sm uppercase tracking-wider font-bold hover:opacity-90 transition active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100 flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      >
+        {busy && <Spinner />}
+        Restore
+      </button>
+      <DeleteIconButton onClick={onDelete} />
+    </div>
   );
 }
