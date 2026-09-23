@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import s from "./press.module.css";
 
 // The landing page's proof section: part of a synthetic compliance matrix on
@@ -10,6 +11,13 @@ import s from "./press.module.css";
 // motion is an 80ms color change. Everything shown is illustrative and
 // labelled as such (PRODUCT.md: never present sample content as a real
 // client's work).
+
+// Back to front: the page furthest back peeks out the most.
+const PAGES = [
+  { src: "/sample-packet/capability-statement.webp" },
+  { src: "/sample-packet/compliance-matrix.webp" },
+  { src: "/sample-packet/technical-narrative.webp" },
+];
 
 const NOTES = [
   {
@@ -101,11 +109,23 @@ export function SampleSpecimen() {
           <div
             className={s.packet}
             role="img"
-            aria-label="A sample bid submission package: capability statement, compliance matrix and technical narrative behind a navy cover"
+            aria-label="The sample bid submission package: real pages from its capability statement, compliance matrix and technical narrative, behind a navy cover"
           >
-            <div className={s.doc}>Technical narrative</div>
-            <div className={s.doc}>Compliance matrix</div>
-            <div className={s.doc}>Capability statement</div>
+            {/* Real pages, not drawings: miniatures rendered straight from the
+                sample packet PDF that lib/pdf/deliverables-packet.ts produces
+                (design-drafts/2026-09-23-sample-packet/), fanned behind the
+                cover. Regenerate them if the packet builder's layout changes. */}
+            {PAGES.map((page) => (
+              <Image
+                key={page.src}
+                src={page.src}
+                alt=""
+                width={560}
+                height={792}
+                sizes="220px"
+                className={s.page}
+              />
+            ))}
             <div className={s.cover}>
               <div className={s.foil}>
                 <span className={s.foilRule} />

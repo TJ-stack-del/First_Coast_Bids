@@ -15,9 +15,9 @@ import { TAGLINE } from "@/lib/brand";
 // Now mounted once for the whole site via app/(marketing)/layout.tsx
 // rather than individually by every page -- when every page rendered its
 // own MarketingShell instance, React had to unmount and remount the whole
-// header/footer on every navigation between marketing pages (see
-// globals.css's .animate-fade-in comment, which existed specifically to
-// soften that remount's visible flash). Active-link highlighting used to
+// header/footer on every navigation between marketing pages. (The page
+// fade that once softened that remount was removed on 2026-09-23: the
+// marketing theme has no entrance animations.) Active-link highlighting used to
 // come from a per-page `activePath` prop for this reason -- a shared
 // layout doesn't know which page rendered it, so this now reads the real
 // current path directly via usePathname() instead.
@@ -139,7 +139,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
         )}
       </header>
 
-      <main className="animate-fade-in flex-grow w-full px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto py-section-gap flex flex-col gap-section-gap">
+      <main className="flex-grow w-full px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto py-section-gap flex flex-col gap-section-gap">
         {children}
       </main>
 

@@ -794,7 +794,7 @@ export function IntakeWizard() {
           {steps.map((label, i) => (
             <div key={label} className="h-2 rounded-full overflow-hidden bg-surface-container-highest">
               <div
-                className={`h-full bg-primary origin-left transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+                className={`h-full bg-primary origin-left transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
                   i <= step ? "scale-x-100" : "scale-x-0"
                 }`}
               />

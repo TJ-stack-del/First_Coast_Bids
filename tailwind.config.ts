@@ -13,6 +13,12 @@ import forms from "@tailwindcss/forms";
 // keyword needs to stay 9999px globally so it keeps rendering actual
 // circles elsewhere in the app (e.g. AppShell's avatar placeholder).
 const config: Config = {
+  // hover: variants only apply on devices that really hover (a fine
+  // pointer). On touch screens a tap otherwise "sticks" the hover state:
+  // buttons stayed lifted after being tapped (2026-09-23 motion audit).
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",

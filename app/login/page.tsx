@@ -34,7 +34,7 @@ export default async function LoginPage({
   const { reason } = await searchParams;
 
   return (
-    <main className="animate-fade-in min-h-screen flex flex-col md:flex-row bg-surface">
+    <main className="min-h-screen flex flex-col md:flex-row bg-surface">
       {/* Marketing panel -- desktop only, matches the Stitch sign-in
           screen's split layout. Mobile collapses to just the auth card
           below, same as Stitch's dedicated mobile sign-in screen. */}

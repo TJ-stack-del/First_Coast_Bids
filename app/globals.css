@@ -197,7 +197,7 @@ body {
 }
 .animate-rail-draw {
   transform-origin: left center;
-  animation: rail-draw 0.6s var(--ease-arrive) 0.1s both;
+  animation: rail-draw 0.3s var(--ease-arrive) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -293,6 +293,24 @@ body {
   font-family: theme("fontFamily.headline");
   font-weight: 700;
   letter-spacing: normal;
+}
+/* Buttons and links that borrow the heading font (the intake wizard's and
+   login's primary buttons) read in the body face, like every other button
+   in this theme, not in serif capitals. */
+.theme-press :is(button, a).font-headline {
+  font-family: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+/* Text fields get a visible edge: on tan panels the app's borderless tan
+   fields had almost no boundary (non-text contrast needs one). */
+.theme-press :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), textarea, select) {
+  background-color: rgb(var(--color-surface-container-lowest));
+  border: 1px solid rgb(var(--color-outline));
+}
+/* Near-square corners, like the rest of this system. */
+.theme-press :is(.rounded-xl, .rounded-lg) {
+  border-radius: 4px;
 }
 /* Monospace is for real figures only in this system (prices, page numbers,
    solicitation numbers via font-code / metric tiers); UI labels read in the
