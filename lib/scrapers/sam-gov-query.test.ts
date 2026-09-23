@@ -6,6 +6,7 @@ import {
   selectSamRows,
   formatSamDate,
   SAM_NAICS_CODES,
+  backfillCodeForDate,
 } from "./sam-gov-query.ts";
 
 const NOW = new Date(2026, 8, 23, 13, 0, 0); // Sept 23 2026, local time
@@ -58,4 +59,20 @@ test("selectSamRows keeps only our trade codes that are biddable and still open"
 test("all 11 trade codes are covered", () => {
   assert.equal(SAM_NAICS_CODES.length, 11);
   assert.equal(new Set(SAM_NAICS_CODES).size, 11);
+});
+
+test("backfillCodeForDate rotates through all 11 trade codes, one per UTC day", () => {
+  const start = Date.UTC(2026, 8, 23);
+  const DAY = 24 * 60 * 60 * 1000;
+  const codes = Array.from({ length: 11 }, (_, i) => backfillCodeForDate(new Date(start + i * DAY)));
+  assert.equal(new Set(codes).size, 11, "11 consecutive days cover every code once");
+  assert.deepEqual([...codes].sort(), [...SAM_NAICS_CODES].sort());
+  assert.equal(backfillCodeForDate(new Date(start + 11 * DAY)), codes[0], "then the cycle repeats");
+});
+
+test("backfillCodeForDate is stable within a UTC day", () => {
+  assert.equal(
+    backfillCodeForDate(new Date(Date.UTC(2026, 8, 23, 0, 0, 1))),
+    backfillCodeForDate(new Date(Date.UTC(2026, 8, 23, 23, 59, 59)))
+  );
 });

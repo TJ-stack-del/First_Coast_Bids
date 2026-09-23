@@ -92,3 +92,14 @@ export function selectSamRows<T extends SamRow>(rows: T[], now: Date): T[] {
   const codes = new Set<string>(SAM_NAICS_CODES);
   return rows.filter((r) => !!r.naicsCode && codes.has(r.naicsCode) && shouldKeepSamNotice(r, now));
 }
+
+// The daily run's rolling catch-up (decided 2026-09-23): each UTC day it
+// also runs the 12-month backfill for ONE trade code, rotating through all
+// 11, so older still-open Florida postings are caught without anyone
+// calling the route by hand (the production CRON_SECRET is a Vercel
+// sensitive variable nobody can read back). Costs one extra request a day;
+// title+agency dedup makes repeats free. A full cycle takes 11 days.
+export function backfillCodeForDate(now: Date): string {
+  const utcDay = Math.floor(now.getTime() / DAY_MS);
+  return SAM_NAICS_CODES[utcDay % SAM_NAICS_CODES.length];
+}
