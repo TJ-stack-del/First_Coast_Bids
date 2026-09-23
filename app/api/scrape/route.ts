@@ -4,7 +4,10 @@ import { scrapeJaa, type ScrapedOpportunity } from "@/lib/scrapers/jaa";
 import { scrapeCoj } from "@/lib/scrapers/coj";
 import { scrapeCojForecast } from "@/lib/scrapers/coj-forecast";
 import { scrapeSamGov, scrapeSamGovBackfill } from "@/lib/scrapers/sam-gov";
-import { SAM_NAICS_CODES, backfillCodeForDate } from "@/lib/scrapers/sam-gov-query";
+import { backfillCodeForDate } from "@/lib/scrapers/sam-gov-query";
+import { loadTrades } from "@/lib/trades/server";
+import { classifyOpportunity, offeredNaicsCodes } from "@/lib/trades/classify";
+import type { Trade } from "@/lib/trades/types";
 import { scrapeJaxBeach } from "@/lib/scrapers/jax-beach";
 import { findBestMatchingClient } from "@/lib/sam-gov/match-scoring";
 import { expiryCutoff } from "@/lib/matches/rules";
@@ -35,7 +38,6 @@ const SCRAPERS: { name: string; run: () => Promise<ScrapedOpportunity[]> }[] = [
   { name: "jaa", run: scrapeJaa },
   { name: "coj", run: scrapeCoj },
   { name: "coj-forecast", run: scrapeCojForecast },
-  { name: "sam-gov", run: scrapeSamGov },
   { name: "jax-beach", run: scrapeJaxBeach },
 ];
 
@@ -66,6 +68,17 @@ export async function GET(request: NextRequest) {
   if (orgError || !org) {
     return NextResponse.json({ error: "No organization set up yet." }, { status: 500 });
   }
+
+  // The trade list decides which SAM.gov codes are searched and which
+  // trade each new match is sorted into. No fallback list: if it can't be
+  // loaded, the run stops here, visibly, and tries again tomorrow.
+  let trades: Trade[];
+  try {
+    trades = await loadTrades(supabase, org.id);
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Couldn't load trades." }, { status: 500 });
+  }
+  const samCodes = offeredNaicsCodes(trades);
 
   // Fetched once per run, not once per opportunity -- reused across every
   // inserted row below.
@@ -109,7 +122,7 @@ export async function GET(request: NextRequest) {
 
   const results: Record<
     string,
-    { found: number; inserted: number; skipped: number; errors?: string[] }
+    { found: number; inserted: number; skipped: number; errors?: string[]; note?: string }
   > = {};
 
   // Manual one-time SAM.gov catch-up: ?samBackfill=<NAICS code> runs only
@@ -117,21 +130,31 @@ export async function GET(request: NextRequest) {
   // daily scrapers, so the backlog can be spread across days within the
   // API key's small daily quota. Same CRON_SECRET auth as the cron itself.
   const backfillCode = request.nextUrl.searchParams.get("samBackfill");
-  if (backfillCode !== null && !(SAM_NAICS_CODES as readonly string[]).includes(backfillCode)) {
+  if (backfillCode !== null && !samCodes.includes(backfillCode)) {
     return NextResponse.json(
-      { error: `samBackfill must be one of: ${SAM_NAICS_CODES.join(", ")}` },
+      { error: `samBackfill must be one of the active trades' NAICS codes: ${samCodes.join(", ") || "(none)"}` },
       { status: 400 }
     );
   }
   // The scheduled run also does one rotating backfill code per day (see
-  // backfillCodeForDate), so the catch-up needs no manual calls.
-  const dailyBackfillCode = backfillCodeForDate(new Date());
+  // backfillCodeForDate), so the catch-up needs no manual calls. With no
+  // active trade codes, SAM.gov is skipped and says why.
+  const dailyBackfillCode = backfillCodeForDate(new Date(), samCodes);
+  const samScrapers =
+    samCodes.length === 0
+      ? []
+      : [
+          { name: "sam-gov", run: () => scrapeSamGov(samCodes) },
+          ...(dailyBackfillCode
+            ? [{ name: `sam-gov-backfill-${dailyBackfillCode}`, run: () => scrapeSamGovBackfill(dailyBackfillCode, samCodes) }]
+            : []),
+        ];
+  if (samCodes.length === 0 && !backfillCode) {
+    results["sam-gov"] = { found: 0, inserted: 0, skipped: 0, note: "Skipped: no active trade has a NAICS code." };
+  }
   const scrapers = backfillCode
-    ? [{ name: `sam-gov-backfill-${backfillCode}`, run: () => scrapeSamGovBackfill(backfillCode) }]
-    : [
-        ...SCRAPERS,
-        { name: `sam-gov-backfill-${dailyBackfillCode}`, run: () => scrapeSamGovBackfill(dailyBackfillCode) },
-      ];
+    ? [{ name: `sam-gov-backfill-${backfillCode}`, run: () => scrapeSamGovBackfill(backfillCode, samCodes) }]
+    : [...SCRAPERS, ...samScrapers];
 
   for (const scraper of scrapers) {
     try {
@@ -172,6 +195,11 @@ export async function GET(request: NextRequest) {
           scope: item.scope ?? null,
           status: "new",
           naics_code: item.naics_code ?? null,
+          nigp_codes: item.nigp_codes ?? [],
+          trade_id: classifyOpportunity(
+            { title: item.source_title, naicsCode: item.naics_code ?? null, nigpCodes: item.nigp_codes ?? null },
+            trades
+          ),
           suggested_client_id: suggestion?.clientId ?? null,
           match_score: suggestion?.score ?? null,
         });
