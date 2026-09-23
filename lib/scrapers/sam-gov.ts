@@ -74,12 +74,17 @@ function parseOpportunity(raw: RawOpportunity, now: Date): ScrapedOpportunity | 
 
 async function fetchOpportunitiesForNaicsCode(naicsCode: string, apiKey: string): Promise<ScrapedOpportunity[]> {
   const today = new Date();
+  // One day short of a year back. SAM.gov counts both end dates, so the
+  // same calendar date last year to today (e.g. 09/23/2025 -> 09/23/2026)
+  // is rejected with 400 "Date range must be no more than 1 year apart" --
+  // confirmed with a live call on 2026-09-23; every SAM.gov request this
+  // scraper made before then failed that way. Using the full window every
+  // run rather than tracking a high-water mark, since the existing
+  // dedup-by-title-and-agency logic in app/api/scrape/route.ts already
+  // prevents re-inserting anything still posted from a prior run.
   const oneYearAgo = new Date(today);
   oneYearAgo.setFullYear(today.getFullYear() - 1);
-  // postedFrom/postedTo max range is exactly 1 year -- use "one year ago"
-  // to "today" every run rather than tracking a high-water mark, since
-  // the existing dedup-by-title-and-agency logic in app/api/scrape/route.ts
-  // already prevents re-inserting anything still posted from a prior run.
+  oneYearAgo.setDate(oneYearAgo.getDate() + 1);
   const params = new URLSearchParams({
     api_key: apiKey,
     ncode: naicsCode,
