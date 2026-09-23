@@ -1,5 +1,13 @@
 import * as cheerio from "cheerio";
 import type { ScrapedOpportunity } from "./jaa";
+import { isPastDeadline } from "@/lib/matches/rules";
+import {
+  parseJaxBeachDetail,
+  isPlaceholderListing,
+  extractSolicitation,
+  extractDeadline,
+  isClosedToProposals,
+} from "./jax-beach-parse";
 
 const JAX_BEACH_BIDS_URL = "https://www.jacksonvillebeach.org/Bids.aspx";
 const SOURCE_AGENCY = "City of Jacksonville Beach";
@@ -24,12 +32,12 @@ const SOURCE_AGENCY = "City of Jacksonville Beach";
 // first is just "Status:"/"Closes:" labels, the second holds the real
 // values in the same order.
 //
-// due_date is left null unconditionally, same as jaa.ts -- every bid
-// observed on this page so far shows "Upon Contract" under Closes, not a
-// real date (confirmed 2026-09-22), so there's no known real-date format to
-// build a parser against yet the way coj.ts's parseCojDate could. Guessing
-// a format risks silently mis-parsing "Upon Contract" itself into a bogus
-// date; an admin can open source_url to check the real deadline instead.
+// The list page alone isn't enough (2026-09-23, see jax-beach-parse.ts):
+// every listing says "Closes: Upon Contract", and one real RFP was posted
+// under the placeholder title "OpenGov Procurement Platform". So each open
+// row's detail page is fetched too (a handful of requests -- the city
+// rarely has more than a few listings up) for the real title, number and
+// deadline, and listings already closed to proposals are dropped.
 export async function scrapeJaxBeach(): Promise<ScrapedOpportunity[]> {
   const res = await fetch(JAX_BEACH_BIDS_URL);
   if (!res.ok) {
@@ -39,7 +47,7 @@ export async function scrapeJaxBeach(): Promise<ScrapedOpportunity[]> {
   const html = await res.text();
   const $ = cheerio.load(html);
 
-  const opportunities: ScrapedOpportunity[] = [];
+  const rows: { title: string; url: string | null; bidNumber: string | null; scope: string | null }[] = [];
 
   $("div.listItemsRow.bid").each((_, row) => {
     const $row = $(row);
@@ -68,15 +76,52 @@ export async function scrapeJaxBeach(): Promise<ScrapedOpportunity[]> {
     descSpan.find("a").remove();
     const scope = descSpan.text().replace(/\s*\[\s*\]\s*$/, "").trim() || null;
 
+    rows.push({ title, url: href ? new URL(href, JAX_BEACH_BIDS_URL).toString() : null, bidNumber, scope });
+  });
+
+  const now = new Date();
+  const opportunities: ScrapedOpportunity[] = [];
+
+  for (const row of rows) {
+    // No detail link means no way to check the deadline or status; a
+    // listing that can't be checked isn't offered (the list page alone is
+    // what let a closed RFP through before).
+    if (!row.url) continue;
+
+    // A failed detail fetch fails the whole source, visibly, in the scrape
+    // result -- not a silent fallback to the list page's unreliable fields.
+    const detailRes = await fetch(row.url);
+    if (!detailRes.ok) {
+      throw new Error(`Jacksonville Beach detail fetch failed for "${row.title}": ${detailRes.status}`);
+    }
+    const $detail = cheerio.load(await detailRes.text());
+    $detail("script, style").remove();
+    const detail = parseJaxBeachDetail($detail("body").text());
+
+    if (isClosedToProposals(detail.additionalStatus)) continue;
+    const dueDate = extractDeadline(detail);
+    if (isPastDeadline(dueDate, now)) continue;
+
+    let title = detail.title ?? row.title;
+    let number = detail.bidNumber ?? row.bidNumber;
+    if (isPlaceholderListing(title, number)) {
+      const real = extractSolicitation(detail.description);
+      // A placeholder whose real solicitation can't be read isn't offered:
+      // "OpenGov Procurement Platform" is not something a client can bid.
+      if (!real?.title) continue;
+      title = real.title;
+      number = real.number;
+    }
+
     opportunities.push({
       source_title: title,
       source_agency: SOURCE_AGENCY,
-      source_url: href ? new URL(href, JAX_BEACH_BIDS_URL).toString() : null,
-      due_date: null,
-      solicitation_number: bidNumber,
-      scope,
+      source_url: row.url,
+      due_date: dueDate,
+      solicitation_number: number,
+      scope: detail.description ?? row.scope,
     });
-  });
+  }
 
   return opportunities;
 }
