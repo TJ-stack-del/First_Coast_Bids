@@ -3,7 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { scrapeJaa, type ScrapedOpportunity } from "@/lib/scrapers/jaa";
 import { scrapeCoj } from "@/lib/scrapers/coj";
 import { scrapeCojForecast } from "@/lib/scrapers/coj-forecast";
-import { scrapeSamGov } from "@/lib/scrapers/sam-gov";
+import { scrapeSamGov, scrapeSamGovBackfill } from "@/lib/scrapers/sam-gov";
+import { SAM_NAICS_CODES } from "@/lib/scrapers/sam-gov-query";
 import { scrapeJaxBeach } from "@/lib/scrapers/jax-beach";
 import { findBestMatchingClient } from "@/lib/sam-gov/match-scoring";
 import { expiryCutoff } from "@/lib/matches/rules";
@@ -111,7 +112,22 @@ export async function GET(request: NextRequest) {
     { found: number; inserted: number; skipped: number; errors?: string[] }
   > = {};
 
-  for (const scraper of SCRAPERS) {
+  // Manual one-time SAM.gov catch-up: ?samBackfill=<NAICS code> runs only
+  // that code's 12-month Florida backfill (one request) instead of the
+  // daily scrapers, so the backlog can be spread across days within the
+  // API key's small daily quota. Same CRON_SECRET auth as the cron itself.
+  const backfillCode = request.nextUrl.searchParams.get("samBackfill");
+  if (backfillCode !== null && !(SAM_NAICS_CODES as readonly string[]).includes(backfillCode)) {
+    return NextResponse.json(
+      { error: `samBackfill must be one of: ${SAM_NAICS_CODES.join(", ")}` },
+      { status: 400 }
+    );
+  }
+  const scrapers = backfillCode
+    ? [{ name: `sam-gov-backfill-${backfillCode}`, run: () => scrapeSamGovBackfill(backfillCode) }]
+    : SCRAPERS;
+
+  for (const scraper of scrapers) {
     try {
       const found = await scraper.run();
       let inserted = 0;
