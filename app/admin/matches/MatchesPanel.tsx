@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { MatchFilters, MatchStatus } from "@/lib/matches/rules";
+import { notifyClientOfMatch } from "@/lib/matches/notify-client";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/ui/Spinner";
 import { Combobox } from "@/components/ui/Combobox";
@@ -405,11 +406,12 @@ export function MatchesPanel({
     // to log in. Doubles as the win-back touch for a client who hasn't had
     // a submission in a while: a real, specific reason to reach out, not a
     // generic "we miss you."
-    fetch("/api/notify-matched-opportunity", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId: submission.id }),
-    }).catch(() => {});
+    //
+    // Awaited, and its result shown: this was fire-and-forget with the
+    // result ignored, so a failed send still looked like a clean assignment
+    // (2026-09-23 production case -- the client was never emailed and
+    // nothing said so). See lib/matches/notify-client.ts.
+    const notified = await notifyClientOfMatch(submission.id);
 
     setMatches((m) =>
       m.map((x) => (x.id === matchId ? { ...x, status: "assigned", assigned_client_id: clientId } : x))
@@ -420,7 +422,17 @@ export function MatchesPanel({
     // submission (not just a label change) had just been created. A real
     // ops test (Carlos Mendez persona, 2026-09-16) assigned an opportunity
     // and couldn't tell whether anything had actually happened.
-    showToast(`Assigned — a new draft submission was created for ${clientName(clientId)}, now waiting on their bid file.`, "success");
+    if (notified.sent) {
+      showToast(
+        `Assigned — a draft submission was created for ${clientName(clientId)} and they were emailed. It's in the inbox under "Waiting on client" until they add their bid file.`,
+        "success"
+      );
+    } else {
+      showToast(
+        `Assigned to ${clientName(clientId)}, but ${notified.message.charAt(0).toLowerCase()}${notified.message.slice(1)} Resend it from the inbox's "Waiting on client" list.`,
+        "error"
+      );
+    }
   }
 
   async function handleDismiss(matchId: string) {

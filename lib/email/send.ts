@@ -40,10 +40,15 @@ export async function sendEmail({
         ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
       },
       body: JSON.stringify({
-        // firstcoastbids.com is the brand domain, confirmed verified
-        // (SPF/DKIM) in Resend. bidpulse.co is being fully decommissioned
-        // (30-day sunset as of 2026-09-22) -- do not send from it again.
-        from: "First Coast Bids <notifications@firstcoastbids.com>",
+        // The verified sending domain in Resend is the SUBDOMAIN
+        // send.firstcoastbids.com, not the root firstcoastbids.com. Sending
+        // from the root (as this did from 2026-09-22 to 2026-09-23) fails
+        // every email with Resend 403 "The firstcoastbids.com domain is not
+        // verified" -- confirmed with a live send and the Resend dashboard,
+        // which lists only send.firstcoastbids.com and bidpulse.co as
+        // verified. bidpulse.co is being decommissioned (30-day sunset as of
+        // 2026-09-22) -- do not send from it again.
+        from: "First Coast Bids <notifications@send.firstcoastbids.com>",
         to: to.trim().toLowerCase(),
         subject,
         html,
