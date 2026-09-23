@@ -401,37 +401,41 @@
 }
 .packet {
   position: relative;
-  width: min(220px, 64vw);
+  width: min(252px, 72vw);
   transform: rotate(-1.5deg);
-  padding-top: 72px;
+  /* Top padding sets how much of each page peeks out above the cover:
+     enough to show every page's real heading and first lines, since a
+     page's top margin alone reads as a blank sheet. */
+  padding: 118px 32px 0 0;
 }
-.doc {
+/* Real packet pages fanned up and to the right behind the cover, each its
+   own sheet with a hairline edge and a small shadow. */
+.page {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgb(var(--color-surface-container-lowest));
-  border: 1px solid rgb(var(--color-outline-variant));
-  padding: 7px 12px;
-  font-size: 11px;
-  font-weight: 500;
-  color: rgb(var(--color-on-surface-variant));
-  transition: transform 150ms ease-out;
-}
-.doc:nth-child(1) {
   top: 0;
+  left: 0;
+  width: calc(100% - 32px);
+  height: auto;
+  aspect-ratio: 8.5 / 11;
+  background: #fff;
+  border: 1px solid rgb(var(--color-outline-variant));
+  box-shadow: 0 6px 14px -8px rgb(27 26 23 / 0.35);
+  transition: translate 150ms ease-out;
 }
-.doc:nth-child(2) {
-  top: 24px;
+.page:nth-of-type(1) {
+  transform: translate(32px, 0) rotate(4deg);
 }
-.doc:nth-child(3) {
-  top: 48px;
+.page:nth-of-type(2) {
+  transform: translate(21px, 34px) rotate(2.5deg);
 }
-.packet:hover .doc:nth-child(1) {
-  transform: translateY(-6px);
+.page:nth-of-type(3) {
+  transform: translate(10px, 68px) rotate(1deg);
 }
-.packet:hover .doc:nth-child(2) {
-  transform: translateY(-3px);
+.packet:hover .page:nth-of-type(1) {
+  translate: 0 -6px;
+}
+.packet:hover .page:nth-of-type(2) {
+  translate: 0 -3px;
 }
 .cover {
   position: relative;
@@ -766,14 +770,14 @@
   .btn,
   .balloon,
   .n,
-  .doc {
+  .page {
     transition: none;
   }
   .btn:active {
     transform: none;
   }
-  .packet:hover .doc {
-    transform: none;
+  .packet:hover .page {
+    translate: none;
   }
 }
 
