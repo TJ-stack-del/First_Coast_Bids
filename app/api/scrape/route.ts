@@ -4,7 +4,7 @@ import { scrapeJaa, type ScrapedOpportunity } from "@/lib/scrapers/jaa";
 import { scrapeCoj } from "@/lib/scrapers/coj";
 import { scrapeCojForecast } from "@/lib/scrapers/coj-forecast";
 import { scrapeSamGov, scrapeSamGovBackfill } from "@/lib/scrapers/sam-gov";
-import { SAM_NAICS_CODES } from "@/lib/scrapers/sam-gov-query";
+import { SAM_NAICS_CODES, backfillCodeForDate } from "@/lib/scrapers/sam-gov-query";
 import { scrapeJaxBeach } from "@/lib/scrapers/jax-beach";
 import { findBestMatchingClient } from "@/lib/sam-gov/match-scoring";
 import { expiryCutoff } from "@/lib/matches/rules";
@@ -123,9 +123,15 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   }
+  // The scheduled run also does one rotating backfill code per day (see
+  // backfillCodeForDate), so the catch-up needs no manual calls.
+  const dailyBackfillCode = backfillCodeForDate(new Date());
   const scrapers = backfillCode
     ? [{ name: `sam-gov-backfill-${backfillCode}`, run: () => scrapeSamGovBackfill(backfillCode) }]
-    : SCRAPERS;
+    : [
+        ...SCRAPERS,
+        { name: `sam-gov-backfill-${dailyBackfillCode}`, run: () => scrapeSamGovBackfill(dailyBackfillCode) },
+      ];
 
   for (const scraper of scrapers) {
     try {
