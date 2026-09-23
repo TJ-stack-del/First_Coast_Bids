@@ -776,3 +776,227 @@
     transform: none;
   }
 }
+
+/* ======================================================================
+   Inner marketing pages (pricing, FAQ, gallery, blog, quiz, contact,
+   privacy, terms): the same system as the landing page, applied to
+   page-level patterns. Left-aligned page heads (only the landing hero is
+   centred), hairline ledgers instead of cards, no scroll reveals.
+   ====================================================================== */
+
+.pageHead {
+  display: grid;
+  gap: 12px;
+  max-width: 44em;
+  /* No rule of its own: the table/ledger below starts with the page's
+     heavy 2px rule, and two stacked rules read as a mistake. */
+}
+.pageTitle {
+  font-family: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.25rem, 1.5rem + 3vw, 3.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  margin: 0;
+}
+.pageTitle em {
+  font-style: italic;
+  color: rgb(var(--color-primary));
+}
+.narrow {
+  max-width: 44em;
+}
+
+/* Section heading inside an inner page (e.g. FAQ categories). */
+.h3 {
+  font-family: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+
+/* Generic ledger: rows divided by hairlines under a heavy top rule. */
+.ledger {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid rgb(var(--color-on-surface));
+}
+.ledger > li,
+.ledger > article {
+  padding: 24px 0;
+  border-bottom: 1px solid rgb(var(--color-outline-variant));
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  align-items: baseline;
+  font-size: 13px;
+  color: rgb(var(--color-on-surface-variant));
+}
+.stamp {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border: 1px solid rgb(var(--color-outline));
+  border-radius: 2px;
+  color: rgb(var(--color-on-surface-variant));
+}
+.rowTitle {
+  font-family: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 6px 0 6px;
+  text-wrap: balance;
+}
+
+/* Gallery rows: photo left, specimen text right; stacks on phones. */
+.exampleRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px 32px;
+  align-items: start;
+}
+@media (min-width: 720px) {
+  .exampleRow {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+}
+.photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border: 1px solid rgb(var(--color-outline-variant));
+  background: rgb(var(--color-surface-container));
+  overflow: hidden;
+}
+
+/* A plain notice: raised panel with a hairline border (no colored side
+   bar, no gold fill -- gold is reserved for the packet foil). */
+.panel {
+  background: rgb(var(--color-surface-container-lowest));
+  border: 1px solid rgb(var(--color-outline-variant));
+  padding: 20px 24px;
+  display: grid;
+  gap: 8px;
+}
+.panelLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--color-on-surface));
+}
+
+/* A call-to-action row closing an inner page. */
+.ctaLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
+  padding: 24px 0;
+  border-top: 1px solid rgb(var(--color-outline-variant));
+  border-bottom: 1px solid rgb(var(--color-outline-variant));
+}
+.ctaLine h2,
+.ctaLine h3 {
+  font-family: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  font-size: 24px;
+  margin: 0;
+}
+
+/* Forms and the quiz: a sheet of paper on the page. */
+.formSheet {
+  background: rgb(var(--color-surface-container-lowest));
+  border: 1px solid rgb(var(--color-outline-variant));
+  box-shadow: 0 24px 40px -24px rgb(27 26 23 / 0.22);
+  padding: 32px;
+  max-width: 36rem;
+}
+@media (max-width: 480px) {
+  .formSheet {
+    padding: 24px 20px;
+  }
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.fieldLabel {
+  font-size: 14px;
+  font-weight: 500;
+}
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 16px;
+  color: rgb(var(--color-on-surface));
+  background: rgb(var(--color-background));
+  border: 1px solid rgb(var(--color-outline));
+  border-radius: 2px;
+}
+.input:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 1px;
+  border-color: rgb(var(--color-primary));
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.progress {
+  height: 4px;
+  background: rgb(var(--color-outline-variant));
+}
+.progressFill {
+  height: 100%;
+  background: rgb(var(--color-primary));
+  transition: width 200ms ease-out;
+}
+
+/* Legal pages: a single reading column. */
+.prose {
+  max-width: 42em;
+  display: grid;
+  gap: 32px;
+}
+.prose h2 {
+  font-family: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  font-size: 26px;
+  margin: 0 0 8px;
+}
+.prose p,
+.prose li {
+  font-size: 17px;
+  line-height: 1.65;
+  color: rgb(var(--color-on-surface-variant));
+  text-wrap: pretty;
+}
+.prose a {
+  color: rgb(var(--color-primary));
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressFill {
+    transition: none;
+  }
+}
+.proseSection {
+  display: grid;
+  gap: 12px;
+}
+.prose .panel p {
+  color: rgb(var(--color-on-surface));
+}

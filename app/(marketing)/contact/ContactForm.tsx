@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Spinner } from "@/components/ui/Spinner";
+import s from "@/components/marketing/press.module.css";
 
 export function ContactForm() {
   const [name, setName] = useState("");
@@ -40,8 +41,8 @@ export function ContactForm() {
             compliance/success signal color, not the brand-accent amber
             every other icon on this page uses. */}
         <span className="material-symbols-outlined text-secondary text-[40px]">check_circle</span>
-        <h2 className="text-title-lg text-primary">Message sent</h2>
-        <p className="text-body-md text-on-surface-variant">
+        <h2 className={s.rowTitle}>Message sent</h2>
+        <p className={s.muted}>
           Thanks, {name.split(" ")[0] || "there"}. We&apos;ll get back to you at {email} soon.
         </p>
       </div>
@@ -49,9 +50,9 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-label-md text-on-surface-variant">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className={s.field}>
+        <label htmlFor="name" className={s.fieldLabel}>
           Name
         </label>
         <input
@@ -60,12 +61,12 @@ export function ContactForm() {
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="px-3 py-2 rounded border border-outline-variant bg-surface text-body-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+          className={s.input}
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-label-md text-on-surface-variant">
+      <div className={s.field}>
+        <label htmlFor="email" className={s.fieldLabel}>
           Email
         </label>
         <input
@@ -74,12 +75,12 @@ export function ContactForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="px-3 py-2 rounded border border-outline-variant bg-surface text-body-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+          className={s.input}
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="message" className="text-label-md text-on-surface-variant">
+      <div className={s.field}>
+        <label htmlFor="message" className={s.fieldLabel}>
           Message
         </label>
         <textarea
@@ -88,16 +89,16 @@ export function ContactForm() {
           rows={5}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="px-3 py-2 rounded border border-outline-variant bg-surface text-body-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary resize-y"
+          className={`${s.input} resize-y`}
         />
       </div>
 
-      {error && <p className="text-body-md text-error">{error}</p>}
+      {error && <p role="alert" className="text-body-md text-error">{error}</p>}
 
       <button
         type="submit"
         disabled={sending}
-        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-container text-on-primary-container rounded text-label-md font-semibold hover:opacity-90 hover:-translate-y-0.5 transition active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className={`${s.btn} ${s.btnPrimary} self-start`}
       >
         {sending && <Spinner />}
         Send message

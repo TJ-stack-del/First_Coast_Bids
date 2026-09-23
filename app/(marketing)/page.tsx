@@ -3,8 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { KNOWN_TRADES, assertNoMissingTradeCards } from "@/lib/compliance/known-trades";
-import { SampleSpecimen } from "@/components/landing/SampleSpecimen";
-import s from "@/components/landing/landing.module.css";
+import { SampleSpecimen } from "@/components/marketing/SampleSpecimen";
+import { PricingSpec } from "@/components/marketing/PricingSpec";
+import s from "@/components/marketing/press.module.css";
 
 export const metadata: Metadata = {
   description: "We help you win local government contracts. Send us the bid papers. Our team handles the paperwork so you can send in a strong bid.",
@@ -367,97 +368,7 @@ function Home() {
             mockup. Starting prices are below.
           </p>
         </div>
-        <div className={`${s.tableWrap} ${s.pricingWrap}`}>
-          <table className={`${s.table} ${s.pricing}`}>
-            <thead>
-              <tr>
-                <th scope="col">Plan</th>
-                {PRICING_PREVIEW.map((tier) => (
-                  <th key={tier.name} scope="col" className={tier.highlight ? s.live : ""}>
-                    <span className={`${s.serif} ${s.planName}`}>{tier.name}</span>
-                    {tier.badgeLabel && <span className={s.planNote}>{tier.badgeLabel}</span>}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">Price</th>
-                {PRICING_PREVIEW.map((tier) => (
-                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
-                    <PriceLine line={tier.priceLine} />
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <th scope="row">For</th>
-                {PRICING_PREVIEW.map((tier) => (
-                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
-                    {tier.tagline}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <th scope="row">Terms</th>
-                {PRICING_PREVIEW.map((tier) => (
-                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
-                    {tier.terms}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <th scope="row">Included</th>
-                {PRICING_PREVIEW.map((tier) => (
-                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
-                    {tier.features[0]}
-                    {tier.features.length > 1 && <span className={s.sub}>{tier.features.slice(1).join(" · ")}</span>}
-                  </td>
-                ))}
-              </tr>
-              <tr className={s.ctaRow}>
-                <th scope="row">
-                  <span className="sr-only">Choose a plan</span>
-                </th>
-                {PRICING_PREVIEW.map((tier) => (
-                  <td key={tier.name} className={tier.highlight ? s.live : ""}>
-                    <Link href={tier.cta.href} className={`${s.btn} ${tier.highlight ? s.btnPrimary : s.btnQuiet}`}>
-                      {tier.cta.label}
-                    </Link>
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        {/* Phones: one spec block per plan instead of a sideways-scrolling table. */}
-        <div className={s.plansMobile}>
-          {PRICING_PREVIEW.map((tier) => (
-            <article key={tier.name} className={tier.highlight ? s.liveCard : ""}>
-              <span className={`${s.serif} ${s.planName}`}>
-                {tier.name}
-                {tier.badgeLabel && <span className={s.planNote}>{tier.badgeLabel}</span>}
-              </span>
-              <dl>
-                <dt>Price</dt>
-                <dd>
-                  <PriceLine line={tier.priceLine} />
-                </dd>
-                <dt>For</dt>
-                <dd>{tier.tagline}</dd>
-                <dt>Terms</dt>
-                <dd>{tier.terms}</dd>
-                <dt>Included</dt>
-                <dd>
-                  {tier.features[0]}
-                  {tier.features.length > 1 && <span className={s.sub}>{tier.features.slice(1).join(" · ")}</span>}
-                </dd>
-              </dl>
-              <Link href={tier.cta.href} className={`${s.btn} ${tier.highlight ? s.btnPrimary : s.btnQuiet}`}>
-                {tier.cta.label}
-              </Link>
-            </article>
-          ))}
-        </div>
+        <PricingSpec tiers={PRICING_PREVIEW} />
         <p className={s.fineprint}>
           No card required to get started. We never promise a win: our readiness check tells you whether the
           submission is complete and correct, not whether you&apos;ll be awarded the contract.{" "}
@@ -516,32 +427,6 @@ function Home() {
         </Link>
         <span className={s.risk}>No card required to get started.</span>
       </section>
-    </>
-  );
-}
-
-// "Starting at $399" / "Starting at $649/mo" / "Free for the first 10 clients"
-// rendered as a spec-table price: the figure in navy monospace with its
-// qualifier underneath. Pilot's line has no figure, so it reads "On us"
-// (the product's own wording -- never a bare "free", PRODUCT.md) above the
-// real terms.
-function PriceLine({ line }: { line: string }) {
-  const m = line.match(/^Starting at (\$[\d,]+)(\/mo)?$/);
-  if (m) {
-    return (
-      <>
-        <span className={`${s.price} ${s.mono}`}>
-          {m[1]}
-          {m[2] && <span className={s.muted} style={{ fontSize: 14 }}>{m[2]}</span>}
-        </span>
-        <span className={s.sub}>Starting at</span>
-      </>
-    );
-  }
-  return (
-    <>
-      <span className={`${s.price} ${s.priceWord}`}>On us</span>
-      <span className={s.sub}>{line}</span>
     </>
   );
 }

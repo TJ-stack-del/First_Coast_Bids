@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import s from "./landing.module.css";
+import s from "./press.module.css";
 
 // The landing page's proof section: part of a synthetic compliance matrix on
 // a workbench grid, with engineering-drawing balloons (1-4) cross-referenced

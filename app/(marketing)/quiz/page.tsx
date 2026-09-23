@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { QuizForm } from "./QuizForm";
-import { Reveal } from "@/components/ui/Reveal";
+import s from "@/components/marketing/press.module.css";
 
 export const metadata: Metadata = {
   title: "Fit-Score Quiz",
@@ -10,15 +10,11 @@ export const metadata: Metadata = {
 export default function QuizPage() {
   return (
     <>
-      <section className="max-w-lg mx-auto w-full flex flex-col gap-6">
-        <Reveal mode="mount" as="div" className="text-center flex flex-col gap-2">
-          <h1 className="text-headline-lg text-primary">Are you ready to bid?</h1>
-          <p className="text-body-md text-on-surface-variant">Four quick questions.</p>
-        </Reveal>
-        <Reveal mode="mount" delay={0.08}>
-          <QuizForm />
-        </Reveal>
-      </section>
+      <header className={s.pageHead}>
+        <h1 className={s.pageTitle}>Are you ready to bid?</h1>
+        <p className={s.lede}>Four quick questions.</p>
+      </header>
+      <QuizForm />
     </>
   );
 }

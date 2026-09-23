@@ -145,7 +145,9 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
 
       <footer className="bg-surface-container-lowest border-t border-outline-variant mt-auto">
         <div className="w-full px-margin-mobile md:px-margin-desktop py-gutter max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-base">
-          <div className="flex items-center gap-2">
+          {/* Stacked (centred) on phones: side by side, the tagline ran over
+              the wordmark at 390px. */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
             <Logo />
             <div className="flex flex-col">
               <span className="text-label-sm text-on-surface-variant">{TAGLINE}</span>

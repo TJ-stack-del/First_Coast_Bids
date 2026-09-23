@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FaqAccordion } from "./FaqAccordion";
-import { Reveal } from "@/components/ui/Reveal";
+import s from "@/components/marketing/press.module.css";
 
 export const metadata: Metadata = {
   title: "FAQ",
@@ -46,39 +45,54 @@ const CATEGORIES = [
   },
 ];
 
+// 2026-09-23: answers shown in full under each category (the landing
+// page's hairline Q/A layout) instead of an accordion -- there are only a
+// handful of questions, so hiding them behind clicks cost more than it
+// saved. FAQPage structured data mirrors the visible text exactly.
 export default function FaqPage() {
+  const allFaqs = CATEGORIES.flatMap((cat) => cat.faqs);
   return (
     <>
-      <section className="max-w-2xl mx-auto w-full flex flex-col gap-4 text-center">
-        <Reveal mode="mount">
-          <h1 className="text-headline-lg text-primary">Frequently asked questions</h1>
-        </Reveal>
-        <Reveal mode="mount" delay={0.08}>
-          <p className="text-body-lg text-on-surface-variant">
-            Straight answers about how First Coast Bids works.
-          </p>
-        </Reveal>
-      </section>
+      <header className={s.pageHead}>
+        <h1 className={s.pageTitle}>Frequently asked questions</h1>
+        <p className={s.lede}>Straight answers about how First Coast Bids works.</p>
+      </header>
 
-      <section className="max-w-3xl mx-auto w-full flex flex-col gap-10">
-        {CATEGORIES.map((cat, i) => (
-          <Reveal key={cat.name} delay={i * 0.08} className="flex flex-col gap-4">
-            <h2 className="text-headline-md text-primary border-b border-outline-variant pb-2">{cat.name}</h2>
-            <FaqAccordion faqs={cat.faqs} />
-          </Reveal>
-        ))}
-      </section>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: allFaqs.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: { "@type": "Answer", text: item.a },
+            })),
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
 
-      <Reveal as="div" className="text-center flex flex-col items-center gap-4">
-        <p className="text-body-lg text-on-surface-variant">Can&apos;t find the answer you&apos;re looking for?</p>
-        <Link
-          href="/contact"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary-container text-on-primary-container rounded text-label-md font-semibold hover:opacity-90 hover:-translate-y-0.5 transition active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
+      {CATEGORIES.map((cat) => (
+        <section key={cat.name}>
+          <h2 className={s.h3}>{cat.name}</h2>
+          <dl className={s.faq}>
+            {cat.faqs.map((item) => (
+              <div key={item.q}>
+                <dt className={s.serif}>{item.q}</dt>
+                <dd>{item.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ))}
+
+      <section className={s.ctaLine}>
+        <h2>Can&apos;t find the answer you&apos;re looking for?</h2>
+        <Link href="/contact" className={`${s.btn} ${s.btnPrimary}`}>
           Contact support
-          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
         </Link>
-      </Reveal>
+      </section>
     </>
   );
 }

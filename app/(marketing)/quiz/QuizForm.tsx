@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import s from "@/components/marketing/press.module.css";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 // 4-question RFP fit-score quiz per BUILD-ORDER-BIDPULSE.md Step 3 — pure
@@ -30,32 +31,27 @@ export function QuizForm() {
   if (step >= QUESTIONS.length) {
     const yesCount = answers.filter(Boolean).length;
     return (
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 flex flex-col gap-4 text-center">
-        <h2 className="text-headline-md text-primary">
+      <div className={`${s.formSheet} grid gap-4`}>
+        <h2 className={s.rowTitle}>
           {yesCount >= 2 ? "You're a strong fit." : "We can still help."}
         </h2>
-        <p className="text-body-md text-on-surface-variant">
+        <p className={s.muted}>
           {yesCount >= 2
             ? "Based on your answers, you're well-positioned to bid. Let's get your submission prepared."
             : "Every bidder starts somewhere. Send us your RFP and we'll take it from there."}
         </p>
-        <Link
-          href="/intake"
-          className="self-center px-6 py-3 bg-primary-container text-on-primary-container rounded text-label-md font-semibold hover:opacity-90 hover:-translate-y-0.5 transition active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          Get started
+        {/* The site's one main action (2026-09-23). */}
+        <Link href="/intake?package=pilot" className={`${s.btn} ${s.btnPrimary} justify-self-start`}>
+          Start a pilot bid
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 flex flex-col gap-8">
-      <div className="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
-        <div
-          className="bg-primary-container h-2 rounded-full transition-[width] duration-300 ease-in-out"
-          style={{ width: `${((step + 1) / QUESTIONS.length) * 100}%` }}
-        />
+    <div className={`${s.formSheet} grid gap-8`}>
+      <div className={s.progress} role="progressbar" aria-valuemin={1} aria-valuemax={QUESTIONS.length} aria-valuenow={step + 1}>
+        <div className={s.progressFill} style={{ width: `${((step + 1) / QUESTIONS.length) * 100}%` }} />
       </div>
 
       {/* A state transition, not decoration: each question is a distinct
@@ -72,24 +68,18 @@ export function QuizForm() {
           exit={reduceMotion ? undefined : { opacity: 0, x: -16 }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className="text-label-md text-on-surface-variant block mb-3 tracking-widest uppercase">
-            Question {step + 1} of {QUESTIONS.length}
+          <span className={`${s.meta} mb-2`}>
+            Question <span className={s.mono}>{step + 1}</span> of <span className={s.mono}>{QUESTIONS.length}</span>
           </span>
-          <h2 className="text-headline-md text-primary leading-tight">{QUESTIONS[step]}</h2>
+          <h2 className={s.rowTitle}>{QUESTIONS[step]}</h2>
         </motion.div>
       </AnimatePresence>
 
       <div className="flex gap-3">
-        <button
-          onClick={() => answer(true)}
-          className="flex-1 py-3 px-4 bg-primary-container text-on-primary-container rounded text-label-md font-semibold hover:opacity-90 hover:-translate-y-0.5 transition active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
+        <button type="button" onClick={() => answer(true)} className={`${s.btn} ${s.btnPrimary} flex-1`}>
           Yes
         </button>
-        <button
-          onClick={() => answer(false)}
-          className="flex-1 py-3 px-4 bg-surface border border-outline-variant rounded text-label-md hover:bg-surface-container-high hover:-translate-y-0.5 transition active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
+        <button type="button" onClick={() => answer(false)} className={`${s.btn} ${s.btnQuiet} flex-1`}>
           No
         </button>
       </div>
