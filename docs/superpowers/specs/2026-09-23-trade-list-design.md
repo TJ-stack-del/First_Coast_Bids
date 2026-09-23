@@ -42,7 +42,7 @@ New table `trades`:
 | `label` | text not null | e.g. "Janitorial" |
 | `naics` | jsonb not null default `[]` | array of `{code, label}`. The code is 6 digits; the label is shown on the client checkboxes |
 | `nigp_codes` | text[] not null default `{}` | format `NNN-NN` (class-item) |
-| `keywords` | text[] not null default `{}` | lowercase; substring match |
+| `keywords` | text[] not null default `{}` | lowercase; matched at the start of a word in the bid title |
 | `active` | boolean not null default true | |
 | `sort_order` | int not null default 0 | first-match order and display order |
 | `created_at` / `updated_at` | timestamptz | |
@@ -64,10 +64,11 @@ Audit: `trade_created`, `trade_updated` and `trade_activated`/`trade_deactivated
 
 1. `naics_code`: an exact match against a trade's NAICS codes (SAM.gov rows).
 2. `nigp_codes`: any overlap with a trade's NIGP codes (future portal scrapers; `ScrapedOpportunity` gains an optional `nigp_codes`).
-3. Keywords in the lowercase title.
-4. Keywords in the lowercase scope or description.
+3. Keywords in the lowercase **title only**. A keyword matches only at the start of a word (`(?<![a-z0-9])keyword`), so "it support" can't match inside "transit support". A keyword can still be a word stem: "landscap" matches "landscaping".
 
 Codes are checked across all trades before any keywords are, so an exact code always beats a keyword hit in an earlier trade. No match gives `null`, which means Other trades. Only active trades are passed in.
+
+**Why the scope is not searched:** tested on 2026-09-23 against all 80 production matches. Construction scopes list incidental work, so scope keywords produce false matches. "McCoy's Creek Greenway", a shared-use path project, matched Landscaping only because its scope mentions "park amenities, and landscaping". A bid whose title doesn't name its trade lands in Other trades, where it stays visible, rather than in the wrong trade. (The Jacksonville Beach janitorial RFP, which once had a placeholder title, now gets its real title from the fixed scraper.)
 
 ## Scrape pipeline (`app/api/scrape/route.ts`)
 
@@ -110,20 +111,30 @@ Codes are checked across all trades before any keywords are, so an exact code al
 
 These are created on each database only after the user approves this exact table. They carry over today's lists.
 
-| trade | NAICS | keywords (from today's lists) |
+| trade | NAICS | title keywords |
 |---|---|---|
-| Janitorial | 561720 Janitorial Services, 561740 Carpet and Upholstery Cleaning Services, 561790 Other Services to Buildings and Dwellings | janitorial, custodial, day porter, cleaning services |
-| Landscaping / Grounds | 561730 Landscaping Services | landscap, turf, lawn care, ornamental, irrigation, grounds maintenance, mowing, tree trim |
-| HVAC / Plumbing | 238220 Plumbing, Heating, and Air-Conditioning Contractors, 238290 Other Building Equipment Contractors | hvac, air condition, refrigerant, chiller, heat pump, ductwork, heating and cooling, plumbing, backflow |
-| Electrical | 238210 Electrical Contractors | electrical, electrician, wiring, switchgear, panel upgrade, lighting retrofit, conduit |
-| IT / Computer Support | 541512, 541519, 518210 | computer support, it support, information technology, network administ, help desk, software development, web application, cybersecurity, desktop support |
-| Facilities Support | 561210 Facilities Support Services | facilities maintenance, facility support |
+| Janitorial | 561720 Janitorial Services, 561740 Carpet and Upholstery Cleaning Services, 561790 Other Services to Buildings and Dwellings, 561210 Facilities Support Services | janitorial, custodial, day porter, building cleaning, office cleaning, carpet cleaning, floor care, window cleaning, pressure washing |
+| Landscaping / Grounds | 561730 Landscaping Services | landscap, lawn care, lawn maintenance, grounds maintenance, mowing, tree trimming, irrigation maintenance, irrigation repair, turf maintenance |
+| HVAC / Plumbing | 238220 Plumbing, Heating, and Air-Conditioning Contractors, 238290 Other Building Equipment Contractors | hvac, air condition, refrigerant, chiller, heat pump, ductwork, heating and cooling, plumbing, plumber, backflow, water heater, boiler |
+| Electrical | 238210 Electrical Contractors | electrician, electrical contractor, electrical services, electrical repair, electrical maintenance, electrical installation, switchgear, panel upgrade, lighting retrofit |
+| IT / Computer Support | 541512, 541519, 518210 | computer support, it services, it support, information technology, network administration, help desk, desktop support, cybersecurity, software development, web application |
 
-**Open questions for the user**, each answered before the seed runs:
+**Decided by the user (2026-09-23):**
 
-- **238220:** is it one "HVAC / Plumbing" trade (a code can only sit in one trade), or HVAC only, with plumbing bids left in Other trades?
-- **561210:** does it get its own trade, or go under Janitorial?
-- **Keyword precision:** "electrical" and "it support" will also catch some non-trade bids. Keep them as they are, or tighten them?
+- 238220 belongs to one **HVAC / Plumbing** trade.
+- 561210 Facilities Support goes under **Janitorial**, with no separate trade.
+- The keywords are **tightened**:
+  - dropped: broad words such as "electrical", "wiring", "conduit", "turf", "ornamental", "irrigation" and "cleaning services";
+  - replaced with the specific phrases above;
+  - matched at word starts, in titles only (see Classification).
+
+**Measured on 2026-09-23 against the 80 production matches, with these final rules:**
+
+- **2 match a trade, both correctly:**
+  - "Boilers PM & Testing" → HVAC / Plumbing, by NAICS code;
+  - the Jacksonville Beach janitorial RFP → Janitorial, by the real title "Citywide Janitorial Services" that the fixed scraper now supplies. The old stored row still has the placeholder title, so it would not match; it has been withdrawn and dismissed anyway.
+- **The other 78 go to Other trades,** and none of them is in an offered trade: roads, drainage, bridges, sidewalks, engineering and CEI services, software licences, and so on. "McCoy's Creek Greenway" matched Landscaping under scope matching; it no longer does.
+- **Where the volume sits:** today's local sources post almost nothing in the offered trades. The trade list mainly cleans up the queue; finding more real bids in these trades depends on adding the new sources (OpenGov, DemandStar, Bonfire).
 
 **NIGP codes:** none are seeded unless verified against an official NIGP code listing during implementation. Gemini's "910-39" and "958-63" are not taken as fact.
 
