@@ -6,7 +6,7 @@ import { scrapeCojForecast } from "@/lib/scrapers/coj-forecast";
 import { scrapeSamGov, scrapeSamGovBackfill } from "@/lib/scrapers/sam-gov";
 import { backfillCodeForDate } from "@/lib/scrapers/sam-gov-query";
 import { loadTrades } from "@/lib/trades/server";
-import { classifyOpportunity, offeredNaicsCodes } from "@/lib/trades/classify";
+import { tradeFieldsForInsert, offeredNaicsCodes } from "@/lib/trades/classify";
 import type { Trade } from "@/lib/trades/types";
 import { scrapeJaxBeach } from "@/lib/scrapers/jax-beach";
 import { findBestMatchingClient } from "@/lib/sam-gov/match-scoring";
@@ -195,8 +195,7 @@ export async function GET(request: NextRequest) {
           scope: item.scope ?? null,
           status: "new",
           naics_code: item.naics_code ?? null,
-          nigp_codes: item.nigp_codes ?? [],
-          trade_id: classifyOpportunity(
+          ...tradeFieldsForInsert(
             { title: item.source_title, naicsCode: item.naics_code ?? null, nigpCodes: item.nigp_codes ?? null },
             trades
           ),

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { classifyOpportunity, keywordMatches, offeredNaicsCodes } from "./classify.ts";
+import { classifyOpportunity, keywordMatches, offeredNaicsCodes, tradeFieldsForInsert } from "./classify.ts";
 import type { Trade } from "./types.ts";
 
 function trade(p: Partial<Trade> & { id: string }): Trade {
@@ -70,4 +70,13 @@ test("offeredNaicsCodes lists active trades' codes once, in sort order", () => {
   const dup = trade({ id: "x", sortOrder: 9, naics: [{ code: "561720", label: "dup" }] });
   const off = trade({ id: "off", active: false, naics: [{ code: "111111", label: "off" }] });
   assert.deepEqual(offeredNaicsCodes([HVAC, off, JANITORIAL, dup]), ["561720", "238220"]);
+});
+
+test("tradeFieldsForInsert gives every insert path the same trade and NIGP fields", () => {
+  // Used by the scrape, the admin's "Log opportunity" form and forwarded
+  // bid emails, so a hand-logged "Citywide Janitorial Services" is sorted
+  // exactly like a scraped one.
+  assert.deepEqual(tradeFieldsForInsert({ title: "Citywide Janitorial Services" }, ALL), { trade_id: "jan", nigp_codes: [] });
+  assert.deepEqual(tradeFieldsForInsert({ title: "Services", nigpCodes: ["910-39"] }, ALL), { trade_id: "jan", nigp_codes: ["910-39"] });
+  assert.deepEqual(tradeFieldsForInsert({ title: "Bridge Replacement", naicsCode: null, nigpCodes: null }, ALL), { trade_id: null, nigp_codes: [] });
 });

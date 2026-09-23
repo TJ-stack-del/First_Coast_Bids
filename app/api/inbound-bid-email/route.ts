@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import { parseLlmJson } from "@/lib/llm-json";
+import { loadTrades } from "@/lib/trades/server";
+import { tradeFieldsForInsert } from "@/lib/trades/classify";
+import type { Trade } from "@/lib/trades/types";
 
 export const runtime = "nodejs";
 // See extract-from-document/route.ts's identical comment -- Vercel's
@@ -139,6 +142,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No organization set up yet." }, { status: 500 });
   }
 
+  // Sorted into a trade like a scraped bid. Same rule as the scrape: if
+  // the trade list can't be loaded, fail visibly rather than guess.
+  let trades: Trade[];
+  try {
+    trades = await loadTrades(supabase, org.id);
+  } catch (err) {
+    console.error("[inbound-bid-email] failed to load trades", err, "from:", from);
+    return NextResponse.json({ error: "Could not load the trade list." }, { status: 500 });
+  }
+
   // Same duplicate guard as the scraper: an Apps Script trigger re-scanning
   // the same labeled thread (e.g. after a script error mid-run) shouldn't
   // create a second row for the same opportunity.
@@ -165,6 +178,7 @@ export async function POST(request: NextRequest) {
       scope: extracted.scope,
       solicitation_number: extracted.solicitationNumber,
       status: "new",
+      ...tradeFieldsForInsert({ title: sourceTitle }, trades),
     })
     .select("id")
     .single();

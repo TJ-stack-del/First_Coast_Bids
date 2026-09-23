@@ -47,3 +47,13 @@ export function offeredNaicsCodes(trades: Trade[]): string[] {
   for (const t of activeInOrder(trades)) for (const n of t.naics) seen.add(n.code);
   return [...seen];
 }
+
+// The trade fields every insert into matched_opportunities sets: the daily
+// scrape, the admin's "Log opportunity" form, and forwarded bid emails. One
+// helper so a bid is sorted the same way however it arrives.
+export function tradeFieldsForInsert(
+  o: { title: string; naicsCode?: string | null; nigpCodes?: string[] | null },
+  trades: Trade[]
+): { trade_id: string | null; nigp_codes: string[] } {
+  return { trade_id: classifyOpportunity(o, trades), nigp_codes: o.nigpCodes ?? [] };
+}

@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { opportunityTradeTag } from "@/lib/opportunity-trade-tag";
 import { clientTradeLabel, clientTradeIds } from "@/lib/trades/naics-options";
 import type { Trade } from "@/lib/trades/types";
+import { tradeFieldsForInsert } from "@/lib/trades/classify";
 import { useToast } from "@/components/Toast";
 
 type Match = {
@@ -294,6 +295,9 @@ export function MatchesPanel({
         solicitation_number: solicitationNumber.trim() || null,
         due_date: dueDate || null,
         status: "new",
+        // Sorted like a scraped bid, so it stays in "Your trades" when its
+        // title names an offered trade.
+        ...tradeFieldsForInsert({ title }, trades),
       })
       .select()
       .single();
