@@ -4,7 +4,7 @@ import { scrapeJaa, type ScrapedOpportunity } from "@/lib/scrapers/jaa";
 import { scrapeCoj } from "@/lib/scrapers/coj";
 import { scrapeCojForecast } from "@/lib/scrapers/coj-forecast";
 import { scrapeSamGov, scrapeSamGovBackfill } from "@/lib/scrapers/sam-gov";
-import { backfillCodeForDate } from "@/lib/scrapers/sam-gov-query";
+import { backfillCodesForDate } from "@/lib/scrapers/sam-gov-query";
 import { loadTrades } from "@/lib/trades/server";
 import { tradeFieldsForInsert, offeredNaicsCodes } from "@/lib/trades/classify";
 import type { Trade } from "@/lib/trades/types";
@@ -34,6 +34,11 @@ export const maxDuration = 60;
 // including the root, returns a CAPTCHA challenge page (confirmed against
 // two independent fetch methods) — a server-side scraper can never get
 // past that. Revisit if JEA ever offers a real feed/API.
+// SAM.gov's public API key allows about 13 requests a day (measured
+// 2026-09-22). The daily run spends 1 on new postings plus this many on the
+// rolling 12-month catch-up, so 11 trade codes are fully covered every 3 days.
+const SAM_BACKFILL_CODES_PER_DAY = 4;
+
 const SCRAPERS: { name: string; run: () => Promise<ScrapedOpportunity[]> }[] = [
   { name: "jaa", run: scrapeJaa },
   { name: "coj", run: scrapeCoj },
@@ -136,18 +141,19 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   }
-  // The scheduled run also does one rotating backfill code per day (see
-  // backfillCodeForDate), so the catch-up needs no manual calls. With no
-  // active trade codes, SAM.gov is skipped and says why.
-  const dailyBackfillCode = backfillCodeForDate(new Date(), samCodes);
+  // The scheduled run also does a rotating backfill of SAM_BACKFILL_CODES_PER_DAY
+  // codes a day (see backfillCodesForDate), so the catch-up needs no manual
+  // calls. With no active trade codes, SAM.gov is skipped and says why.
+  const dailyBackfillCodes = backfillCodesForDate(new Date(), samCodes, SAM_BACKFILL_CODES_PER_DAY);
   const samScrapers =
     samCodes.length === 0
       ? []
       : [
           { name: "sam-gov", run: () => scrapeSamGov(samCodes) },
-          ...(dailyBackfillCode
-            ? [{ name: `sam-gov-backfill-${dailyBackfillCode}`, run: () => scrapeSamGovBackfill(dailyBackfillCode, samCodes) }]
-            : []),
+          ...dailyBackfillCodes.map((code) => ({
+            name: `sam-gov-backfill-${code}`,
+            run: () => scrapeSamGovBackfill(code, samCodes),
+          })),
         ];
   if (samCodes.length === 0 && !backfillCode) {
     results["sam-gov"] = { found: 0, inserted: 0, skipped: 0, note: "Skipped: no active trade has a NAICS code." };
@@ -156,9 +162,17 @@ export async function GET(request: NextRequest) {
     ? [{ name: `sam-gov-backfill-${backfillCode}`, run: () => scrapeSamGovBackfill(backfillCode, samCodes) }]
     : [...SCRAPERS, ...samScrapers];
 
-  for (const scraper of scrapers) {
+  // Every source is fetched at the same time, then saved one source at a
+  // time below. Fetching them one after another no longer fits Vercel's
+  // 60-second limit: coj-forecast alone takes ~43s (44 PDF project sheets,
+  // measured 2026-09-23), and the SAM.gov requests used to wait behind it.
+  const fetched = await Promise.allSettled(scrapers.map((scraper) => scraper.run()));
+
+  for (const [index, scraper] of scrapers.entries()) {
     try {
-      const found = await scraper.run();
+      const outcome = fetched[index];
+      if (outcome.status === "rejected") throw outcome.reason;
+      const found = outcome.value;
       let inserted = 0;
       let skipped = 0;
       const insertErrors: string[] = [];

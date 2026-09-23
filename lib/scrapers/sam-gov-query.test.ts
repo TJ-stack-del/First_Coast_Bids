@@ -5,7 +5,7 @@ import {
   buildSamBackfillParams,
   selectSamRows,
   formatSamDate,
-  backfillCodeForDate,
+  backfillCodesForDate,
 } from "./sam-gov-query.ts";
 
 const NOW = new Date(2026, 8, 23, 13, 0, 0); // Sept 23 2026, local time
@@ -62,21 +62,36 @@ test("with no trade codes, nothing is selected", () => {
   assert.deepEqual(selectSamRows(rows, NOW, []), []);
 });
 
-test("backfillCodeForDate rotates through the given codes, one per UTC day", () => {
-  const start = Date.UTC(2026, 8, 23);
-  const DAY = 24 * 60 * 60 * 1000;
-  const codes = Array.from({ length: CODES.length }, (_, i) => backfillCodeForDate(new Date(start + i * DAY), CODES));
-  assert.deepEqual([...codes].sort(), [...CODES].sort(), "each code once per cycle");
-  assert.equal(backfillCodeForDate(new Date(start + CODES.length * DAY), CODES), codes[0], "then the cycle repeats");
+const ELEVEN = ["561720", "561740", "561790", "561210", "561730", "238220", "238290", "238210", "541512", "541519", "518210"];
+const DAY = 24 * 60 * 60 * 1000;
+const START = Date.UTC(2026, 8, 24);
+
+test("backfillCodesForDate gives 4 different codes a day and covers all 11 within 3 days", () => {
+  const days = [0, 1, 2].map((i) => backfillCodesForDate(new Date(START + i * DAY), ELEVEN, 4));
+  for (const codes of days) {
+    assert.equal(codes.length, 4);
+    assert.equal(new Set(codes).size, 4, "no repeats within a day");
+  }
+  assert.deepEqual(new Set(days.flat()), new Set(ELEVEN), "3 days cover every code");
 });
 
-test("backfillCodeForDate returns null when there are no codes", () => {
-  assert.equal(backfillCodeForDate(NOW, []), null);
+test("backfillCodesForDate keeps cycling after a full pass", () => {
+  const seen = new Set<string>();
+  for (let i = 3; i < 6; i++) for (const c of backfillCodesForDate(new Date(START + i * DAY), ELEVEN, 4)) seen.add(c);
+  assert.deepEqual(seen, new Set(ELEVEN), "the next 3 days cover every code again");
 });
 
-test("backfillCodeForDate is stable within a UTC day", () => {
-  assert.equal(
-    backfillCodeForDate(new Date(Date.UTC(2026, 8, 23, 0, 0, 1)), CODES),
-    backfillCodeForDate(new Date(Date.UTC(2026, 8, 23, 23, 59, 59)), CODES)
+test("backfillCodesForDate returns each code once when there are fewer codes than the daily allowance", () => {
+  assert.deepEqual([...backfillCodesForDate(new Date(START), CODES, 4)].sort(), [...CODES].sort());
+});
+
+test("backfillCodesForDate returns nothing when there are no codes", () => {
+  assert.deepEqual(backfillCodesForDate(NOW, [], 4), []);
+});
+
+test("backfillCodesForDate is stable within a UTC day", () => {
+  assert.deepEqual(
+    backfillCodesForDate(new Date(Date.UTC(2026, 8, 23, 0, 0, 1)), ELEVEN, 4),
+    backfillCodesForDate(new Date(Date.UTC(2026, 8, 23, 23, 59, 59)), ELEVEN, 4)
   );
 });

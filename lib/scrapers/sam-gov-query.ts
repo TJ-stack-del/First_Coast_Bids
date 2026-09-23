@@ -72,13 +72,17 @@ export function selectSamRows<T extends SamRow>(rows: T[], now: Date, codes: rea
   return rows.filter((r) => !!r.naicsCode && wanted.has(r.naicsCode) && shouldKeepSamNotice(r, now));
 }
 
-// The daily run's rolling catch-up (decided 2026-09-23): each UTC day it
-// also runs the 12-month backfill for ONE offered trade code, rotating
+// The daily run's rolling catch-up: each UTC day it also runs the
+// 12-month backfill for `perDay` of the offered trade codes, rotating
 // through all of them, so older still-open Florida postings are caught
-// without anyone calling the route by hand. Costs one extra request a day;
-// title+agency dedup makes repeats free. Null when no trade has a code.
-export function backfillCodeForDate(now: Date, codes: readonly string[]): string | null {
-  if (codes.length === 0) return null;
+// without anyone calling the route by hand. Raised from 1 to 4 codes a day
+// on 2026-09-23 (a full pass of 11 codes took 11 days); the daily run is
+// then 1 + 4 = 5 requests against a quota measured at about 13.
+// Title+agency dedup makes repeats free. Empty when no trade has a code.
+export function backfillCodesForDate(now: Date, codes: readonly string[], perDay: number): string[] {
+  if (codes.length === 0 || perDay < 1) return [];
+  if (codes.length <= perDay) return [...codes];
   const utcDay = Math.floor(now.getTime() / DAY_MS);
-  return codes[utcDay % codes.length];
+  const start = (utcDay * perDay) % codes.length;
+  return Array.from({ length: perDay }, (_, i) => codes[(start + i) % codes.length]);
 }
