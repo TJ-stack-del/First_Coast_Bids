@@ -111,11 +111,13 @@ Confirmed anti-reference: generic tech-startup SaaS. No glossy gradients, no flo
 
 Since 2026-09-22 the public marketing pages (everything under `app/(marketing)/`: home, pricing, FAQ, gallery, blog, quiz, contact, privacy, terms) use a second, scoped theme. The dashboard, intake and admin still use the Compliance Ledger system described in the rest of this file, unchanged, until they get their own design pass.
 
-- **Where it lives:** `.theme-press` in `app/globals.css` remaps the same color tokens inside `app/(marketing)/layout.tsx`'s wrapper, and that layout loads Newsreader and Archivo through `next/font`. Nothing outside the wrapper is affected. The landing page's own layout is `components/landing/landing.module.css`.
+- **Where it lives:** `.theme-press` in `app/globals.css` remaps the same color tokens inside `app/(marketing)/layout.tsx`'s wrapper, and that layout loads Newsreader and Archivo through `next/font`. Nothing outside the wrapper is affected. The landing page's own layout is `components/marketing/press.module.css`.
 - **Direction:** Dieter Rams / Braun structure (spec-sheet call-outs, spec-table pricing, hairline rules, quick mechanical motion) with Stripe Press warmth (bone paper, serif headings, one real shadow under the sample sheet, the navy cloth packet with a gold foil title). The approved drafts, decisions and critique history are in `design-drafts/2026-09-22-landing-directions/README.md`.
 - **Color:** bone paper `#F0EBDD`, raised panel `#FBF8F0`, ink `#1B1A17`, secondary text `#5E5848`, hairline `#CDC2A8`. Navy `#0C2D52` is the one strong color, and primary buttons are solid navy. Gold `#C19349` appears only as the packet's foil (and in the logo). Green and red are for status only.
 - **Type:** Newsreader for headings, at regular weight, with the second clause in italic navy ("You run the crew. *We handle the paperwork.*"). Archivo for all running text and UI labels. JetBrains Mono only for real figures: prices, page numbers, solicitation numbers. The logo wordmark (`[data-wordmark]`) keeps Chivo in every theme.
 - **Motion:** no scroll reveals. Hover and focus color changes of 80–150ms, plus the packet's page edges lifting on hover, all disabled under reduced motion.
+- **Inner pages** (since 2026-09-23): a left-aligned serif page head (only the landing hero is centred), then content on hairline ledgers under a heavy 2px top rule. Pricing reuses the landing page's spec table (`components/marketing/PricingSpec.tsx`). FAQ shows every answer, with no accordion. Gallery and Blog are ledgers of rows, not cards. Forms and the quiz sit on a single raised sheet. Privacy and Terms use a reading column. Shared styles are in `components/marketing/press.module.css`.
+- **One main action:** "Start a pilot bid" (`/intake?package=pilot`) in the header, the hero, the final call to action and the quiz result, while the free Pilot cohort is open.
 
 ## Colors
 

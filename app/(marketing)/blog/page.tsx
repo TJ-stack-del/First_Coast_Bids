@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Reveal } from "@/components/ui/Reveal";
+import s from "@/components/marketing/press.module.css";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -27,39 +27,32 @@ const POSTS = [
   },
 ];
 
+// 2026-09-23: a dated ledger instead of cards. Posts have no pages of
+// their own yet, so rows are deliberately not links (and have no hover
+// affordance promising a click that goes nowhere).
 export default function BlogPage() {
   return (
     <>
-      <section className="max-w-2xl mx-auto w-full flex flex-col gap-2 text-center">
-        <Reveal mode="mount" as="div">
-          <h1 className="text-headline-lg text-primary">Blog</h1>
-        </Reveal>
-        <Reveal mode="mount" delay={0.08}>
-          <p className="text-body-lg text-on-surface-variant">Plain-language tips for bidding on local contracts.</p>
-        </Reveal>
+      <header className={s.pageHead}>
+        <h1 className={s.pageTitle}>Blog</h1>
+        <p className={s.lede}>Plain-language tips for bidding on local contracts.</p>
+      </header>
+      <section className={s.narrow}>
+        <div className={s.ledger}>
+          {POSTS.map((post) => (
+            <article key={post.title}>
+              <div className={s.meta}>
+                <time dateTime={post.date} className={s.mono}>
+                  {new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}
+                </time>
+                <span>{post.category}</span>
+              </div>
+              <h2 className={s.rowTitle}>{post.title}</h2>
+              <p className={s.muted}>{post.excerpt}</p>
+            </article>
+          ))}
+        </div>
       </section>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter max-w-3xl mx-auto w-full">
-        {POSTS.map((post, i) => (
-          <Reveal
-            key={post.title}
-            as="article"
-            delay={i * 0.1}
-            // No hover lift/shadow: these cards aren't links (no post routes
-            // yet), so a hover affordance would promise a click that does
-            // nothing. It also never worked -- Reveal's motion.article writes
-            // an inline `transform: none` that beats `hover:-translate-y-1`.
-            // If posts get routes, put the hover on an inner <Link>, not here.
-            className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col gap-3"
-          >
-            <div className="flex items-center justify-between text-label-sm text-on-surface-variant uppercase tracking-wider">
-              <span className="text-primary font-bold">{post.category}</span>
-              <span>{new Date(post.date).toLocaleDateString()}</span>
-            </div>
-            <h2 className="text-title-lg text-primary">{post.title}</h2>
-            <p className="text-body-sm text-on-surface-variant">{post.excerpt}</p>
-          </Reveal>
-        ))}
-      </div>
     </>
   );
 }

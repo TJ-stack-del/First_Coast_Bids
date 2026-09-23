@@ -9,7 +9,8 @@ import { TAGLINE } from "@/lib/brand";
 // Shared header/footer for the public marketing site — separate from
 // AppShell, which is for the authenticated app and branches nav by role.
 // Nobody needs a role here; every visitor sees the same nav, plus
-// Log in / Get started. Visual system matches the new First Coast Bids mockups.
+// Log in / Start a pilot bid (the site's one main action while the free
+// Pilot cohort is open). Visual system matches the new First Coast Bids mockups.
 //
 // Now mounted once for the whole site via app/(marketing)/layout.tsx
 // rather than individually by every page -- when every page rendered its
@@ -59,7 +60,10 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
           <Link href="/" onClick={() => setMenuOpen(false)} className="flex flex-col justify-center">
             <Logo priority />
           </Link>
-          <nav className="hidden md:flex items-center gap-6">
+          {/* Full nav from lg (1024px) up; below that, the menu button. At md
+              (768-1023px) five links plus Log in and the Pilot button didn't
+              fit: the wordmark and several links wrapped to two lines. */}
+          <nav className="hidden lg:flex items-center gap-6">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -74,7 +78,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </nav>
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
             <Link
               href="/login"
               className="text-label-md uppercase tracking-wider text-on-surface-variant hover:text-primary transition"
@@ -82,10 +86,10 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
               Log in
             </Link>
             <Link
-              href="/intake"
-              className="px-4 py-2 bg-primary-container text-on-primary-container rounded text-label-md uppercase tracking-wider font-bold hover:opacity-90 transition active:scale-[0.97]"
+              href="/intake?package=pilot"
+              className="whitespace-nowrap px-4 py-2 bg-primary-container text-on-primary-container rounded text-label-md uppercase tracking-wider font-bold hover:opacity-90 transition active:scale-[0.97]"
             >
-              Get started
+              Start a pilot bid
             </Link>
           </div>
           <button
@@ -93,14 +97,14 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
             onClick={() => setMenuOpen((open) => !open)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
-            className="md:hidden p-2 -mr-2 text-on-surface"
+            className="lg:hidden p-2 -mr-2 text-on-surface"
           >
             <span className="material-symbols-outlined">{menuOpen ? "close" : "menu"}</span>
           </button>
         </div>
 
         {menuOpen && (
-          <nav className="md:hidden absolute top-full inset-x-0 z-40 border-t border-outline-variant bg-surface px-margin-mobile py-4 flex flex-col gap-2 max-h-[calc(100vh-4.5rem)] overflow-y-auto shadow-lg">
+          <nav className="lg:hidden absolute top-full inset-x-0 z-40 border-t border-outline-variant bg-surface px-margin-mobile py-4 flex flex-col gap-2 max-h-[calc(100vh-4.5rem)] overflow-y-auto shadow-lg">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -124,11 +128,11 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
                 Log in
               </Link>
               <Link
-                href="/intake"
+                href="/intake?package=pilot"
                 onClick={() => setMenuOpen(false)}
                 className="px-4 py-3 bg-primary-container text-on-primary-container rounded text-label-md text-center active:scale-[0.97]"
               >
-                Get started
+                Start a pilot bid
               </Link>
             </div>
           </nav>
@@ -141,7 +145,9 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
 
       <footer className="bg-surface-container-lowest border-t border-outline-variant mt-auto">
         <div className="w-full px-margin-mobile md:px-margin-desktop py-gutter max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-base">
-          <div className="flex items-center gap-2">
+          {/* Stacked (centred) on phones: side by side, the tagline ran over
+              the wordmark at 390px. */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
             <Logo />
             <div className="flex flex-col">
               <span className="text-label-sm text-on-surface-variant">{TAGLINE}</span>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Reveal } from "@/components/ui/Reveal";
+import s from "@/components/marketing/press.module.css";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -17,76 +17,76 @@ export const metadata: Metadata = {
 // language, since drafting that requires real counsel, not a guess).
 export default function PrivacyPage() {
   return (
-    <div className="max-w-2xl mx-auto w-full flex flex-col gap-8">
-      <Reveal mode="mount" className="flex flex-col gap-2">
-        <h1 className="text-headline-lg text-primary">Privacy</h1>
-        <p className="text-body-md text-on-surface-variant">
+    <div className={s.prose}>
+      <header className={s.pageHead}>
+        <h1 className={s.pageTitle}>Privacy</h1>
+        <p>
           Last updated {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.
         </p>
-      </Reveal>
+      </header>
 
-      <Reveal delay={0.06} className="bg-tertiary-container text-on-tertiary-container rounded-xl p-5 flex flex-col gap-2">
-        <p className="text-label-md font-bold uppercase tracking-wider">This is a plain-language summary, not a final policy</p>
-        <p className="text-body-md">
+      <div className={s.panel}>
+        <p className={s.panelLabel}>This is a plain-language summary, not a final policy</p>
+        <p>
           We&apos;re finalizing a formal, attorney-reviewed Privacy Policy. In the meantime, this page describes how
           First Coast Bids actually handles your information today, in plain English. If you have questions or a specific
-          request about your data, <Link href="/contact" className="font-bold underline">contact us</Link> directly.
+          request about your data, <Link href="/contact">contact us</Link> directly.
         </p>
-      </Reveal>
+      </div>
 
-      <Reveal delay={0.12} className="flex flex-col gap-3">
-        <h2 className="text-headline-md text-primary">What we collect</h2>
-        <p className="text-body-md text-on-surface-variant">
+      <section className={s.proseSection}>
+        <h2>What we collect</h2>
+        <p>
           Your company and contact information, your business credentials (license numbers, insurance details,
           certifications, and the documents that support them), the RFP and bid materials you upload, and basic
           account information needed to sign you in.
         </p>
-      </Reveal>
+      </section>
 
-      <Reveal delay={0.18} className="flex flex-col gap-3">
-        <h2 className="text-headline-md text-primary">How it&apos;s stored and who can see it</h2>
-        <p className="text-body-md text-on-surface-variant">
+      <section className={s.proseSection}>
+        <h2>How it&apos;s stored and who can see it</h2>
+        <p>
           Your data lives in a secured cloud database and file storage (Supabase). Access is restricted so only
           your own account and the First Coast Bids team members preparing your submissions can see it: access rules are
           enforced at the database level, not just hidden by the interface. Documents are kept in a private
           storage bucket and served through short-lived links (about an hour) rather than public URLs.
         </p>
-      </Reveal>
+      </section>
 
-      <Reveal delay={0.24} className="flex flex-col gap-3">
-        <h2 className="text-headline-md text-primary">Cookies</h2>
-        <p className="text-body-md text-on-surface-variant">
+      <section className={s.proseSection}>
+        <h2>Cookies</h2>
+        <p>
           We use a session cookie to keep you signed in. We don&apos;t currently use third-party advertising or
           analytics tracking cookies.
         </p>
-      </Reveal>
+      </section>
 
-      <Reveal delay={0.3} className="flex flex-col gap-3">
-        <h2 className="text-headline-md text-primary">Payment information</h2>
-        <p className="text-body-md text-on-surface-variant">
+      <section className={s.proseSection}>
+        <h2>Payment information</h2>
+        <p>
           We invoice you directly for work we&apos;ve done. This app itself doesn&apos;t collect or store your
           credit card number.
         </p>
-      </Reveal>
+      </section>
 
-      <Reveal delay={0.36} className="flex flex-col gap-3">
-        <h2 className="text-headline-md text-primary">Sharing</h2>
-        <p className="text-body-md text-on-surface-variant">
+      <section className={s.proseSection}>
+        <h2>Sharing</h2>
+        <p>
           We don&apos;t sell your data. We don&apos;t share it with third parties beyond what&apos;s genuinely needed
           to prepare your bid package.
         </p>
-      </Reveal>
+      </section>
 
-      <Reveal delay={0.42} className="flex flex-col gap-3">
-        <h2 className="text-headline-md text-primary">Questions or requests</h2>
-        <p className="text-body-md text-on-surface-variant">
+      <section className={s.proseSection}>
+        <h2>Questions or requests</h2>
+        <p>
           Want a copy of your data, or want something deleted?{" "}
-          <Link href="/contact" className="text-primary font-bold hover:underline">
+          <Link href="/contact">
             Reach out
           </Link>{" "}
           and we&apos;ll help.
         </p>
-      </Reveal>
+      </section>
     </div>
   );
 }
