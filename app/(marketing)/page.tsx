@@ -228,8 +228,11 @@ function Home() {
           matrix, and technical narrative, so you can review, sign, and send.
         </p>
         <div className={s.ctas}>
-          <Link href="/intake" className={`${s.btn} ${s.btnPrimary}`}>
-            Get started
+          {/* Pilot is the page's one main action (2026-09-23 decision, while
+              the free founding cohort is open); every other button on the
+              page and in the header points to the same place. */}
+          <Link href="/intake?package=pilot" className={`${s.btn} ${s.btnPrimary}`}>
+            Start a pilot bid
           </Link>
           <a href="#how" className={`${s.btn} ${s.btnQuiet}`}>
             See how it works
@@ -466,6 +469,22 @@ function Home() {
 
       {/* ---------- FAQ ---------- */}
       <section id="faq" className={s.block}>
+        {/* FAQPage structured data for search and answer engines: the exact
+            questions and answers rendered below, nothing added. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: FAQ_PREVIEW.map((item) => ({
+                "@type": "Question",
+                name: item.q,
+                acceptedAnswer: { "@type": "Answer", text: item.a },
+              })),
+            }).replace(/</g, "\\u003c"),
+          }}
+        />
         <div className={s.head}>
           <h2 className={s.h2}>
             Questions contractors <em>actually ask.</em>
@@ -492,8 +511,8 @@ function Home() {
           Ready to send in a <em>strong bid?</em>
         </h2>
         <p>Tell us about your bid. It only takes a few minutes.</p>
-        <Link href="/intake" className={`${s.btn} ${s.finalBtn}`}>
-          Get started
+        <Link href="/intake?package=pilot" className={`${s.btn} ${s.finalBtn}`}>
+          Start a pilot bid
         </Link>
         <span className={s.risk}>No card required to get started.</span>
       </section>
