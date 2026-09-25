@@ -61,8 +61,11 @@ const RULES: Rule[] = [
     build: (m) => ({ key: `addendum:${m[1]}`, kind: "amendment", federal: false, label: `Acknowledge Addendum ${m[1]}`, detail: null }),
   },
   {
-    pattern: /\backnowledg\w*\s+(?:receipt\s+of\s+)?(?:all\s+|any\s+)?addend/gi,
-    build: () => ({ key: "addendum:ack-all", kind: "amendment", federal: false, label: "Acknowledge all addenda on the bid form", detail: null }),
+    // "acknowledge receipt of all addenda" (local bids) and "acknowledge
+    // receipt of amendments" (federal RFQs, e.g. FA252126QB143).
+    // General wording only: a specific "Acknowledge Amendment 0001" has its own item.
+    pattern: /\backnowledg\w*\s+(?:receipt\s+of\s+(?:all\s+|any\s+)?(?:addend|amendment)|(?:all|any)\s+(?:addend|amendment)|(?:addenda|amendments)\b)/gi,
+    build: () => ({ key: "addendum:ack-all", kind: "amendment", federal: false, label: "Acknowledge every addendum or amendment", detail: null }),
   },
   {
     pattern: /\b(?:WD|Wage Determination)\s*(?:No\.?|Number|#)?\s*:?\s*(\d{4}-\d{4})(?:\s*\(?\s*Rev(?:ision)?\.?\s*(?:No\.?\s*)?-?\s*(\d{1,3})\)?)?/gi,

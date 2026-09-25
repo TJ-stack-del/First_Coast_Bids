@@ -36,6 +36,13 @@ test("a general 'acknowledge all addenda' rule is detected", () => {
   assert.deepEqual(keys(run("Bidders shall acknowledge receipt of all addenda on the bid form.")), ["addendum:ack-all"]);
 });
 
+test("a general 'acknowledge amendments' rule is detected too (real FA252126QB143 wording)", () => {
+  assert.deepEqual(
+    keys(run("(k) The offeror must acknowledge receipt of amendments to the solicitation, if applicable.")),
+    ["addendum:ack-all"]
+  );
+});
+
 test("wage determinations with and without revision", () => {
   const a = run("The Service Contract Act applies. WD 2015-4523 (Rev.-27) is attached.");
   assert.equal(a[0].key, "wd:2015-4523");
