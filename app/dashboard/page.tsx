@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { WageCheck } from "@/lib/wage/wage-check";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BidListFilter, type BidListItem } from "@/components/ui/BidListFilter";
@@ -57,6 +58,7 @@ export type Submission = {
   estimated_value: number | null;
   mandatory_site_visit_concern: boolean | null;
   mandatory_site_visit_explanation: string | null;
+  wage_check: WageCheck | null;
 };
 
 export type ChecklistItem = { id: string; submission_id: string; label: string; status: string; notes: string | null };
@@ -116,7 +118,7 @@ export default async function DashboardPage() {
   const { data: submissions, error: submissionsError } = await supabase
     .from("submissions")
     .select(
-      "id, agency, solicitation_number, due_date, scope, stage, draft, is_test, package_id, created_at, updated_at, estimated_value, mandatory_site_visit_concern, mandatory_site_visit_explanation"
+      "id, agency, solicitation_number, due_date, scope, stage, draft, is_test, package_id, created_at, updated_at, estimated_value, mandatory_site_visit_concern, mandatory_site_visit_explanation, wage_check"
     )
     .eq("client_id", client.id)
     .order("updated_at", { ascending: false });
