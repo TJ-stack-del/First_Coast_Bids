@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad, readNumberText } from "./prefill.ts";
+import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad, readNumberText, pickWdSuggestion, rerateLines, wdRefChanged, prefillGuidance } from "./prefill.ts";
 import type { ParsedWd } from "./parse-wd.ts";
 
 const WD: ParsedWd = {
@@ -77,7 +77,11 @@ test("sanitizing: blank, negative, text and unknown codes never become NaN or ne
 test("the worksheet reloads itself when the checklist finds the WD", () => {
   assert.equal(shouldAutoLoad("no_wd", null, "Price labor at or above Wage Determination 2015-4539 (Rev. 32)"), true);
   assert.equal(shouldAutoLoad("no_wd", "WD 2015-4539", "WD 2015-4539"), false, "same WD, nothing new");
-  assert.equal(shouldAutoLoad("ready", null, "WD 2015-4539"), false, "never replaces a worksheet in use");
+  // An amendment's newer WD while the worksheet is open: re-check it, which
+  // saves pending edits first and returns the saved worksheet plus the
+  // "solicitation now names Rev. N" banner (final review C1).
+  assert.equal(shouldAutoLoad("ready", "2015-4539|31", "2015-4539|32"), true);
+  assert.equal(shouldAutoLoad("loading", null, "WD 2015-4539"), false, "never while a load is running");
   assert.equal(shouldAutoLoad("no_wd", null, null), false);
 });
 
@@ -92,4 +96,70 @@ test("a number box's text is read without losing a half-typed decimal", () => {
   assert.equal(readNumberText("."), 0);
   assert.equal(readNumberText("abc"), null, "not a number: leave the value as it was");
   assert.equal(readNumberText("-4"), null, "negative isn't allowed");
+});
+
+// ---- Final review fixes (2026-09-25) ----
+
+test("I2: a bid price typed with $ and commas is read, not dropped", () => {
+  assert.equal(readNumberText("$90,000"), 90000);
+  assert.equal(readNumberText(" 90,000.50 "), 90000.5);
+});
+
+test("I5: a revision is read with or without brackets", () => {
+  assert.deepEqual(parseWdReference("2015-4539 Rev. 32"), { number: "2015-4539", revision: 32 });
+  assert.deepEqual(parseWdReference("2015-4539 Rev 32"), { number: "2015-4539", revision: 32 });
+  assert.deepEqual(parseWdReference("WD 2015-4539, Revision No. 32"), { number: "2015-4539", revision: 32 });
+  assert.deepEqual(parseWdReference("2015-4539 (Rev.-27)"), { number: "2015-4539", revision: 27 });
+});
+
+test("I5: the WD comes from the newest non-rejected WD suggestion (amendments supersede), number from its key", () => {
+  const sug = [
+    { kind: "wage_determination", dedupe_key: "wd:2015-4523", label: "Price labor at or above Wage Determination 2015-4523 (Rev. 36)", status: "rejected", created_at: "2026-09-25T10:00:00Z" },
+    { kind: "wage_determination", dedupe_key: "wd:2015-4539:r32", label: "Price labor at or above Wage Determination 2015-4539 (Rev. 32)", status: "approved", created_at: "2026-09-25T10:00:02Z" },
+    { kind: "form", dedupe_key: "form:sf-1449", label: "SF-1449", status: "pending", created_at: "2026-09-25T09:00:00Z" },
+    { kind: "wage_determination", dedupe_key: "wd:2015-4539:r33", label: "Price labor at or above Wage Determination 2015-4539 (Rev. 33)", status: "pending", created_at: "2026-09-25T10:00:05Z" },
+  ];
+  assert.deepEqual(pickWdSuggestion(sug), { number: "2015-4539", revision: 33 }, "the amendment's newer revision wins");
+  assert.deepEqual(pickWdSuggestion(sug.slice(0, 3)), { number: "2015-4539", revision: 32 });
+  assert.equal(pickWdSuggestion([]), null);
+  assert.equal(pickWdSuggestion([sug[0]]), null, "only a rejected one: none");
+});
+
+test("C1: switching WD keeps positions that exist in the new WD, re-rated, and drops the rest", () => {
+  const other = { ...WD, positions: [{ code: "11150", title: "Janitor", rate: 18.5, footnote: null }] };
+  const out = rerateLines(
+    [
+      { code: "11150", title: "Janitor", rate: 17.04, workers: 2, hoursPerWeek: 32.14, hoursSource: "from 45,000 sq ft" },
+      { code: "11210", title: "Laborer, Grounds Maintenance", rate: 17.94, workers: 1, hoursPerWeek: 20, hoursSource: null },
+    ],
+    other
+  );
+  assert.deepEqual(out, [{ code: "11150", title: "Janitor", rate: 18.5, workers: 2, hoursPerWeek: 32.14, hoursSource: "from 45,000 sq ft" }]);
+});
+
+test("C1: a changed WD number or revision is detected", () => {
+  assert.equal(wdRefChanged({ number: "2015-4539", revision: 32 }, { number: "2015-4539", revision: 33 }), true);
+  assert.equal(wdRefChanged({ number: "2015-4539", revision: 32 }, { number: "2015-4523", revision: 32 }), true);
+  assert.equal(wdRefChanged({ number: "2015-4539", revision: 32 }, { number: "2015-4539", revision: 32 }), false);
+  assert.equal(wdRefChanged({ number: "2015-4539", revision: 32 }, { number: "2015-4539", revision: null }), false, "no stated revision isn't a change");
+  assert.equal(wdRefChanged({ number: "2015-4539", revision: 32 }, null), false);
+});
+
+test("I4: the worksheet says exactly which default is missing", () => {
+  assert.deepEqual(prefillGuidance({ tradeLabel: null, positionCode: null, productionRate: null, cleanableSqft: null, missingCode: null }), [
+    "No trade matched this bid, so no position was pre-filled. Add a position below.",
+  ]);
+  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: null, productionRate: 3500, cleanableSqft: 45000, missingCode: null }), [
+    "Set a wage worksheet position code for Janitorial in Settings → Trades to pre-fill positions.",
+  ]);
+  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "11150", productionRate: null, cleanableSqft: 45000, missingCode: null }), [
+    "Set a production rate for Janitorial in Settings → Trades to pre-fill hours.",
+  ]);
+  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "11150", productionRate: 3500, cleanableSqft: null, missingCode: null }), [
+    "The solicitation didn't state square footage, so enter hours per week.",
+  ]);
+  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "99999", productionRate: 3500, cleanableSqft: 45000, missingCode: "99999" }), [
+    "Position 99999 (the Janitorial default) isn't in this wage determination. Add a position below.",
+  ]);
+  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "11150", productionRate: 3500, cleanableSqft: 45000, missingCode: null }), []);
 });

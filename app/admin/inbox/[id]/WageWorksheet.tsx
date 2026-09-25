@@ -5,6 +5,8 @@ import { Spinner } from "@/components/ui/Spinner";
 import { computeFloor, computePrice, belowFloor, roundCents, type WorksheetLine } from "@/lib/wage/floor";
 import type { ParsedWd } from "@/lib/wage/parse-wd";
 import { shouldAutoLoad, readNumberText } from "@/lib/wage/prefill";
+import { createSaver, type SaveStatus } from "@/lib/wage/saver";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 // A number box that keeps exactly what's typed (so "35." keeps its point
 // while "35.5" is entered) and passes the math the value it reads. Shows the
@@ -50,8 +52,10 @@ type Loaded = {
     bid_price: number | null;
   };
   parsed: ParsedWd;
-  missingCode: string | null;
-  hoursNeeded: boolean;
+  // Which default is missing, if any (Settings), and whether the
+  // solicitation's WD differs from this worksheet's (e.g. an amendment).
+  guidance: string[];
+  wdChanged: { number: string; revision: number | null } | null;
 };
 
 // Opens pre-filled; the admin checks the highlighted numbers and adjusts.
@@ -66,16 +70,44 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
   const [opts, setOpts] = useState({ includeVacation: true, eo13658: false });
   const [pricing, setPricing] = useState({ suppliesMode: "percent" as "percent" | "flat", suppliesValue: 0, overheadPct: 0, profitPct: 0 });
   const [bidPrice, setBidPrice] = useState<string>("");
-  const [saveState, setSaveState] = useState<"saved" | "saving" | "idle">("idle");
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saveState, setSaveState] = useState<SaveStatus>("idle");
+  const [changeWd, setChangeWd] = useState("");
+  const [confirmRefill, setConfirmRefill] = useState(false);
   const loadedOnce = useRef(false);
 
-  async function load(wdNumber?: string) {
+  // One save at a time, newest values win, failures shown (final review I3).
+  const saver = useRef(
+    createSaver<Record<string, unknown>>({
+      delay: 800,
+      onStatus: setSaveState,
+      send: async (payload) => {
+        const res = await fetch("/api/wage-worksheet", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          keepalive: true,
+        });
+        return res.ok;
+      },
+    })
+  );
+  // Leaving the page within the debounce still saves the last edit.
+  useEffect(() => {
+    const flush = () => void saver.current.flush();
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, []);
+
+  async function load(opts?: { wdNumber?: string; refill?: boolean }) {
+    await saver.current.flush();
     setState("loading");
     const res = await fetch("/api/wage-worksheet", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId, ...(wdNumber ? { wdNumber } : {}) }),
+      body: JSON.stringify({ submissionId, ...(opts?.wdNumber ? { wdNumber: opts.wdNumber } : {}), ...(opts?.refill ? { refill: true } : {}) }),
     });
     const body = await res.json().catch(() => null);
     if (res.status === 404 && body?.error === "no_wd") return setState("no_wd");
@@ -109,23 +141,19 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
     lastRef.current = wdRef;
   }, [wdRef, state]);
 
-  // Autosave: every change restarts the timer; the save sends current state.
+  // "$90,000" and "90,000" are read, never silently dropped (final review I2).
+  const bidParsed = bidPrice.trim() === "" ? null : readNumberText(bidPrice);
+  const bidInvalid = bidPrice.trim() !== "" && bidParsed === null;
+
+  // Autosave the latest values after each change.
   useEffect(() => {
     if (state !== "ready") return;
     if (!loadedOnce.current) {
       loadedOnce.current = true;
       return;
     }
-    if (timer.current) clearTimeout(timer.current);
-    setSaveState("saving");
-    timer.current = setTimeout(async () => {
-      await fetch("/api/wage-worksheet", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId, lines, options: opts, ...pricing, bidPrice: bidPrice === "" ? null : Number(bidPrice) }),
-      });
-      setSaveState("saved");
-    }, 800);
+    if (bidInvalid) return;
+    saver.current.schedule({ submissionId, lines, options: opts, ...pricing, bidPrice: bidParsed });
   }, [lines, opts, pricing, bidPrice]);
 
   const box = "mt-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-6";
@@ -141,7 +169,7 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
         <h2 id="wage-worksheet" className="text-title-lg text-primary">Wage worksheet</h2>
         {state === "error" && <p className="mt-2 text-error">{error}</p>}
         <p className="mt-2 text-body-md text-on-surface-variant">Enter the wage determination from the solicitation (e.g. 2015-4539 (Rev. 32)).</p>
-        <form onSubmit={(e) => { e.preventDefault(); load(wdInput); }} className="mt-3 flex gap-2">
+        <form onSubmit={(e) => { e.preventDefault(); load({ wdNumber: wdInput }); }} className="mt-3 flex gap-2">
           <input value={wdInput} onChange={(e) => setWdInput(e.target.value)} placeholder="2015-4539 (Rev. 32)" className="px-3 py-2 rounded border border-outline-variant font-code" />
           <button type="submit" className="px-4 py-2 rounded-lg bg-primary text-on-primary text-label-md font-bold">Fetch</button>
         </form>
@@ -151,15 +179,23 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
   const wd = data!.parsed;
   const { lines: per, total } = computeFloor(lines, wd, opts);
   const { supplies, price } = computePrice(total.floor, pricing);
-  const bid = bidPrice === "" ? null : Number(bidPrice);
-  const short = belowFloor(bid !== null && Number.isFinite(bid) ? bid : null, total.floor);
+  const short = belowFloor(bidParsed, total.floor);
   const cell = "px-2 py-1 rounded border border-outline-variant w-24 text-right";
 
   return (
     <section className={box} aria-labelledby="wage-worksheet">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="wage-worksheet" className="text-title-lg text-primary">Wage worksheet</h2>
-        <span className="text-body-sm text-on-surface-variant">{saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : ""}</span>
+        <span className="text-body-sm text-on-surface-variant">
+          {saveState === "saving" && "Saving…"}
+          {saveState === "saved" && "Saved"}
+          {saveState === "error" && (
+            <span className="text-error font-bold">
+              Not saved.{" "}
+              <button type="button" onClick={() => void saver.current.retry()} className="underline">Retry</button>
+            </span>
+          )}
+        </span>
       </div>
       <p className="mt-1 text-body-sm text-on-surface-variant">
         WD {wd.number} Rev. {wd.revision} · {wd.area ?? wd.state} · check this area matches the place of performance.
@@ -167,9 +203,29 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
       {data!.worksheet.wd_revision_source === "latest" && (
         <p className="mt-1 text-body-sm text-error">The solicitation didn&apos;t name a revision; this is the latest. Confirm it with the solicitation.</p>
       )}
-      {data!.missingCode && (
-        <p className="mt-1 text-body-sm text-error">Position {data!.missingCode} (your trade&apos;s default) isn&apos;t in this WD. Add a position below.</p>
+      {data!.wdChanged && (
+        <p role="alert" className="mt-2 text-body-md text-error font-bold">
+          The solicitation now names WD {data!.wdChanged.number}
+          {data!.wdChanged.revision !== null ? ` Rev. ${data!.wdChanged.revision}` : ""}; this worksheet uses Rev. {wd.revision}.{" "}
+          <button
+            type="button"
+            onClick={() => load({ wdNumber: `${data!.wdChanged!.number}${data!.wdChanged!.revision !== null ? ` (Rev. ${data!.wdChanged!.revision})` : ""}` })}
+            className="underline"
+          >
+            Update the worksheet
+          </button>
+        </p>
       )}
+      {data!.guidance.map((g) => (
+        <p key={g} className="mt-1 text-body-sm text-error">{g}</p>
+      ))}
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-body-sm">
+        <form onSubmit={(e) => { e.preventDefault(); if (changeWd.trim()) load({ wdNumber: changeWd }); }} className="flex items-center gap-2">
+          <input value={changeWd} onChange={(e) => setChangeWd(e.target.value)} placeholder="Change WD, e.g. 2015-4539 Rev 33" className="px-2 py-1 rounded border border-outline-variant font-code w-64" />
+          <button type="submit" className="text-primary font-bold underline">Use this WD</button>
+        </form>
+        <button type="button" onClick={() => setConfirmRefill(true)} className="text-primary font-bold underline">Re-fill from Settings</button>
+      </div>
 
       <table className="mt-4 w-full text-body-sm">
         <thead>
@@ -210,7 +266,7 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
 
       <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1 text-body-sm max-w-lg">
         <dt>Wages</dt><dd className="text-right font-code">{money(roundCents(total.wages))}</dd>
-        <dt>Health &amp; welfare ({money(wd.hwPerHour)}/h, up to 40 h/wk)</dt><dd className="text-right font-code">{money(roundCents(total.hw))}</dd>
+        <dt>Health &amp; welfare ({money(total.hwRate)}/h{wd.paidSickLeave && wd.hwEo13706PerHour !== null ? ", the WD's EO 13706 rate" : ""}, up to 40 h/wk)</dt><dd className="text-right font-code">{money(roundCents(total.hw))}</dd>
         <dt>Holidays ({wd.holidays ?? 0})</dt><dd className="text-right font-code">{money(roundCents(total.holidays))}</dd>
         <dt><label className="flex items-center gap-2"><input type="checkbox" checked={opts.includeVacation} onChange={(e) => setOpts({ ...opts, includeVacation: e.target.checked })} /> Vacation ({wd.vacationWeeks ?? 0} wks)</label></dt><dd className="text-right font-code">{money(roundCents(total.vacation))}</dd>
         <dt>Paid sick leave (EO 13706)</dt><dd className="text-right font-code">{money(roundCents(total.sick))}</dd>
@@ -234,9 +290,21 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
       <label className="mt-3 flex items-center gap-2 text-body-md">
         Bid price ($/year) <input className={`${cell} w-36`} inputMode="decimal" value={bidPrice} onChange={(e) => setBidPrice(e.target.value)} />
       </label>
+      {bidInvalid && <p role="alert" className="mt-2 text-body-md font-bold text-error">The bid price isn&apos;t a number, so it can&apos;t be checked against the floor.</p>}
       {short !== null && (
         <p role="alert" className="mt-2 text-body-md font-bold text-error">Below the labor-cost floor by {money(short)}/year.</p>
       )}
+      <ConfirmDialog
+        open={confirmRefill}
+        onClose={() => setConfirmRefill(false)}
+        onConfirm={() => {
+          setConfirmRefill(false);
+          load({ refill: true });
+        }}
+        title="Re-fill from Settings?"
+        description="This replaces the positions, hours, supplies, overhead and profit with your current Settings defaults. The bid price is kept."
+        confirmLabel="Re-fill"
+      />
     </section>
   );
 }

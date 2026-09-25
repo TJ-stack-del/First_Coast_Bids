@@ -18,6 +18,7 @@ import { ChecklistSuggestionsPanel } from "./ChecklistSuggestionsPanel";
 import { WageWorksheet } from "./WageWorksheet";
 import { isFederalAgency } from "@/lib/federal-agency";
 import { filesFingerprint } from "@/lib/checklist/scan-state";
+import { pickWdSuggestion } from "@/lib/wage/prefill";
 import { isKnownTrade } from "@/lib/compliance/known-trades";
 import { computePreflightSummary } from "@/lib/compliance/preflight-summary";
 import { AdminFirstViewTransition } from "./AdminFirstViewTransition";
@@ -146,7 +147,7 @@ export default async function AdminSubmissionDetailPage({
 
   const { data: suggestions } = await supabase
     .from("checklist_suggestions")
-    .select("id, kind, federal, label, detail, quote, page, source_file, quote_status, found_by, suggested_owner, status")
+    .select("id, kind, federal, label, detail, quote, page, source_file, quote_status, found_by, suggested_owner, status, dedupe_key, created_at")
     .eq("submission_id", id)
     .order("created_at", { ascending: true });
   // Same rule as /api/send-checklist-items: client items not yet emailed and not finished.
@@ -435,7 +436,10 @@ export default async function AdminSubmissionDetailPage({
           {(isFederalAgency(submission.agency) || (suggestions ?? []).some((s: any) => s.kind === "wage_determination")) && (
             <WageWorksheet
               submissionId={submission.id}
-              wdRef={(suggestions ?? []).find((s: any) => s.kind === "wage_determination")?.label ?? null}
+              wdRef={(() => {
+                const wd = pickWdSuggestion((suggestions ?? []) as any);
+                return wd ? `${wd.number}|${wd.revision ?? ""}` : null;
+              })()}
             />
           )}
           <AdminSubmissionActions

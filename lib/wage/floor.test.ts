@@ -15,21 +15,23 @@ test("two full-time janitors on the Jacksonville WD (worked by hand)", () => {
   const r = computeLine(janitors(2, 40), WD, ON);
   assert.equal(r.annualHours, 4160);
   assert.equal(roundCents(r.wages), 70886.4);
-  assert.equal(roundCents(r.hw), 24627.2);
+  // Final review I1: the WD says the H&W EO 13706 rate ($5.42) is the one to
+  // use when paid sick leave is provided -- $5.92 plus sick leave double-counts.
+  assert.equal(roundCents(r.hw), 22547.2);
   assert.equal(roundCents(r.holidays), 2999.04);
   assert.equal(roundCents(r.vacation), 2726.4);
   assert.equal(roundCents(r.sick), 1908.48, "sick leave capped at 56 h per worker");
   assert.equal(roundCents(r.fica), 6006.8);
-  assert.equal(roundCents(r.floor), 109154.32);
+  assert.equal(roundCents(r.floor), 107074.32);
 });
 
 test("a part-time janitor is prorated (20 h/week)", () => {
   const r = computeLine(janitors(1, 20), WD, ON);
-  assert.equal(roundCents(r.hw), 6156.8);
+  assert.equal(roundCents(r.hw), 5636.8);
   assert.equal(roundCents(r.holidays), 749.76);
   assert.equal(roundCents(r.vacation), 681.6);
   assert.equal(roundCents(r.sick), 590.72, "1 h per 30 worked, under the cap");
-  assert.equal(roundCents(r.floor), 27410.87);
+  assert.equal(roundCents(r.floor), 26890.87);
 });
 
 test("health & welfare, holidays and vacation stop at 40 hours a week", () => {
@@ -63,7 +65,7 @@ test("missing WD holidays/vacation count as zero, never NaN", () => {
 test("computeFloor totals the lines", () => {
   const { total, lines } = computeFloor([janitors(2, 40), janitors(1, 20)], WD, ON);
   assert.equal(lines.length, 2);
-  assert.equal(roundCents(total.floor), roundCents(109154.32448 + 27410.87152));
+  assert.equal(roundCents(total.floor), roundCents(107074.32448 + 26890.87152));
 });
 
 test("price = (floor + supplies) x (1 + overhead) x (1 + profit)", () => {
@@ -78,4 +80,11 @@ test("below-floor shortfall", () => {
   assert.equal(belowFloor(100000, 109154.32), 9154.32);
   assert.equal(belowFloor(120000, 109154.32), null);
   assert.equal(belowFloor(null, 109154.32), null);
+});
+
+test("without paid sick leave the standard H&W rate applies", () => {
+  const r = computeLine(janitors(2, 40), { ...WD, paidSickLeave: false }, ON);
+  assert.equal(roundCents(r.hw), 24627.2);
+  assert.equal(r.hwRate, 5.92);
+  assert.equal(computeLine(janitors(2, 40), WD, ON).hwRate, 5.42);
 });

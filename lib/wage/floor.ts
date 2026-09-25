@@ -24,6 +24,8 @@ export type FloorBreakdown = {
   floor: number;
   annualHours: number;
   wage: number;
+  // The health & welfare rate actually used (see computeLine).
+  hwRate: number;
 };
 export type PricingInputs = { suppliesMode: "percent" | "flat"; suppliesValue: number; overheadPct: number; profitPct: number };
 
@@ -41,12 +43,16 @@ export function computeLine(line: WorksheetLine, wd: ParsedWd, options: Workshee
   const capped = Math.min(line.hoursPerWeek, 40);
   const annualHours = line.workers * line.hoursPerWeek * WEEKS;
   const wages = annualHours * wage;
-  const hw = line.workers * capped * WEEKS * wd.hwPerHour;
+  // When the WD provides EO 13706 paid sick leave, the WD itself says its
+  // "H&W EO 13706" rate is the one to use; the standard rate plus sick leave
+  // double-counts (~2% too high on the Jacksonville WD; final review, 2026-09-25).
+  const hwRate = wd.paidSickLeave && wd.hwEo13706PerHour !== null ? wd.hwEo13706PerHour : wd.hwPerHour;
+  const hw = line.workers * capped * WEEKS * hwRate;
   const holidays = line.workers * (wd.holidays ?? 0) * 8 * (capped / 40) * wage;
   const vacation = options.includeVacation ? line.workers * (wd.vacationWeeks ?? 0) * capped * wage : 0;
   const sick = wd.paidSickLeave ? Math.min(annualHours * SICK_HOURS_PER_WORKED, SICK_CAP_PER_WORKER * line.workers) * wage : 0;
   const fica = FICA * (wages + holidays + vacation + sick);
-  return { wages, hw, holidays, vacation, sick, fica, floor: wages + hw + holidays + vacation + sick + fica, annualHours, wage };
+  return { wages, hw, holidays, vacation, sick, fica, floor: wages + hw + holidays + vacation + sick + fica, annualHours, wage, hwRate };
 }
 
 export function computeFloor(
@@ -66,8 +72,9 @@ export function computeFloor(
       floor: t.floor + r.floor,
       annualHours: t.annualHours + r.annualHours,
       wage: 0,
+      hwRate: r.hwRate,
     }),
-    { wages: 0, hw: 0, holidays: 0, vacation: 0, sick: 0, fica: 0, floor: 0, annualHours: 0, wage: 0 }
+    { wages: 0, hw: 0, holidays: 0, vacation: 0, sick: 0, fica: 0, floor: 0, annualHours: 0, wage: 0, hwRate: wd.paidSickLeave && wd.hwEo13706PerHour !== null ? wd.hwEo13706PerHour : wd.hwPerHour }
   );
   return { lines: each, total };
 }

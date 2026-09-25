@@ -45,7 +45,9 @@ test("a general 'acknowledge amendments' rule is detected too (real FA252126QB14
 
 test("wage determinations with and without revision", () => {
   const a = run("The Service Contract Act applies. WD 2015-4523 (Rev.-27) is attached.");
-  assert.equal(a[0].key, "wd:2015-4523");
+  // The revision is part of the identity, so an amendment that moves the WD
+  // to a new revision becomes its own item (wage worksheet review, 2026-09-25).
+  assert.equal(a[0].key, "wd:2015-4523:r27");
   assert.match(a[0].label, /2015-4523 \(Rev\. 27\)/);
   assert.equal(a[0].suggested_owner, "admin");
   const b = run("Wage Determination No. 2015-4523 applies.");
@@ -84,4 +86,10 @@ test("identifierKey finds the same keys in free text", () => {
   assert.equal(identifierKey("Complete FAR 52.212-3"), "far:52.212-3");
   assert.equal(identifierKey("Acknowledge Amendment 0002"), "amendment:0002");
   assert.equal(identifierKey("Provide a bid bond"), null);
+});
+
+test("an amendment naming a new WD revision is a separate item", () => {
+  const items = run("Wage Determination No. 2015-4539 (Rev. 32) applies.", "Amendment 0001: Wage Determination No. 2015-4539 (Rev. 33) replaces Rev. 32.");
+  assert.ok(items.some((i) => i.key === "wd:2015-4539:r32"));
+  assert.ok(items.some((i) => i.key === "wd:2015-4539:r33"));
 });

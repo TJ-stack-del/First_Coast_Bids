@@ -70,7 +70,9 @@ const RULES: Rule[] = [
   {
     pattern: /\b(?:WD|Wage Determination)\s*(?:No\.?|Number|#)?\s*:?\s*(\d{4}-\d{4})(?:\s*\(?\s*Rev(?:ision)?\.?\s*(?:No\.?\s*)?-?\s*(\d{1,3})\)?)?/gi,
     build: (m) => ({
-      key: `wd:${m[1]}`,
+      // The revision is part of the identity: an amendment moving the WD to a
+      // new revision is a new item, so the wage worksheet can flag it.
+      key: `wd:${m[1]}${m[2] ? `:r${m[2]}` : ""}`,
       kind: "wage_determination",
       federal: true,
       label: `Price labor at or above Wage Determination ${m[1]}${m[2] ? ` (Rev. ${m[2]})` : ""}`,
