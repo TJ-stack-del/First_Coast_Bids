@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signRfpDocumentUrl, signRfpDocumentUrls } from "@/lib/storage";
 
@@ -45,6 +46,7 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     supabase
@@ -93,14 +95,20 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
       return;
     }
 
-    // Read the new solicitation for checklist suggestions. Not awaited:
-    // the upload is done; the admin panel shows the reading's progress.
+    // Read the new solicitation for checklist suggestions. Not awaited: the
+    // upload is done. The page refreshes shortly after (so the panel shows
+    // "Reading…") and again when the reading finishes, so the suggestions and
+    // the wage worksheet appear without a manual reload -- found in the dev
+    // run on 2026-09-25, where nothing updated until the admin reloaded.
     if (docType === "rfp_file") {
+      setTimeout(() => router.refresh(), 1500);
       fetch("/api/checklist-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submissionId }),
-      }).catch(() => {});
+      })
+        .catch(() => {})
+        .finally(() => router.refresh());
     }
 
     const signedUrl = await signRfpDocumentUrl(supabase, path);

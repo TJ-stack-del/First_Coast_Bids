@@ -25,6 +25,9 @@ export type BidEstimationFacts = {
   facility_count: number | null;
   facility_type: string | null;
   term_years: number | null;
+  // Days per week the service is performed, only when the document states a
+  // schedule -- pre-fills the wage worksheet's hours.
+  service_days_per_week: number | null;
   // The only real dollar figure in this whole module: an actual contract
   // ceiling/value the agency itself stated. Null means "not stated" --
   // never a guess standing in for it.
@@ -48,6 +51,7 @@ Read the provided document(s) and respond with ONLY a single JSON object with ex
 - "facility_count": the number of distinct facilities/sites/buildings covered, as an integer, or null if not stated or not determinable.
 - "facility_type": a short label for the facility type (e.g. "public_works", "courthouse", "school", "airport", "medical"), or null.
 - "term_years": the total contract term in years, INCLUDING any renewal/option years explicitly offered (e.g. "3-year base plus two 1-year options" is 5), as a number, or null if not stated.
+- "service_days_per_week": how many days per week the service is performed, as a number from 1 to 7, ONLY if the document states a schedule (e.g. "Monday through Friday" is 5; "three times per week" is 3); otherwise null.
 - "stated_ceiling": the total contract value or ceiling, in dollars, ONLY if the document explicitly states one (a dollar figure, an "not-to-exceed" amount, an estimated total value). Do not calculate, annualize, or infer this from a rate or square footage -- if the document doesn't state an actual total dollar figure, this must be null.
 - "services_detected": an object with boolean values for each of these keys, true only if that specific service is explicitly mentioned as in-scope: ${KNOWN_SERVICE_KEYS.join(", ")}. Omit or leave false any key not clearly supported by the document text.
 
@@ -60,6 +64,7 @@ function coerceFacts(parsed: unknown): BidEstimationFacts {
     facility_count: null,
     facility_type: null,
     term_years: null,
+    service_days_per_week: null,
     stated_ceiling: null,
     services_detected: {},
   };
@@ -86,6 +91,10 @@ function coerceFacts(parsed: unknown): BidEstimationFacts {
     facility_count: asPositiveInt(record.facility_count),
     facility_type: asString(record.facility_type),
     term_years: asPositiveNumber(record.term_years),
+    service_days_per_week: (() => {
+      const n = asPositiveNumber(record.service_days_per_week);
+      return n !== null && n <= 7 ? n : null;
+    })(),
     stated_ceiling: asPositiveNumber(record.stated_ceiling),
     services_detected,
   };

@@ -24,6 +24,8 @@ export function applyTradeChange(trades: Trade[], change: (TradeInput & { id: st
     keywords: change.keywords,
     active: change.active,
     sortOrder,
+    wdPositionCode: change.wdPositionCode ?? null,
+    productionRate: change.productionRate ?? null,
   };
   return existing ? trades.map((t) => (t.id === change.id ? updated : t)) : [...trades, updated];
 }
