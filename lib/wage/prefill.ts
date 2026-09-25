@@ -87,3 +87,10 @@ export function sanitizeLines(raw: unknown, wd: ParsedWd): WorksheetLine[] {
   }
   return out;
 }
+
+// The worksheet fills itself in when the checklist finds the bid's WD after
+// it was first shown (upload -> reading -> WD found). It only ever replaces
+// the "enter the wage determination" state, never a worksheet in use.
+export function shouldAutoLoad(state: string, previousRef: string | null, currentRef: string | null): boolean {
+  return state === "no_wd" && currentRef !== null && currentRef !== previousRef;
+}

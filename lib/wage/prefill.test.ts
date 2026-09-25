@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber } from "./prefill.ts";
+import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad } from "./prefill.ts";
 import type { ParsedWd } from "./parse-wd.ts";
 
 const WD: ParsedWd = {
@@ -68,4 +68,15 @@ test("sanitizing: blank, negative, text and unknown codes never become NaN or ne
   assert.equal(sanitizeNumber("12.5", 0), 12.5);
   assert.equal(sanitizeNumber(Infinity, 7), 7);
   assert.equal(sanitizeNumber(-1, 7), 7);
+});
+
+// Found in the dev end-to-end run (2026-09-25): the worksheet showed "Enter
+// the wage determination" before the solicitation was read and stayed that
+// way after the checklist found WD 2015-4539 -- an extra step for one person
+// on a 48-hour clock. It fills itself in once the WD becomes known.
+test("the worksheet reloads itself when the checklist finds the WD", () => {
+  assert.equal(shouldAutoLoad("no_wd", null, "Price labor at or above Wage Determination 2015-4539 (Rev. 32)"), true);
+  assert.equal(shouldAutoLoad("no_wd", "WD 2015-4539", "WD 2015-4539"), false, "same WD, nothing new");
+  assert.equal(shouldAutoLoad("ready", null, "WD 2015-4539"), false, "never replaces a worksheet in use");
+  assert.equal(shouldAutoLoad("no_wd", null, null), false);
 });

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Spinner } from "@/components/ui/Spinner";
 import { computeFloor, computePrice, belowFloor, roundCents, type WorksheetLine } from "@/lib/wage/floor";
 import type { ParsedWd } from "@/lib/wage/parse-wd";
+import { shouldAutoLoad } from "@/lib/wage/prefill";
 
 const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
@@ -28,7 +29,7 @@ type Loaded = {
 // Opens pre-filled; the admin checks the highlighted numbers and adjusts.
 // Recomputes live with plain code; autosaves ~0.8 s after the last change,
 // always sending the latest values.
-export function WageWorksheet({ submissionId }: { submissionId: string }) {
+export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; wdRef: string | null }) {
   const [state, setState] = useState<"loading" | "no_wd" | "error" | "ready">("loading");
   const [error, setError] = useState<string | null>(null);
   const [wdInput, setWdInput] = useState("");
@@ -72,6 +73,13 @@ export function WageWorksheet({ submissionId }: { submissionId: string }) {
   useEffect(() => {
     load();
   }, [submissionId]);
+
+  // The checklist found the WD after this was first shown: fill in now.
+  const lastRef = useRef<string | null>(wdRef);
+  useEffect(() => {
+    if (shouldAutoLoad(state, lastRef.current, wdRef)) load();
+    lastRef.current = wdRef;
+  }, [wdRef, state]);
 
   // Autosave: every change restarts the timer; the save sends current state.
   useEffect(() => {

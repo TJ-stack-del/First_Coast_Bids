@@ -433,7 +433,10 @@ export default async function AdminSubmissionDetailPage({
             unsentClientItems={unsentClientItems}
           />
           {(isFederalAgency(submission.agency) || (suggestions ?? []).some((s: any) => s.kind === "wage_determination")) && (
-            <WageWorksheet submissionId={submission.id} />
+            <WageWorksheet
+              submissionId={submission.id}
+              wdRef={(suggestions ?? []).find((s: any) => s.kind === "wage_determination")?.label ?? null}
+            />
           )}
           <AdminSubmissionActions
             submissionId={submission.id}
