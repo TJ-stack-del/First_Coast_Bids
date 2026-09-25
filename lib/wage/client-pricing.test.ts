@@ -25,3 +25,9 @@ test("negative, unreadable, or a zero production rate is missing", () => {
 test("0% profit is a real answer, not missing", () => {
   assert.deepEqual(missingPricing(normalizeClientPricing({ suppliesValue: 5, overheadPct: 10, profitPct: 0 })), []);
 });
+
+test("only a client with no saved numbers counts as a first save", () => {
+  assert.equal(hasAnyPricing(normalizeClientPricing({})), false);
+  assert.equal(hasAnyPricing(normalizeClientPricing({ productionRate: 3500 })), true);
+  assert.equal(hasAnyPricing(normalizeClientPricing({ profitPct: 0 })), true);
+});

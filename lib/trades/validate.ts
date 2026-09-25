@@ -41,10 +41,6 @@ export function normalizeTradeInput(raw: unknown): TradeInput {
     active: obj.active === false ? false : true,
     wdPositionCode:
       typeof obj.wdPositionCode === "string" && obj.wdPositionCode.trim() ? obj.wdPositionCode.trim() : null,
-    productionRate:
-      obj.productionRate === "" || obj.productionRate === null || obj.productionRate === undefined
-        ? null
-        : Number(obj.productionRate),
   };
 }
 
@@ -93,13 +89,6 @@ export function validateTrade(input: TradeInput, allTrades: Trade[]): { ok: bool
 
   if (input.wdPositionCode && !/^\d{5}$/.test(input.wdPositionCode)) {
     errors.push(`Position code "${input.wdPositionCode}" must be 5 digits, like 11150.`);
-  }
-  if (
-    input.productionRate !== null &&
-    input.productionRate !== undefined &&
-    !(Number.isFinite(input.productionRate) && input.productionRate > 0)
-  ) {
-    errors.push("Production rate must be a positive number of square feet per hour.");
   }
 
   return { ok: errors.length === 0, errors };

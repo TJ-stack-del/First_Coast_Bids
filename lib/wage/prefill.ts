@@ -3,16 +3,7 @@ import type { WorksheetLine } from "./floor.ts";
 
 // Opening the worksheet already filled in (the user's hard constraint: one
 // person, 48-hour turnaround). Every value comes from the solicitation's
-// facts, the WD, or the admin's own standing settings -- never a guess.
-
-export type PricingDefaults = {
-  suppliesMode?: "percent" | "flat";
-  suppliesValue?: number;
-  overheadPct?: number;
-  profitPct?: number;
-  includeVacation?: boolean;
-  serviceDaysPerWeek?: number;
-};
+// facts, the WD, or the client's own numbers -- never a guess.
 
 // "Wage Determination 2015-4523 (Rev. 27)", "WD 2015-4539".
 // "Wage Determination 2015-4523 (Rev. 27)", "2015-4539 Rev 32",
@@ -55,25 +46,32 @@ export function rerateLines(lines: WorksheetLine[], wd: ParsedWd): WorksheetLine
   return sanitizeLines(lines, wd);
 }
 
-// Exactly which default is missing, so an empty or half-filled worksheet says
-// what to set (final review, 2026-09-25) instead of just showing $0.
+// Exactly what's missing, so a half-filled worksheet says what to get: the
+// client's numbers name the client; only the position code is ours (Settings).
 export function prefillGuidance(input: {
   tradeLabel: string | null;
   positionCode: string | null;
+  clientName: string;
   productionRate: number | null;
   cleanableSqft: number | null;
   missingCode: string | null;
+  missingPricing: string[];
 }): string[] {
-  if (!input.tradeLabel) return ["No trade matched this bid, so no position was pre-filled. Add a position below."];
-  if (input.missingCode) {
-    return [`Position ${input.missingCode} (the ${input.tradeLabel} default) isn't in this wage determination. Add a position below.`];
-  }
-  if (!input.positionCode) {
-    return [`Set a wage worksheet position code for ${input.tradeLabel} in Settings → Trades to pre-fill positions.`];
-  }
   const out: string[] = [];
-  if (!input.productionRate) out.push(`Set a production rate for ${input.tradeLabel} in Settings → Trades to pre-fill hours.`);
-  if (!input.cleanableSqft) out.push("The solicitation didn't state square footage, so enter hours per week.");
+  if (!input.tradeLabel) out.push("No trade matched this bid, so no position was pre-filled. Add a position below.");
+  else if (input.missingCode) {
+    out.push(`Position ${input.missingCode} (the ${input.tradeLabel} default) isn't in this wage determination. Add a position below.`);
+  } else if (!input.positionCode) {
+    out.push(`Set a wage worksheet position code for ${input.tradeLabel} in Settings → Trades to pre-fill positions.`);
+  } else {
+    if (!input.productionRate) out.push(`Enter ${input.clientName}'s sq ft per hour to pre-fill hours.`);
+    if (!input.cleanableSqft) out.push("The solicitation didn't state square footage, so enter hours per week.");
+  }
+  if (input.missingPricing.length) {
+    const m = input.missingPricing;
+    const list = m.length === 1 ? m[0] : `${m.slice(0, -1).join(", ")} and ${m[m.length - 1]}`;
+    out.push(`Missing ${input.clientName}'s ${list}.`);
+  }
   return out;
 }
 
@@ -96,14 +94,14 @@ export function prefillLines(input: {
   productionRate: number | null;
   cleanableSqft: number | null;
   serviceDaysPerWeek: number | null;
-  defaults: PricingDefaults;
 }): { lines: WorksheetLine[]; missingCode: string | null; hoursNeeded: boolean } {
   const code = input.positionCode;
   const position = code ? input.wd.positions.find((p) => p.code === code) : undefined;
   if (code && !position) return { lines: [], missingCode: code, hoursNeeded: true };
   if (!position) return { lines: [], missingCode: null, hoursNeeded: true };
 
-  const days = input.serviceDaysPerWeek ?? input.defaults.serviceDaysPerWeek ?? 5;
+  const assumed = input.serviceDaysPerWeek === null;
+  const days = input.serviceDaysPerWeek ?? 5;
   if (!input.cleanableSqft || !input.productionRate) {
     return {
       lines: [{ code: position.code, title: position.title, rate: position.rate, workers: 1, hoursPerWeek: 0, hoursSource: null }],
@@ -121,12 +119,22 @@ export function prefillLines(input: {
         rate: position.rate,
         workers,
         hoursPerWeek: Math.round((totalHours / workers) * 100) / 100,
-        hoursSource: `from ${fmt(input.cleanableSqft)} sq ft at ${fmt(input.productionRate)} sq ft/hr × ${days} days`,
+        hoursSource: `from ${fmt(input.cleanableSqft)} sq ft at ${fmt(input.productionRate)} sq ft/hr × ${days} days${assumed ? " (assumed; the solicitation didn't say)" : ""}`,
       },
     ],
     missingCode: null,
     hoursNeeded: false,
   };
+}
+
+// Saving a client's numbers the first time re-computes hours -- only on
+// lines whose hours are blank or were pre-filled, never hours the admin typed.
+export function applyPrefilledHours(current: WorksheetLine[], prefilled: WorksheetLine[]): WorksheetLine[] {
+  return current.map((l) => {
+    if (l.hoursPerWeek > 0 && l.hoursSource === null) return l;
+    const p = prefilled.find((x) => x.code === l.code);
+    return p && p.hoursPerWeek > 0 ? { ...l, workers: p.workers, hoursPerWeek: p.hoursPerWeek, hoursSource: p.hoursSource } : l;
+  });
 }
 
 // Lines as sent by the browser: rates always come from the WD (never the
@@ -170,4 +178,12 @@ export function readNumberText(text: string): number | null {
   if (!/^\d*\.?\d*$/.test(t)) return null;
   const n = Number(t);
   return Number.isFinite(n) ? n : null;
+}
+
+// For boxes where blank means "not given yet" (the client's numbers):
+// null = blank, a number = read, undefined = unreadable (keep the old value).
+export function readOptionalNumberText(text: string): number | null | undefined {
+  if (text.trim() === "") return null;
+  const n = readNumberText(text);
+  return n === null ? undefined : n;
 }

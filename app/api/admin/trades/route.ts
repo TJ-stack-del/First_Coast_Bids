@@ -57,7 +57,6 @@ export async function POST(request: Request) {
       active: saved.active,
       sort_order: saved.sortOrder,
       wd_position_code: saved.wdPositionCode,
-      production_rate_sqft_per_hour: saved.productionRate,
       updated_at: new Date().toISOString(),
     };
     const { error } = isNew

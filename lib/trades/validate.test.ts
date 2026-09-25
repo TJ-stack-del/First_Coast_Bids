@@ -12,7 +12,6 @@ const EXISTING: Trade = {
   active: false, // inactive trades still own their codes
   sortOrder: 1,
   wdPositionCode: null,
-  productionRate: null,
 };
 
 function errorsOf(raw: unknown, all: Trade[] = [EXISTING]): string[] {
@@ -35,8 +34,7 @@ test("normalises: trims, lowercases and dedupes keywords; drops empty rows", () 
     keywords: ["pressure wash"],
     active: true,
     wdPositionCode: null,
-    productionRate: null,
-  });
+    });
 });
 
 test("a valid new trade passes", () => {
@@ -86,15 +84,16 @@ test("garbage input normalises to an empty trade instead of throwing", () => {
   assert.equal(normalizeTradeInput(null).label, "");
   assert.deepEqual(normalizeTradeInput({ naics: "nope", keywords: 5 }).naics, []);
 });
-test("wage-worksheet defaults: a 5-digit position code and a positive production rate", () => {
-  const ok = normalizeTradeInput({ label: "Janitorial", keywords: ["janitorial"], wdPositionCode: " 11150 ", productionRate: "3500" });
+test("wage-worksheet position code: 5 digits", () => {
+  const ok = normalizeTradeInput({ label: "Janitorial", keywords: ["janitorial"], wdPositionCode: " 11150 " });
   assert.equal(ok.wdPositionCode, "11150");
-  assert.equal(ok.productionRate, 3500);
   assert.deepEqual(validateTrade(ok, []).errors, []);
-  const bad = normalizeTradeInput({ label: "Janitorial", keywords: ["janitorial"], wdPositionCode: "1115", productionRate: "-2" });
+  const bad = normalizeTradeInput({ label: "Janitorial", keywords: ["janitorial"], wdPositionCode: "1115" });
   assert.ok(validateTrade(bad, []).errors.includes('Position code "1115" must be 5 digits, like 11150.'));
-  assert.ok(validateTrade(bad, []).errors.includes("Production rate must be a positive number of square feet per hour."));
-  const blank = normalizeTradeInput({ label: "Janitorial", keywords: ["janitorial"], wdPositionCode: "", productionRate: "" });
+  const blank = normalizeTradeInput({ label: "Janitorial", keywords: ["janitorial"], wdPositionCode: "" });
   assert.equal(blank.wdPositionCode, null);
-  assert.equal(blank.productionRate, null);
+});
+test("a production rate sent by an old page is ignored, not saved", () => {
+  const t = normalizeTradeInput({ label: "Janitorial", keywords: ["janitorial"], productionRate: "3500" }) as Record<string, unknown>;
+  assert.equal("productionRate" in t, false);
 });

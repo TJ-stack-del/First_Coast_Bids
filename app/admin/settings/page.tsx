@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ThresholdSettingsForm } from "./ThresholdSettingsForm";
 import { TradesSettings } from "./TradesSettings";
-import { PricingDefaultsForm } from "./PricingDefaultsForm";
 import { loadTrades } from "@/lib/trades/server";
 import type { Trade } from "@/lib/trades/types";
 
@@ -24,7 +23,7 @@ export default async function AdminSettingsPage() {
 
   const { data: org } = await supabase
     .from("organizations")
-    .select("id, lean_package_threshold, pricing_defaults")
+    .select("id, lean_package_threshold")
     .eq("id", member.org_id)
     .single();
 
@@ -75,13 +74,6 @@ export default async function AdminSettingsPage() {
         {tradesError ? <p className="text-body-md text-error">{tradesError}</p> : <TradesSettings trades={trades} />}
       </div>
 
-    <div className="mt-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 max-w-3xl">
-      <h2 className="text-title-lg text-primary mb-2">Pricing defaults</h2>
-      <p className="text-body-md text-on-surface-variant mb-4">
-        Every wage worksheet opens with these. Set them once; adjust per bid only when a job is different.
-      </p>
-      {org ? <PricingDefaultsForm orgId={org.id} initial={(org as any).pricing_defaults ?? {}} /> : null}
-    </div>
     </>
   );
 }
