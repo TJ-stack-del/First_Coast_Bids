@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto";
-
 export type ScanState = {
   status: "running" | "done" | "failed";
   started_at: string;
@@ -11,10 +9,14 @@ export type ScanState = {
 };
 
 // Same files, same fingerprint: a finished scan of them is reused instead of
-// paying for another AI reading.
+// paying for another AI reading. A plain sorted join rather than a hash:
+// this module is also imported by the admin panel (a client component), and
+// node:crypto can't be bundled for the browser.
 export function filesFingerprint(files: { file_name: string; created_at: string }[]): string {
-  const parts = files.map((f) => `${f.file_name}@${f.created_at}`).sort();
-  return createHash("sha256").update(parts.join("|")).digest("hex");
+  return files
+    .map((f) => `${f.file_name}@${f.created_at}`)
+    .sort()
+    .join("|");
 }
 
 // Vercel stops the function at 60 seconds and nothing records the kill, so
