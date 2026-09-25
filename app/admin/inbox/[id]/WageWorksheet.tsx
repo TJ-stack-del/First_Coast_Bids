@@ -4,7 +4,35 @@ import { useEffect, useRef, useState } from "react";
 import { Spinner } from "@/components/ui/Spinner";
 import { computeFloor, computePrice, belowFloor, roundCents, type WorksheetLine } from "@/lib/wage/floor";
 import type { ParsedWd } from "@/lib/wage/parse-wd";
-import { shouldAutoLoad } from "@/lib/wage/prefill";
+import { shouldAutoLoad, readNumberText } from "@/lib/wage/prefill";
+
+// A number box that keeps exactly what's typed (so "35." keeps its point
+// while "35.5" is entered) and passes the math the value it reads. Shows the
+// saved value again when you leave the box.
+function NumberField({ value, onChange, className }: { value: number; onChange: (n: number) => void; className: string }) {
+  const [text, setText] = useState(String(value));
+  const focused = useRef(false);
+  useEffect(() => {
+    if (!focused.current) setText(String(value));
+  }, [value]);
+  return (
+    <input
+      className={className}
+      inputMode="decimal"
+      value={text}
+      onFocus={() => (focused.current = true)}
+      onBlur={() => {
+        focused.current = false;
+        setText(String(value));
+      }}
+      onChange={(e) => {
+        setText(e.target.value);
+        const n = readNumberText(e.target.value);
+        if (n !== null) onChange(n);
+      }}
+    />
+  );
+}
 
 const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
@@ -125,7 +153,6 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
   const { supplies, price } = computePrice(total.floor, pricing);
   const bid = bidPrice === "" ? null : Number(bidPrice);
   const short = belowFloor(bid !== null && Number.isFinite(bid) ? bid : null, total.floor);
-  const num = (v: string) => (v === "" ? 0 : Number(v));
   const cell = "px-2 py-1 rounded border border-outline-variant w-24 text-right";
 
   return (
@@ -155,13 +182,12 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
             <tr key={i} className="border-t border-outline-variant">
               <td className="py-2">{l.code} {l.title}{l.hoursSource && <span className="block text-on-surface-variant">{l.hoursSource}</span>}</td>
               <td>{money(per[i].wage)}</td>
-              <td><input className={cell} inputMode="decimal" value={l.workers} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, workers: num(e.target.value) } : x)))} /></td>
+              <td><NumberField className={cell} value={l.workers} onChange={(n) => setLines(lines.map((x, j) => (j === i ? { ...x, workers: n } : x)))} /></td>
               <td>
-                <input
+                <NumberField
                   className={`${cell} ${l.hoursPerWeek === 0 ? "border-error bg-error-container/20" : ""}`}
-                  inputMode="decimal"
                   value={l.hoursPerWeek}
-                  onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, hoursPerWeek: num(e.target.value), hoursSource: null } : x)))}
+                  onChange={(n) => setLines(lines.map((x, j) => (j === i ? { ...x, hoursPerWeek: n, hoursSource: null } : x)))}
                 />
               </td>
               <td className="text-right font-code">{money(roundCents(per[i].floor))}</td>
@@ -199,9 +225,9 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
       )}
 
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl text-body-sm">
-        <label>Supplies <input className={cell} inputMode="decimal" value={pricing.suppliesValue} onChange={(e) => setPricing({ ...pricing, suppliesValue: num(e.target.value) })} /> {pricing.suppliesMode === "percent" ? "%" : "$"}</label>
-        <label>Overhead % <input className={cell} inputMode="decimal" value={pricing.overheadPct} onChange={(e) => setPricing({ ...pricing, overheadPct: num(e.target.value) })} /></label>
-        <label>Profit % <input className={cell} inputMode="decimal" value={pricing.profitPct} onChange={(e) => setPricing({ ...pricing, profitPct: num(e.target.value) })} /></label>
+        <label>Supplies <NumberField className={cell} value={pricing.suppliesValue} onChange={(n) => setPricing({ ...pricing, suppliesValue: n })} /> {pricing.suppliesMode === "percent" ? "%" : "$"}</label>
+        <label>Overhead % <NumberField className={cell} value={pricing.overheadPct} onChange={(n) => setPricing({ ...pricing, overheadPct: n })} /></label>
+        <label>Profit % <NumberField className={cell} value={pricing.profitPct} onChange={(n) => setPricing({ ...pricing, profitPct: n })} /></label>
       </div>
       <p className="mt-3 text-body-md">Supplies {money(roundCents(supplies))} · <strong>Resulting price {money(roundCents(price))}/year</strong></p>
 

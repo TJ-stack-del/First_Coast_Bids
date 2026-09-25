@@ -94,3 +94,16 @@ export function sanitizeLines(raw: unknown, wd: ParsedWd): WorksheetLine[] {
 export function shouldAutoLoad(state: string, previousRef: string | null, currentRef: string | null): boolean {
   return state === "no_wd" && currentRef !== null && currentRef !== previousRef;
 }
+
+// Reads what's typed in a worksheet number box. The box keeps the text as
+// typed (so "35." keeps its point while "35.5" is being entered -- found in
+// the dev run, where "35.5" saved as 355); this turns it into a number for
+// the math. Empty or a lone "." is 0; anything else unreadable or negative
+// is null, meaning "keep the previous value".
+export function readNumberText(text: string): number | null {
+  const t = text.replace(/,/g, "").trim();
+  if (t === "" || t === ".") return 0;
+  if (!/^\d*\.?\d*$/.test(t)) return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}

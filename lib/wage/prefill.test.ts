@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad } from "./prefill.ts";
+import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad, readNumberText } from "./prefill.ts";
 import type { ParsedWd } from "./parse-wd.ts";
 
 const WD: ParsedWd = {
@@ -79,4 +79,17 @@ test("the worksheet reloads itself when the checklist finds the WD", () => {
   assert.equal(shouldAutoLoad("no_wd", "WD 2015-4539", "WD 2015-4539"), false, "same WD, nothing new");
   assert.equal(shouldAutoLoad("ready", null, "WD 2015-4539"), false, "never replaces a worksheet in use");
   assert.equal(shouldAutoLoad("no_wd", null, null), false);
+});
+
+// Found in the dev end-to-end run (2026-09-25): typing "35.5" into hours
+// saved 355 -- each keystroke was turned into a number, so "35." lost its
+// point. A box keeps the text as typed; this reads it.
+test("a number box's text is read without losing a half-typed decimal", () => {
+  assert.equal(readNumberText("35."), 35);
+  assert.equal(readNumberText("35.5"), 35.5);
+  assert.equal(readNumberText("1,250"), 1250);
+  assert.equal(readNumberText(""), 0);
+  assert.equal(readNumberText("."), 0);
+  assert.equal(readNumberText("abc"), null, "not a number: leave the value as it was");
+  assert.equal(readNumberText("-4"), null, "negative isn't allowed");
 });
