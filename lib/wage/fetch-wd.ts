@@ -16,3 +16,28 @@ export function extractWdDocument(rawJson: string): { number: string; revision: 
   const text = d.document.replace(/^\s*"/, "").replace(/"\s*$/, "").trim();
   return { number: d.fullReferenceNumber, revision: d.revisionNumber, text };
 }
+const SAM = "https://sam.gov/api/prod";
+const HEADERS = { Accept: "application/hal+json" };
+
+// The latest revision of a WD, from SAM.gov's public search.
+async function latestRevision(number: string): Promise<number> {
+  const res = await fetch(`${SAM}/sgs/v1/search/?index=wd&q=${encodeURIComponent(number)}&page=0&size=5&mode=search`, { headers: HEADERS });
+  if (!res.ok) throw new Error(`SAM.gov search failed (${res.status}).`);
+  const body = (await res.json()) as { _embedded?: { results?: { fullReferenceNumber?: string; revisionNumber?: number }[] } };
+  const hit = body._embedded?.results?.find((r) => r.fullReferenceNumber === number);
+  if (!hit || typeof hit.revisionNumber !== "number") throw new Error(`Wage determination ${number} wasn't found on SAM.gov.`);
+  return hit.revisionNumber;
+}
+
+// The WD text for the revision the solicitation names, or the latest when
+// it names none (the worksheet then warns the admin to confirm).
+export async function fetchWdText(
+  number: string,
+  revision: number | null
+): Promise<{ text: string; revision: number; revisionSource: "solicitation" | "latest" }> {
+  const rev = revision ?? (await latestRevision(number));
+  const res = await fetch(`${SAM}/wdol/v1/wd/${encodeURIComponent(number)}/${rev}`, { headers: HEADERS });
+  if (!res.ok) throw new Error(`SAM.gov didn't return wage determination ${number} Rev. ${rev} (${res.status}).`);
+  const doc = extractWdDocument(await res.text());
+  return { text: doc.text, revision: doc.revision, revisionSource: revision === null ? "latest" : "solicitation" };
+}
