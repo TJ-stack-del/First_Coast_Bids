@@ -52,8 +52,13 @@ export function ClientNumbers({
     onSaved(body.applied === true);
   }
 
+  // Blank or unreadable ("12 percent") is highlighted; unreadable blocks
+  // Save, so nothing typed is ever silently dropped (final review I1).
+  const unreadable = Object.values(text).some((v) => readOptionalNumberText(v) === undefined);
   const box = (v: string) =>
-    `px-2 py-1 rounded border w-24 text-right ${v.trim() === "" ? "border-error bg-error-container/20" : "border-outline-variant"}`;
+    `px-2 py-1 rounded border w-24 text-right ${
+      readOptionalNumberText(v) == null ? "border-error bg-error-container/20" : "border-outline-variant"
+    }`;
   return (
     <fieldset className="mt-4 rounded-lg border border-outline-variant p-3">
       <legend className="px-1 text-label-md font-bold">{clientName}&apos;s numbers</legend>
@@ -79,11 +84,12 @@ export function ClientNumbers({
         <label className="flex flex-col gap-1">Overhead %<input className={box(text.overheadPct)} inputMode="decimal" value={text.overheadPct} onChange={(e) => edit("overheadPct", e.target.value)} /></label>
         <label className="flex flex-col gap-1">Profit %<input className={box(text.profitPct)} inputMode="decimal" value={text.profitPct} onChange={(e) => edit("profitPct", e.target.value)} /></label>
         <label className="flex flex-col gap-1">Sq ft per hour<input className={box(text.productionRate)} inputMode="decimal" value={text.productionRate} onChange={(e) => edit("productionRate", e.target.value)} /></label>
-        <button type="button" onClick={save} disabled={busy} className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-label-md font-bold flex items-center gap-2 disabled:opacity-40">
+        <button type="button" onClick={save} disabled={busy || unreadable} className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-label-md font-bold flex items-center gap-2 disabled:opacity-40">
           {busy && <Spinner />} Save for {clientName}
         </button>
         {saved && <span className="text-on-surface-variant">Saved</span>}
       </div>
+      {unreadable && <p role="alert" className="mt-2 text-error">Use plain numbers, like 12 or 1,500.</p>}
       {error && <p role="alert" className="mt-2 text-error">{error}</p>}
     </fieldset>
   );

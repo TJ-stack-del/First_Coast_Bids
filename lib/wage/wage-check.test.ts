@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { staffingText, wageCheckFor, wageCheckLines } from "./wage-check.ts";
+import { staffingText, wageCheckFor, wageCheckLines, wageCheckForWorksheet } from "./wage-check.ts";
 
 const jan = { code: "11150", title: "Janitor", rate: 17.04, workers: 2, hoursPerWeek: 32.14, hoursSource: null };
 const base = { floor: 86427.26, lines: [jan], wdNumber: "2015-4539", wdRevision: 32, now: "2026-09-25T12:00:00.000Z" };
@@ -34,4 +34,19 @@ test("the client's wording, with the warning only below the floor", () => {
   assert.equal(ok.warning, null);
   const low = wageCheckLines(wageCheckFor({ ...base, bidPrice: 80000 }));
   assert.equal(low.warning, "This price is below the legal minimum. We'll go over it with you before you submit.");
+});
+
+test("the client's line comes from the saved worksheet itself, so Re-fill and a WD switch refresh it (final review I2)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { parseWd } = await import("./parse-wd.ts");
+  const { computeFloor, roundCents } = await import("./floor.ts");
+  const wd = parseWd(readFileSync(new URL("./fixtures/wd-2015-4539-r32.txt", import.meta.url), "utf8")).wd;
+  const lines = [{ ...jan, rate: 17.04 }];
+  const options = { includeVacation: true, eo13658: false };
+  const ws = { wd_parsed: wd, wd_number: "2015-4539", wd_revision: 32, lines, options, bid_price: "90000" };
+  const c = wageCheckForWorksheet(ws, "2026-09-25T12:00:00.000Z");
+  assert.equal(c.floor, roundCents(computeFloor(lines, wd, options).total.floor));
+  assert.equal(c.bidPrice, 90000);
+  assert.equal(c.wdRevision, 32);
+  assert.equal(wageCheckForWorksheet({ ...ws, bid_price: null }, "x"), null);
 });

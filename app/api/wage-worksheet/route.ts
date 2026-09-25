@@ -10,9 +10,7 @@ import {
   sanitizeNumber,
   wdRefChanged,
 } from "@/lib/wage/prefill";
-import { computeFloor, roundCents } from "@/lib/wage/floor";
-import { wageCheckFor } from "@/lib/wage/wage-check";
-import { adminFor, prefillContext, guidanceFor, pricingColumns, type Ctx } from "@/lib/wage/server";
+import { adminFor, prefillContext, guidanceFor, pricingColumns, saveWageCheck, type Ctx } from "@/lib/wage/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -81,6 +79,8 @@ export async function POST(request: Request) {
       .select("*")
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const checkError = await saveWageCheck(supabase, submissionId, saved);
+    if (checkError) return NextResponse.json({ error: checkError }, { status: 500 });
     return NextResponse.json({ worksheet: saved, parsed: wd, guidance, wdChanged: null, client: clientOut(ctx) });
   }
 
@@ -129,6 +129,8 @@ export async function POST(request: Request) {
     .select("*")
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const checkError = await saveWageCheck(supabase, submissionId, saved);
+  if (checkError) return NextResponse.json({ error: checkError }, { status: 500 });
   const changed = wdRefChanged({ number: wd.number, revision: wd.revision }, ctx.currentWd);
   return NextResponse.json({ worksheet: saved, parsed: wd, guidance, wdChanged: changed && !handPicked ? ctx.currentWd : null, client: clientOut(ctx) });
 }
@@ -170,16 +172,7 @@ export async function PATCH(request: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // The client's read-only line on their bid; cleared when there's no bid price.
-  const { total } = computeFloor(lines, wd, opts);
-  const check = wageCheckFor({
-    floor: roundCents(total.floor),
-    bidPrice: bid,
-    lines,
-    wdNumber: ws.wd_number,
-    wdRevision: ws.wd_revision,
-    now: updatedAt,
-  });
-  const { error: checkError } = await supabase.from("submissions").update({ wage_check: check }).eq("id", submissionId);
-  if (checkError) return NextResponse.json({ error: checkError.message }, { status: 500 });
+  const checkError = await saveWageCheck(supabase, submissionId, { ...ws, lines, options: opts, bid_price: bid });
+  if (checkError) return NextResponse.json({ error: checkError }, { status: 500 });
   return NextResponse.json({ ok: true, updatedAt });
 }

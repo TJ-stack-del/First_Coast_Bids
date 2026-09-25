@@ -173,7 +173,7 @@ export function shouldAutoLoad(state: string, previousRef: string | null, curren
 // the math. Empty or a lone "." is 0; anything else unreadable or negative
 // is null, meaning "keep the previous value".
 export function readNumberText(text: string): number | null {
-  const t = text.replace(/[,$\s]/g, "");
+  const t = text.replace(/[,$%\s]/g, "");
   if (t === "" || t === ".") return 0;
   if (!/^\d*\.?\d*$/.test(t)) return null;
   const n = Number(t);

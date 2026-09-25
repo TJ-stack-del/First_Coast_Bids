@@ -194,3 +194,10 @@ test("a bid price that isn't a usable number is saved as empty, never as $0", ()
   assert.equal(bidPriceForSave(90000), 90000);
   assert.equal(bidPriceForSave(0), 0);
 });
+
+test("a pasted '12%' or '12 %' is read as 12, not dropped (final review I1)", () => {
+  assert.equal(readOptionalNumberText("12%"), 12);
+  assert.equal(readOptionalNumberText("12 %"), 12);
+  assert.equal(readNumberText("8%"), 8);
+  assert.equal(readOptionalNumberText("12 percent"), undefined);
+});

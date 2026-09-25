@@ -5,6 +5,7 @@ import { normalizeClientPricing, missingPricing, type ClientPricing } from "@/li
 import { getOrExtractBidEstimationFacts } from "@/lib/bid-estimation";
 import { loadTrades } from "@/lib/trades/server";
 import { clientTradeIds } from "@/lib/trades/naics-options";
+import { wageCheckForWorksheet } from "@/lib/wage/wage-check";
 
 // Shared by /api/wage-worksheet and /api/wage-worksheet/client-pricing.
 
@@ -94,4 +95,16 @@ export function guidanceFor(
 // A worksheet's pricing columns, pre-filled from the client's numbers.
 export function pricingColumns(p: ClientPricing) {
   return { supplies_mode: p.suppliesMode, supplies_value: p.suppliesValue, overhead_pct: p.overheadPct, profit_pct: p.profitPct };
+}
+
+// Keeps the client's read-only line in step with a just-saved worksheet row
+// (null when there's no bid price). Returns an error message or null.
+export async function saveWageCheck(
+  supabase: Supabase,
+  submissionId: string,
+  ws: Parameters<typeof wageCheckForWorksheet>[0]
+): Promise<string | null> {
+  const check = wageCheckForWorksheet(ws, new Date().toISOString());
+  const { error } = await supabase.from("submissions").update({ wage_check: check }).eq("id", submissionId);
+  return error ? error.message : null;
 }
