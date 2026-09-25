@@ -23,6 +23,8 @@ export function TradeForm({
   const [naics, setNaics] = useState(initial?.naics.length ? initial.naics : [{ code: "", label: "" }]);
   const [nigp, setNigp] = useState((initial?.nigpCodes ?? []).join(", "));
   const [keywords, setKeywords] = useState((initial?.keywords ?? []).join(", "));
+  const [wdPositionCode, setWdPositionCode] = useState(initial?.wdPositionCode ?? "");
+  const [productionRate, setProductionRate] = useState(initial?.productionRate?.toString() ?? "");
   const [errors, setErrors] = useState<string[]>([]);
 
   const inputClass =
@@ -36,6 +38,8 @@ export function TradeForm({
       naics,
       nigpCodes: nigp.split(/[,\n]/),
       keywords: keywords.split(/[,\n]/),
+      wdPositionCode,
+      productionRate,
       active: initial?.active ?? true,
     });
     const result = validateTrade(input, allTrades);
@@ -100,6 +104,19 @@ export function TradeForm({
         <span className="text-body-sm text-on-surface-variant">Class-item, comma separated, like 910-39.</span>
         <input value={nigp} onChange={(e) => setNigp(e.target.value)} className={`${inputClass} font-code`} />
       </label>
+
+    <div className="grid gap-3 sm:grid-cols-2">
+      <label className="flex flex-col gap-1">
+        <span className="text-label-md font-bold text-on-surface">Wage worksheet position code</span>
+        <span className="text-body-sm text-on-surface-variant">From the wage determination, e.g. 11150 (Janitor).</span>
+        <input value={wdPositionCode} onChange={(e) => setWdPositionCode(e.target.value)} className={`${inputClass} font-code`} inputMode="numeric" />
+      </label>
+      <label className="flex flex-col gap-1">
+        <span className="text-label-md font-bold text-on-surface">Production rate (sq ft per hour)</span>
+        <span className="text-body-sm text-on-surface-variant">Used to pre-fill hours from a bid&apos;s square footage.</span>
+        <input value={productionRate} onChange={(e) => setProductionRate(e.target.value)} className={inputClass} inputMode="decimal" />
+      </label>
+    </div>
 
       <label className="flex flex-col gap-1">
         <span className="text-label-md font-bold text-on-surface">Title keywords</span>

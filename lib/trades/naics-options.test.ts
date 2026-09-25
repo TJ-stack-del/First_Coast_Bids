@@ -14,6 +14,8 @@ const JAN: Trade = {
   keywords: [],
   active: true,
   sortOrder: 1,
+  wdPositionCode: null,
+  productionRate: null,
 };
 const ELEC: Trade = { ...JAN, id: "elec", label: "Electrical", naics: [{ code: "238210", label: "Electrical Contractors" }], sortOrder: 2 };
 const OFF: Trade = { ...JAN, id: "off", label: "Roofing", naics: [{ code: "238160", label: "Roofing Contractors" }], active: false, sortOrder: 3 };

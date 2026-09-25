@@ -11,6 +11,10 @@ export type Trade = {
   keywords: string[];
   active: boolean;
   sortOrder: number;
+  // Wage worksheet defaults (set once in Settings): the WD position this
+  // trade's bids are priced on, and square feet per labor hour.
+  wdPositionCode: string | null;
+  productionRate: number | null;
 };
 
 // What the Trades form submits: a new trade has no id yet.
@@ -21,9 +25,12 @@ export type TradeInput = {
   nigpCodes: string[];
   keywords: string[];
   active: boolean;
+  wdPositionCode?: string | null;
+  productionRate?: number | null;
 };
 
-export const TRADE_COLUMNS = "id, label, naics, nigp_codes, keywords, active, sort_order";
+export const TRADE_COLUMNS =
+  "id, label, naics, nigp_codes, keywords, active, sort_order, wd_position_code, production_rate_sqft_per_hour";
 
 export type TradeRow = {
   id: string;
@@ -33,6 +40,8 @@ export type TradeRow = {
   keywords: string[] | null;
   active: boolean;
   sort_order: number;
+  wd_position_code?: string | null;
+  production_rate_sqft_per_hour?: number | string | null;
 };
 
 // naics is jsonb, so it's checked rather than trusted: anything that isn't
@@ -53,5 +62,10 @@ export function rowToTrade(row: TradeRow): Trade {
     keywords: row.keywords ?? [],
     active: row.active,
     sortOrder: row.sort_order,
+    wdPositionCode: row.wd_position_code ?? null,
+    productionRate:
+      row.production_rate_sqft_per_hour === null || row.production_rate_sqft_per_hour === undefined
+        ? null
+        : Number(row.production_rate_sqft_per_hour),
   };
 }

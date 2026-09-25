@@ -11,6 +11,8 @@ const JAN: Trade = {
   keywords: ["janitorial"],
   active: true,
   sortOrder: 1,
+  wdPositionCode: null,
+  productionRate: null,
 };
 const rows = [
   { id: "r1", title: "Citywide Janitorial Services", naicsCode: null, nigpCodes: [], tradeId: null },
