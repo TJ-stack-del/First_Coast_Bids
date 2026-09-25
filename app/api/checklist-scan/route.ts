@@ -7,7 +7,16 @@ import { chunkPages } from "@/lib/checklist/chunk";
 import { runAiPass } from "@/lib/checklist/ai-pass";
 import { verifyQuote } from "@/lib/checklist/verify-quote";
 import { mergeCandidates, finalizeCandidates } from "@/lib/checklist/merge";
-import { filesFingerprint, filesReadParts, filesToRead, isScanStale, type ScanState } from "@/lib/checklist/scan-state";
+import {
+  allowForce,
+  carryForward,
+  claimFilter,
+  filesFingerprint,
+  filesToRead,
+  isScanStale,
+  nextFilesRead,
+  type ScanState,
+} from "@/lib/checklist/scan-state";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -22,7 +31,7 @@ export const maxDuration = 60;
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const submissionId = body && typeof body === "object" ? (body as { submissionId?: unknown }).submissionId : null;
-  const force = !!(body && typeof body === "object" && (body as { force?: unknown }).force === true);
+  const forceRequested = !!(body && typeof body === "object" && (body as { force?: unknown }).force === true);
   if (typeof submissionId !== "string") return NextResponse.json({ error: "Invalid submissionId." }, { status: 400 });
 
   const supabase = await createClient();
@@ -33,6 +42,15 @@ export async function POST(request: Request) {
 
   const { data: visible } = await supabase.from("submissions").select("id").eq("id", submissionId).maybeSingle();
   if (!visible) return NextResponse.json({ error: "Submission not found." }, { status: 404 });
+
+  // "Check again" (force) re-reads every file with the AI -- admins only.
+  const { data: adminRow } = await supabase
+    .from("team_members")
+    .select("id")
+    .eq("auth_user_id", user.id)
+    .eq("role", "admin")
+    .maybeSingle();
+  const force = allowForce(forceRequested, !!adminRow);
 
   const service = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   const { data: submission } = await service
@@ -61,18 +79,43 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "running" });
   }
 
-  const started: ScanState = { status: "running", started_at: now.toISOString(), files_fingerprint: fingerprint };
-  await service.from("submissions").update({ checklist_scan: started }).eq("id", submissionId);
+  // Earlier coverage and notices ride along, so a run that dies or fails
+  // doesn't make the next one re-read (and re-word) everything.
+  const started: ScanState = {
+    status: "running",
+    started_at: now.toISOString(),
+    files_fingerprint: fingerprint,
+    files_read: previous?.files_read,
+    pages_read: previous?.pages_read,
+    ai_failed: previous?.ai_failed,
+    unreadable: previous?.unreadable,
+  };
+  // Claim atomically: several simultaneous requests start one reading.
+  const { data: claimed } = await service
+    .from("submissions")
+    .update({ checklist_scan: started })
+    .eq("id", submissionId)
+    .or(claimFilter(now))
+    .select("id");
+  if (!claimed || claimed.length !== 1) return NextResponse.json({ status: "running" });
 
   try {
     // Download and read every file's own text.
-    const files: (FilePages & { buffer: Buffer })[] = [];
+    // One file that can't be downloaded or read is recorded and skipped;
+    // it never sinks the reading of the others.
+    const files: (FilePages & { buffer: Buffer; problem: string | null })[] = [];
+    const unreadableNow: { file: string; problem: string }[] = [];
     for (const doc of docs) {
       const { data: blob } = await service.storage.from("rfp-documents").download(doc.file_url);
-      if (!blob) continue;
+      if (!blob) {
+        unreadableNow.push({ file: doc.file_name, problem: "couldn't be downloaded" });
+        continue;
+      }
       const buffer = Buffer.from(await blob.arrayBuffer());
       const text = await extractFileText(doc.file_name, buffer);
-      files.push({ fileName: doc.file_name, pages: text.pages, buffer });
+      if (text.problem === "unsupported_type") unreadableNow.push({ file: doc.file_name, problem: "file type can't be read (use PDF or Word .docx)" });
+      if (text.problem === "unreadable_file") unreadableNow.push({ file: doc.file_name, problem: "file is damaged or not what its name says" });
+      files.push({ fileName: doc.file_name, pages: text.pages, buffer, problem: text.problem });
     }
 
     // Detectors cover every file; the AI reads only files not covered by
@@ -80,8 +123,10 @@ export async function POST(request: Request) {
     const toRead = new Set(filesToRead(docs, previous, force));
     const detected = detectItems(files);
     const { chunks, pagesRead } = chunkPages(files.filter((f) => toRead.has(f.fileName)));
+    // Only genuinely scanned PDFs go to the AI as PDFs -- never damaged or
+    // unsupported files.
     const scannedPdfs = files
-      .filter((f) => toRead.has(f.fileName) && f.pages === null && f.fileName.toLowerCase().endsWith(".pdf"))
+      .filter((f) => toRead.has(f.fileName) && f.problem === "no_text" && f.fileName.toLowerCase().endsWith(".pdf"))
       .map((f) => ({ fileName: f.fileName, buffer: f.buffer }));
     const ai = await runAiPass({ chunks, scannedPdfs, agency: submission.agency });
 
@@ -124,14 +169,26 @@ export async function POST(request: Request) {
     }
 
     const allAiFailed = ai.failed.length > 0 && ai.failed.length === chunks.length + scannedPdfs.length;
+    const toReadNames = [...toRead];
+    const currentNames = docs.map((d) => d.file_name);
     const finished: ScanState = {
       ...started,
       status: allAiFailed ? "failed" : "done",
       finished_at: new Date().toISOString(),
-      error: allAiFailed ? `The AI reading failed: ${ai.failed[0]}` : null,
-      pages_read: pagesRead,
-      ai_failed: ai.failed,
-      files_read: filesReadParts(docs),
+      error: allAiFailed ? `The AI reading failed: ${ai.failed[0].file} ${ai.failed[0].message}` : null,
+      // Only what was really read counts as read; notices about files not
+      // re-read this time are kept.
+      files_read: nextFilesRead({
+        previousRead: previous?.files_read,
+        docs,
+        toRead: toReadNames,
+        pagesRead,
+        failedFiles: ai.failed.map((f) => f.file),
+        unreadable: unreadableNow.map((u) => u.file),
+      }),
+      pages_read: carryForward(previous?.pages_read, pagesRead, toReadNames, currentNames),
+      ai_failed: carryForward(previous?.ai_failed, ai.failed, toReadNames, currentNames),
+      unreadable: carryForward(previous?.unreadable, unreadableNow, currentNames, currentNames),
     };
     await service.from("submissions").update({ checklist_scan: finished }).eq("id", submissionId);
     return NextResponse.json({ status: finished.status, inserted: rows.length });

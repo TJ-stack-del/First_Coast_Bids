@@ -133,7 +133,7 @@ export function ChecklistSuggestionsPanel({
     const res = await fetch("/api/checklist-suggestions/approve-verified", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId, expected: verifiedPending.length }),
+      body: JSON.stringify({ submissionId, expected: verifiedPending.length, owners }),
     });
     const body = await res.json().catch(() => null);
     setBusy(null);
@@ -241,8 +241,15 @@ export function ChecklistSuggestionsPanel({
           </p>
         ))}
       {scan?.ai_failed && scan.ai_failed.length > 0 && scan.status === "done" && (
-        <p className="mt-2 text-body-sm text-error">Part of the document couldn&apos;t be read: {scan.ai_failed.join("; ")}</p>
+        <p className="mt-2 text-body-sm text-error">
+          Part of the document couldn&apos;t be read: {scan.ai_failed.map((f) => `${f.file} (${f.message})`).join("; ")}
+        </p>
       )}
+      {scan?.unreadable?.map((u) => (
+        <p key={u.file} className="mt-2 text-body-sm text-error">
+          Couldn&apos;t read {u.file}: {u.problem}.
+        </p>
+      ))}
 
       {GROUPS.map((g) => {
         const items = pending.filter((s) => g.kinds.includes(s.kind));

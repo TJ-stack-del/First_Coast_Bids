@@ -113,15 +113,17 @@ export async function runAiPass(input: {
   chunks: Chunk[];
   scannedPdfs: { fileName: string; buffer: Buffer }[];
   agency: string;
-}): Promise<{ items: Candidate[]; failed: string[] }> {
+}): Promise<{ items: Candidate[]; failed: { file: string; message: string }[] }> {
   const client = new Anthropic();
-  const jobs: { label: string; run: () => Promise<Candidate[]> }[] = [
+  const jobs: { file: string; label: string; run: () => Promise<Candidate[]> }[] = [
     ...input.chunks.map((c) => ({
-      label: `${c.fileName} pages ${c.startPage}-${c.endPage}`,
+      file: c.fileName,
+      label: `pages ${c.startPage}-${c.endPage}`,
       run: () => readOne(client, [{ type: "text", text: c.text }], input.agency),
     })),
     ...input.scannedPdfs.map((f) => ({
-      label: `${f.fileName} (scanned)`,
+      file: f.fileName,
+      label: "scanned document",
       run: () =>
         readOne(
           client,
@@ -135,10 +137,10 @@ export async function runAiPass(input: {
   ];
   const settled = await Promise.allSettled(jobs.map((j) => j.run()));
   const items: Candidate[] = [];
-  const failed: string[] = [];
+  const failed: { file: string; message: string }[] = [];
   settled.forEach((s, i) => {
     if (s.status === "fulfilled") items.push(...s.value);
-    else failed.push(`${jobs[i].label}: ${s.reason instanceof Error ? s.reason.message : "failed"}`);
+    else failed.push({ file: jobs[i].file, message: `${jobs[i].label}: ${s.reason instanceof Error ? s.reason.message : "failed"}` });
   });
   return { items, failed };
 }

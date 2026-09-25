@@ -5,7 +5,9 @@ export type ScanState = {
   files_fingerprint: string;
   error?: string | null;
   pages_read?: { file: string; total: number; read: number }[];
-  ai_failed?: string[];
+  ai_failed?: { file: string; message: string }[];
+  // Files that couldn't be read at all, and why (see extract-text.ts).
+  unreadable?: { file: string; problem: string }[];
   // "name@uploaded_at" of every file covered so far (see filesToRead).
   files_read?: string[];
 };
@@ -35,10 +37,13 @@ export function isScanStale(scan: ScanState | null, now: Date): boolean {
 // covered a different set of files (files uploaded while it ran were
 // skipped -- a real case: three quick uploads, only the first was read).
 // Never for a bid that was never read (old bids aren't read, and paid for,
-// just by opening them) and never to retry a failure (Check again does that).
+// just by opening them) and never to retry a failure or a dead run (Check
+// again does that).
 export function needsRescan(scan: ScanState | null, currentFingerprint: string | null, now: Date): boolean {
   if (!scan || currentFingerprint === null) return false;
-  if (scan.status === "running") return isScanStale(scan, now);
+  // A dead run is a failure: the panel shows "timed out" with Check again
+  // rather than re-running (and re-billing) on every page load.
+  if (scan.status === "running") return false;
   if (scan.status === "failed") return false;
   return scan.files_fingerprint !== currentFingerprint;
 }
@@ -65,4 +70,60 @@ export function filesToRead(
 
 export function filesReadParts(docs: { file_name: string; created_at: string }[]): string[] {
   return docs.map(filePart);
+}
+
+// The files covered after this run: earlier coverage of files still present
+// and not re-read now, plus files the AI read completely this run (every
+// chunk succeeded, nothing cut off by the size cap, file readable). A file
+// that failed or was only partly read stays uncovered, so it's shown and
+// read again rather than silently counted as done.
+export function nextFilesRead(opts: {
+  previousRead: string[] | undefined;
+  docs: { file_name: string; created_at: string }[];
+  toRead: string[];
+  pagesRead: { file: string; total: number; read: number }[];
+  failedFiles: string[];
+  unreadable: string[];
+}): string[] {
+  const previous = new Set(opts.previousRead ?? []);
+  const toRead = new Set(opts.toRead);
+  const out: string[] = [];
+  for (const doc of opts.docs) {
+    const part = filePart(doc);
+    if (!toRead.has(doc.file_name)) {
+      if (previous.has(part)) out.push(part);
+      continue;
+    }
+    if (opts.failedFiles.includes(doc.file_name) || opts.unreadable.includes(doc.file_name)) continue;
+    const pages = opts.pagesRead.find((p) => p.file === doc.file_name);
+    if (pages && pages.read < pages.total) continue;
+    out.push(part);
+  }
+  return out;
+}
+
+// Notices (partial reads, failures, unreadable files) about files that
+// weren't re-read this run are kept, so a later upload doesn't wipe them.
+export function carryForward<T extends { file: string }>(
+  previous: T[] | undefined,
+  current: T[],
+  toRead: string[],
+  currentNames: string[]
+): T[] {
+  const kept = (previous ?? []).filter((e) => !toRead.includes(e.file) && currentNames.includes(e.file));
+  return [...kept, ...current];
+}
+
+// "Check again" re-reads every file with the AI -- a paid action, so only an
+// admin can force it. A client's upload still triggers a normal reading.
+export function allowForce(requested: boolean, isAdmin: boolean): boolean {
+  return requested && isAdmin;
+}
+
+// PostgREST filter for claiming a reading atomically: the update only lands
+// if no reading is running, or the running one is dead (see isScanStale).
+// Several simultaneous requests therefore start one reading, not several.
+export function claimFilter(now: Date): string {
+  const staleBefore = new Date(now.getTime() - STALE_AFTER_MS).toISOString();
+  return `checklist_scan.is.null,checklist_scan->>status.neq.running,checklist_scan->>started_at.lt."${staleBefore}"`;
 }

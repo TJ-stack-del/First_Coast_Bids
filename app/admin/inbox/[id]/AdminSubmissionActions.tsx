@@ -54,6 +54,10 @@ export function AdminSubmissionActions({
   const [noteText, setNoteText] = useState("");
   const [localNotes, setLocalNotes] = useState(notes);
   const [localChecklist, setLocalChecklist] = useState(checklist);
+  // Items approved from the checklist suggestions panel arrive as a new prop
+  // after router.refresh(); without this the list stayed stale until a full
+  // reload (final review, 2026-09-25).
+  useEffect(() => setLocalChecklist(checklist), [checklist]);
   const [checklistLabel, setChecklistLabel] = useState("");
   const [addingChecklistItem, setAddingChecklistItem] = useState(false);
   const [savingStage, setSavingStage] = useState(false);

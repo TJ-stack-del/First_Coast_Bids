@@ -18,7 +18,9 @@ function normalizeLabel(label: string): string {
 
 // "Form 10", "FORM 5:" -- a solicitation's own numbered forms. Two digits at
 // most, so "Form 1449" (an SF form, keyed by the detectors) isn't caught.
-const LOCAL_FORM = /\bform\s*#?\s*(\d{1,2})\b/i;
+// Only as a heading ("Form 10:", "FORM 1 – ...") or at the start, so a count
+// like "W-9 form 2 copies" isn't read as Form 2.
+const LOCAL_FORM = /(?:^|\b)form\s*#?\s*(\d{1,2})\s*(?:[:\-\u2013\u2014]|$)|^form\s*#?\s*(\d{1,2})\b/i;
 const FAR_NUMBER = /\b(52\.2\d{2}-\d{1,3})\b/;
 
 // Identity of a requirement, so different wordings of it (from different
@@ -31,10 +33,13 @@ export function candidateKey(c: Candidate): string {
   if (c.key) return c.key;
   const id = identifierKey(c.label);
   if (id) return id;
-  const far = c.label.match(FAR_NUMBER) ?? (c.detail ?? "").match(FAR_NUMBER);
+  // A FAR number identifies the item only when the item IS that provision:
+  // many different submission rules cite 52.212-1 in their detail, and
+  // merging them would silently drop requirements (final review, 2026-09-25).
+  const far = c.label.match(FAR_NUMBER);
   if (far) return `far:${far[1]}`;
   const form = c.label.match(LOCAL_FORM);
-  if (form) return `localform:${Number(form[1])}`;
+  if (form) return `localform:${Number(form[1] ?? form[2])}`;
   return `${c.kind}:${normalizeLabel(c.label)}`;
 }
 

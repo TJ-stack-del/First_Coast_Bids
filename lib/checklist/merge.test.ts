@@ -77,3 +77,17 @@ test("parentheticals and page notes don't make a new item", () => {
   ]);
   assert.equal(merged.length, 1);
 });
+
+// Final review, Important 8: distinct requirements must not be merged away.
+test("different items that cite the same FAR number in their detail stay separate", () => {
+  const merged = mergeCandidates([], [
+    c({ kind: "submission_rule", label: "Quote due date/time", detail: "Per 52.212-1, quotes are due 24 Sep" }),
+    c({ kind: "submission_rule", label: "No .zip files", detail: "Per 52.212-1, no .zip attachments" }),
+  ]);
+  assert.equal(merged.length, 2);
+});
+
+test("a form count isn't mistaken for a numbered form", () => {
+  assert.equal(candidateKey(c({ kind: "form", label: "W-9 form 2 copies" })), "form:w 9 form 2 copies");
+  assert.equal(candidateKey(c({ kind: "form", label: "Form 1 \u2013 Response Form / Turn-In Checklist" })), "localform:1");
+});
