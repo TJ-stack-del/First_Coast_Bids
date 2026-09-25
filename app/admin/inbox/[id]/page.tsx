@@ -15,6 +15,8 @@ import { IsTestToggle } from "./IsTestToggle";
 import { SubmissionMessages } from "@/components/ui/SubmissionMessages";
 import { SubmissionDocuments } from "@/components/ui/SubmissionDocuments";
 import { ChecklistSuggestionsPanel } from "./ChecklistSuggestionsPanel";
+import { WageWorksheet } from "./WageWorksheet";
+import { isFederalAgency } from "@/lib/federal-agency";
 import { filesFingerprint } from "@/lib/checklist/scan-state";
 import { isKnownTrade } from "@/lib/compliance/known-trades";
 import { computePreflightSummary } from "@/lib/compliance/preflight-summary";
@@ -430,6 +432,9 @@ export default async function AdminSubmissionDetailPage({
             currentFingerprint={(rfpDocs ?? []).length > 0 ? filesFingerprint(rfpDocs ?? []) : null}
             unsentClientItems={unsentClientItems}
           />
+          {(isFederalAgency(submission.agency) || (suggestions ?? []).some((s: any) => s.kind === "wage_determination")) && (
+            <WageWorksheet submissionId={submission.id} />
+          )}
           <AdminSubmissionActions
             submissionId={submission.id}
             actorId={member.id}
