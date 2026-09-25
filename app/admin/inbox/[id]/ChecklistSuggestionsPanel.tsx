@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/Toast";
-import { isScanStale, type ScanState } from "@/lib/checklist/scan-state";
+import { isScanStale, needsRescan, type ScanState } from "@/lib/checklist/scan-state";
 import { describeSendResult } from "@/lib/checklist/send-result";
 
 export type Suggestion = {
@@ -46,6 +46,7 @@ export function ChecklistSuggestionsPanel({
   initialSuggestions,
   rfpDocumentUrls,
   hasRfpFiles,
+  currentFingerprint,
   unsentClientItems,
 }: {
   submissionId: string;
@@ -53,6 +54,7 @@ export function ChecklistSuggestionsPanel({
   initialSuggestions: Suggestion[];
   rfpDocumentUrls: Record<string, string>;
   hasRfpFiles: boolean;
+  currentFingerprint: string | null;
   unsentClientItems: number;
 }) {
   const router = useRouter();
@@ -78,6 +80,23 @@ export function ChecklistSuggestionsPanel({
     }, 3000);
     return () => clearInterval(timer);
   }, [running, submissionId, router]);
+
+  // Files added while a reading ran (or after it) are read automatically,
+  // once per set of files.
+  const [autoStartedFor, setAutoStartedFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!currentFingerprint || autoStartedFor === currentFingerprint) return;
+    if (!needsRescan(scan, currentFingerprint, new Date())) return;
+    setAutoStartedFor(currentFingerprint);
+    setScan({ status: "running", started_at: new Date().toISOString(), files_fingerprint: "" });
+    fetch("/api/checklist-scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ submissionId }),
+    })
+      .catch(() => {})
+      .finally(() => router.refresh());
+  }, [scan, currentFingerprint, autoStartedFor, submissionId, router]);
 
   async function checkAgain() {
     setScan({ status: "running", started_at: new Date().toISOString(), files_fingerprint: "" });
@@ -201,7 +220,7 @@ export function ChecklistSuggestionsPanel({
         <div className="flex items-center gap-3">
           {scan?.finished_at && <span className="text-body-sm text-on-surface-variant">Last read {new Date(scan.finished_at).toLocaleString()}</span>}
           <button type="button" onClick={checkAgain} disabled={running || !hasRfpFiles} className="px-3 py-1.5 rounded-lg border border-outline-variant text-label-sm font-bold disabled:opacity-40">
-            Check again
+            {scan ? "Check again" : "Read the solicitation"}
           </button>
         </div>
       </div>

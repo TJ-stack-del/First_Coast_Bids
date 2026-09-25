@@ -15,6 +15,7 @@ import { IsTestToggle } from "./IsTestToggle";
 import { SubmissionMessages } from "@/components/ui/SubmissionMessages";
 import { SubmissionDocuments } from "@/components/ui/SubmissionDocuments";
 import { ChecklistSuggestionsPanel } from "./ChecklistSuggestionsPanel";
+import { filesFingerprint } from "@/lib/checklist/scan-state";
 import { isKnownTrade } from "@/lib/compliance/known-trades";
 import { computePreflightSummary } from "@/lib/compliance/preflight-summary";
 import { AdminFirstViewTransition } from "./AdminFirstViewTransition";
@@ -132,7 +133,7 @@ export default async function AdminSubmissionDetailPage({
   // every other file on this page.
   const { data: rfpDocs } = await supabase
     .from("submission_documents")
-    .select("file_name, file_url")
+    .select("file_name, file_url, created_at")
     .eq("submission_id", id)
     .eq("document_type", "rfp_file");
   const rfpDocumentUrls: Record<string, string> = {};
@@ -426,6 +427,7 @@ export default async function AdminSubmissionDetailPage({
             initialSuggestions={(suggestions ?? []) as any}
             rfpDocumentUrls={rfpDocumentUrls}
             hasRfpFiles={(rfpDocs ?? []).length > 0}
+            currentFingerprint={(rfpDocs ?? []).length > 0 ? filesFingerprint(rfpDocs ?? []) : null}
             unsentClientItems={unsentClientItems}
           />
           <AdminSubmissionActions

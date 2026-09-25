@@ -6,13 +6,36 @@ import type { Candidate } from "./types.ts";
 // requirement, detectors' verbatim quotes preferred, nothing re-suggested
 // that the bid already has (in any status).
 
+// Parentheticals ("(Page 46)", "(3)") and punctuation don't make a new item.
 function normalizeLabel(label: string): string {
-  return label.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  return label
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
+// "Form 10", "FORM 5:" -- a solicitation's own numbered forms. Two digits at
+// most, so "Form 1449" (an SF form, keyed by the detectors) isn't caught.
+const LOCAL_FORM = /\bform\s*#?\s*(\d{1,2})\b/i;
+const FAR_NUMBER = /\b(52\.2\d{2}-\d{1,3})\b/;
+
+// Identity of a requirement, so different wordings of it (from different
+// page ranges or readings) become one suggestion. Taken from the item's own
+// label (and, for FAR numbers, its detail) -- never from the quote, which
+// can mention other requirements in passing. Found necessary on real
+// documents (2026-09-25): "FORM 10: Qualifications (Page 46)" and
+// "Form 10: Qualifications & Experience" were separate suggestions.
 export function candidateKey(c: Candidate): string {
   if (c.key) return c.key;
-  return identifierKey(`${c.label} ${c.detail ?? ""} ${c.quote}`) ?? `${c.kind}:${normalizeLabel(c.label)}`;
+  const id = identifierKey(c.label);
+  if (id) return id;
+  const far = c.label.match(FAR_NUMBER) ?? (c.detail ?? "").match(FAR_NUMBER);
+  if (far) return `far:${far[1]}`;
+  const form = c.label.match(LOCAL_FORM);
+  if (form) return `localform:${Number(form[1])}`;
+  return `${c.kind}:${normalizeLabel(c.label)}`;
 }
 
 export function mergeCandidates(detected: Candidate[], ai: Candidate[]): Candidate[] {

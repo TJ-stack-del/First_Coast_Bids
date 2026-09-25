@@ -46,3 +46,34 @@ test("finalize drops federal items on local bids and keys that already exist", (
   const out = finalizeCandidates(items, { agency: "City of Jacksonville", detected: [], existingKeys: new Set(["sworn:e-verify"]) });
   assert.deepEqual(out.map((o) => o.key), ["bond:bid bond"]);
 });
+
+// Real duplicates from the 2026-09-25 dev run on Jacksonville Beach RFQ 03-2526
+// and Air Force FA252126QB143: same requirement, different wording per chunk.
+test("numbered local forms are one item however they're worded", () => {
+  const merged = mergeCandidates([], [
+    c({ kind: "form", label: "FORM 10: Qualifications (Page 46)" }),
+    c({ kind: "form", label: "FORM 10: Qualifications" }),
+    c({ kind: "form", label: "Form 10: Qualifications & Experience" }),
+    c({ kind: "sworn_statement", label: "FORM 5: Non-Collusion Affidavit (Page 41)" }),
+    c({ kind: "sworn_statement", label: "Form 5: Non-Collusion Affidavit" }),
+  ]);
+  assert.deepEqual(merged.map((m) => m.key).sort(), ["localform:10", "localform:5"]);
+});
+
+test("any FAR number identifies the item, not just the ones detectors act on", () => {
+  const merged = mergeCandidates([], [
+    c({ kind: "far_provision", label: "52.212-1 minimum offer contents" }),
+    c({ kind: "far_provision", label: "FAR 52.212-1 minimum offer contents" }),
+    c({ kind: "far_provision", label: "52.209-11 Representation" }),
+    c({ kind: "far_provision", label: "52.209-11 Representation regarding delinquent tax liability/felony conviction" }),
+  ]);
+  assert.deepEqual(merged.map((m) => m.key).sort(), ["far:52.209-11", "far:52.212-1"]);
+});
+
+test("parentheticals and page notes don't make a new item", () => {
+  const merged = mergeCandidates([], [
+    c({ kind: "other", label: "Three project references" }),
+    c({ kind: "other", label: "Three (3) project references" }),
+  ]);
+  assert.equal(merged.length, 1);
+});

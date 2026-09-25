@@ -7,7 +7,7 @@ import { chunkPages } from "@/lib/checklist/chunk";
 import { runAiPass } from "@/lib/checklist/ai-pass";
 import { verifyQuote } from "@/lib/checklist/verify-quote";
 import { mergeCandidates, finalizeCandidates } from "@/lib/checklist/merge";
-import { filesFingerprint, isScanStale, type ScanState } from "@/lib/checklist/scan-state";
+import { filesFingerprint, filesReadParts, filesToRead, isScanStale, type ScanState } from "@/lib/checklist/scan-state";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -75,10 +75,13 @@ export async function POST(request: Request) {
       files.push({ fileName: doc.file_name, pages: text.pages, buffer });
     }
 
+    // Detectors cover every file; the AI reads only files not covered by
+    // the last reading, unless this is a forced "Check again".
+    const toRead = new Set(filesToRead(docs, previous, force));
     const detected = detectItems(files);
-    const { chunks, pagesRead } = chunkPages(files);
+    const { chunks, pagesRead } = chunkPages(files.filter((f) => toRead.has(f.fileName)));
     const scannedPdfs = files
-      .filter((f) => f.pages === null && f.fileName.toLowerCase().endsWith(".pdf"))
+      .filter((f) => toRead.has(f.fileName) && f.pages === null && f.fileName.toLowerCase().endsWith(".pdf"))
       .map((f) => ({ fileName: f.fileName, buffer: f.buffer }));
     const ai = await runAiPass({ chunks, scannedPdfs, agency: submission.agency });
 
@@ -128,6 +131,7 @@ export async function POST(request: Request) {
       error: allAiFailed ? `The AI reading failed: ${ai.failed[0]}` : null,
       pages_read: pagesRead,
       ai_failed: ai.failed,
+      files_read: filesReadParts(docs),
     };
     await service.from("submissions").update({ checklist_scan: finished }).eq("id", submissionId);
     return NextResponse.json({ status: finished.status, inserted: rows.length });
