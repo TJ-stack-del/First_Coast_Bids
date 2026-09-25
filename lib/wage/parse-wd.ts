@@ -37,8 +37,9 @@ function toNumber(word: string): number | null {
 const POSITION_LINE = /^(\d{5}) - (.+?)\s{2,}(?:(\d+)\s+)?(\d+\.\d{2})\*?\s*$/gm;
 
 // Some titles wrap: "15010 - Aircrew Training Devices Instructor" then
-// "(Non-Rated)      33.88" on the next line. Join such pairs first.
-const WRAPPED_TITLE = /^(\d{5} - [^\n]*?)[ \t]*\n(?!\s*\d{5} - )([^\n]*\d+\.\d{2}\*?[ \t]*)$/gm;
+// "(Non-Rated)      33.88" on the next line. Join such pairs first -- only
+// when the first line has no rate of its own.
+const WRAPPED_TITLE = /^(\d{5} - (?![^\n]*\d+\.\d{2}\*?[ \t]*$)[^\n]*?)[ \t]*\n(?!\s*\d{5} - )([^\n]*\d+\.\d{2}\*?[ \t]*)$/gm;
 
 export function parseWd(text: string): { ok: boolean; wd: ParsedWd | null; missing: string[] } {
   const flat = text.replace(/\s+/g, " ");

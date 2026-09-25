@@ -57,3 +57,12 @@ test("a truncated WD fails validation and names what's missing", () => {
   assert.equal(wd, null);
   assert.ok(missing.includes("health & welfare rate"));
 });
+
+test("a position line that already has its rate is never joined onto the next line", () => {
+  const text = readFileSync(new URL("./fixtures/wd-2015-4539-r32.txt", import.meta.url), "utf8").replace(
+    /^(11150 - Janitor.*)$/m,
+    "$1\nNote: see the uniform allowance of 1.35"
+  );
+  const r = parseWd(text);
+  assert.equal(r.wd.positions.find((p) => p.code === "11150").rate, 17.04);
+});

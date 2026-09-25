@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extractWdDocument } from "./fetch-wd.ts";
+import { extractWdDocument, highestRevision } from "./fetch-wd.ts";
 
 test("the WD text is taken from SAM.gov's JSON, with control characters and wrapping quotes handled", () => {
   const raw = '{"fullReferenceNumber":"2015-4539","revisionNumber":32,"document":"\\"\\n\\nREGISTER OF WAGE DETERMINATIONS\\n11150 - Janitor   17.04\\n\\""}';
@@ -18,4 +18,16 @@ test("raw control characters inside the document string don't break it", () => {
 test("non-WD JSON throws", () => {
   assert.throws(() => extractWdDocument('{"title":"Not Found","status":404}'));
   assert.throws(() => extractWdDocument("not json"));
+});
+
+test("the latest revision is the highest one found, not the first search hit", () => {
+  const results = [
+    { fullReferenceNumber: "2015-4539", revisionNumber: 30 },
+    { fullReferenceNumber: "2015-45390", revisionNumber: 99 },
+    { fullReferenceNumber: "2015-4539", revisionNumber: 32 },
+    { fullReferenceNumber: "2015-4539", revisionNumber: 31 },
+  ];
+  assert.equal(highestRevision(results, "2015-4539"), 32);
+  assert.equal(highestRevision(results, "2015-0001"), null);
+  assert.equal(highestRevision(undefined, "2015-4539"), null);
 });

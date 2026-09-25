@@ -82,6 +82,12 @@ export function sanitizeNumber(v: unknown, fallback: number): number {
   return Number.isFinite(n) && n >= 0 ? n : fallback;
 }
 
+// The bid price the admin typed, as saved: empty unless it's a real,
+// non-negative number (a bad value is never saved as $0).
+export function bidPriceForSave(v: unknown): number | null {
+  return sanitizeNumber(v, null);
+}
+
 const fmt = (n: number) => n.toLocaleString("en-US");
 
 export function prefillLines(input: {

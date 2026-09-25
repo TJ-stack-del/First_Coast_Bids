@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchWdText } from "@/lib/wage/fetch-wd";
 import { parseWd, type ParsedWd } from "@/lib/wage/parse-wd";
 import {
+  bidPriceForSave,
   parseWdReference,
   pickWdSuggestion,
   prefillGuidance,
@@ -227,7 +228,7 @@ export async function PATCH(request: Request) {
       supplies_value: sanitizeNumber(body?.suppliesValue, 0),
       overhead_pct: sanitizeNumber(body?.overheadPct, 0),
       profit_pct: sanitizeNumber(body?.profitPct, 0),
-      bid_price: body?.bidPrice === null || body?.bidPrice === "" || body?.bidPrice === undefined ? null : sanitizeNumber(body.bidPrice, 0),
+      bid_price: bidPriceForSave(body?.bidPrice),
       updated_by: member.id,
       updated_at: updatedAt,
     })

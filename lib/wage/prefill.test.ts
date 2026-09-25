@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad, readNumberText, pickWdSuggestion, rerateLines, wdRefChanged, prefillGuidance } from "./prefill.ts";
+import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad, readNumberText, pickWdSuggestion, rerateLines, wdRefChanged, prefillGuidance, bidPriceForSave } from "./prefill.ts";
 import type { ParsedWd } from "./parse-wd.ts";
 
 const WD: ParsedWd = {
@@ -162,4 +162,13 @@ test("I4: the worksheet says exactly which default is missing", () => {
     "Position 99999 (the Janitorial default) isn't in this wage determination. Add a position below.",
   ]);
   assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "11150", productionRate: 3500, cleanableSqft: 45000, missingCode: null }), []);
+});
+
+test("a bid price that isn't a usable number is saved as empty, never as $0", () => {
+  assert.equal(bidPriceForSave(-5), null);
+  assert.equal(bidPriceForSave(""), null);
+  assert.equal(bidPriceForSave(undefined), null);
+  assert.equal(bidPriceForSave("abc"), null);
+  assert.equal(bidPriceForSave(90000), 90000);
+  assert.equal(bidPriceForSave(0), 0);
 });
