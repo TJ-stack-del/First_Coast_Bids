@@ -91,3 +91,33 @@ test("a form count isn't mistaken for a numbered form", () => {
   assert.equal(candidateKey(c({ kind: "form", label: "W-9 form 2 copies" })), "form:w 9 form 2 copies");
   assert.equal(candidateKey(c({ kind: "form", label: "Form 1 \u2013 Response Form / Turn-In Checklist" })), "localform:1");
 });
+
+// Real repeats from the 2026-09-25 re-test (Jacksonville Beach RFQ 03-2526 +
+// 2 addenda): the same topic, reworded by different files/page ranges.
+test("evaluation information is one item per bid", () => {
+  const merged = mergeCandidates([], [
+    c({ kind: "evaluation_method", label: "Evaluation and award method" }),
+    c({ kind: "evaluation_method", label: "Evaluation criteria" }),
+    c({ kind: "evaluation_method", label: "Evaluation criteria and proximity bonus" }),
+  ]);
+  assert.equal(merged.length, 1);
+});
+
+test("submission rules merge by topic, and distinct rules stay separate", () => {
+  const key = (label: string) => candidateKey(c({ kind: "submission_rule", label }));
+  assert.equal(key("Deadline, method and delivery location"), key("Response deadline"));
+  assert.equal(key("Deadline, copies, sealed envelope labelling and delivery address"), key("Response deadline"));
+  assert.equal(key("Page limit / formatting"), key("40-page limit and what counts"));
+  assert.equal(key("Formatting rules"), key("Page limit / formatting"));
+  assert.equal(key("Cone of Silence compliance"), key("No lobbying of officials"));
+  assert.notEqual(key("Questions deadline"), key("Response deadline"), "the questions deadline is its own rule");
+  assert.notEqual(key("Response validity period"), key("Response deadline"));
+  assert.notEqual(key("Cost information withheld until requested"), key("Response deadline"));
+});
+
+test("'Forms 10 and 11' is the same item as 'Form 10: Qualifications and Form 11: Experience'", () => {
+  assert.equal(
+    candidateKey(c({ kind: "form", label: "Forms 10 and 11 (Qualifications / Experience)" })),
+    candidateKey(c({ kind: "form", label: "Form 10: Qualifications and Form 11: Experience" }))
+  );
+});

@@ -3,13 +3,15 @@ import type { FilePages } from "./detectors.ts";
 // Splits readable text into page-range chunks for parallel AI requests: one
 // request over a long solicitation can outlast Vercel's 60-second limit.
 // Each chunk carries document and page markers so the AI reports exact
-// pages. totalCap bounds the whole reading; pagesRead says how far each
+// pages. 120,000 characters (~30k tokens) keeps a typical RFQ in one
+// reading -- page-range splits reworded the same items (2026-09-25 re-test).
+// totalCap bounds the whole reading; pagesRead says how far each
 // file got so a partial read is shown, never hidden.
 export type Chunk = { fileName: string; startPage: number; endPage: number; text: string };
 
 export function chunkPages(
   files: FilePages[],
-  maxChars = 60_000,
+  maxChars = 120_000,
   totalCap = 360_000
 ): { chunks: Chunk[]; pagesRead: { file: string; total: number; read: number }[] } {
   const chunks: Chunk[] = [];

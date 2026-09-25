@@ -20,7 +20,7 @@ function normalizeLabel(label: string): string {
 // most, so "Form 1449" (an SF form, keyed by the detectors) isn't caught.
 // Only as a heading ("Form 10:", "FORM 1 – ...") or at the start, so a count
 // like "W-9 form 2 copies" isn't read as Form 2.
-const LOCAL_FORM = /(?:^|\b)form\s*#?\s*(\d{1,2})\s*(?:[:\-\u2013\u2014]|$)|^form\s*#?\s*(\d{1,2})\b/i;
+const LOCAL_FORM = /(?:^|\b)forms?\s*#?\s*(\d{1,2})\s*(?:[:\-\u2013\u2014]|$)|^forms?\s*#?\s*(\d{1,2})\b/i;
 const FAR_NUMBER = /\b(52\.2\d{2}-\d{1,3})\b/;
 
 // Identity of a requirement, so different wordings of it (from different
@@ -29,8 +29,26 @@ const FAR_NUMBER = /\b(52\.2\d{2}-\d{1,3})\b/;
 // can mention other requirements in passing. Found necessary on real
 // documents (2026-09-25): "FORM 10: Qualifications (Page 46)" and
 // "Form 10: Qualifications & Experience" were separate suggestions.
+// Submission rules merge by topic: different files and page ranges word the
+// same rule differently (a real RFQ + addenda gave three "deadline" items).
+// Order matters: the questions deadline is checked before the response
+// deadline. Anything else keeps its own label.
+const SUBMISSION_TOPICS: [string, RegExp][] = [
+  ["questions", /\bquestions?\b|interpretation|clarification/i],
+  ["validity", /validity|honou?r .*days|price[s]? firm|acceptance period/i],
+  ["no-contact", /lobby|cone of silence|contact .*(official|council|committee)/i],
+  ["format", /page limit|\d+-page|format|font|page size|margins?\b/i],
+  ["deadline", /deadline|\bdue\b|submittals?\b.*\b(by|before)\b|deliver/i],
+];
+
 export function candidateKey(c: Candidate): string {
   if (c.key) return c.key;
+  // Evaluation information is one item per bid.
+  if (c.kind === "evaluation_method") return "evaluation:all";
+  if (c.kind === "submission_rule") {
+    const topic = SUBMISSION_TOPICS.find(([, re]) => re.test(c.label));
+    if (topic) return `submission:${topic[0]}`;
+  }
   const id = identifierKey(c.label);
   if (id) return id;
   // A FAR number identifies the item only when the item IS that provision:
