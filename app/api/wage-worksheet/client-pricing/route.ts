@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import type { ParsedWd } from "@/lib/wage/parse-wd";
 import { normalizeClientPricing, hasAnyPricing } from "@/lib/wage/client-pricing";
 import { applyPrefilledHours } from "@/lib/wage/prefill";
@@ -26,8 +27,19 @@ export async function PUT(request: Request) {
   const pricing = normalizeClientPricing(body?.pricing);
   const firstTime = !hasAnyPricing(ctx.client.pricing);
 
-  const { error } = await supabase.from("clients").update({ pricing }).eq("id", ctx.client.id);
+  // clients.pricing is admin-owned (the client never edits it), so it's
+  // deliberately NOT in the "authenticated" column grant on clients
+  // (20260920130000_lock_down_sam_status_columns.sql) -- this one write goes
+  // through the service role, only after the admin check above and only for
+  // the client of a bid this admin can see, in their own org.
+  const { data: updated, error } = await createServiceClient()
+    .from("clients")
+    .update({ pricing })
+    .eq("id", ctx.client.id)
+    .eq("org_id", member.org_id)
+    .select("id");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (updated?.length !== 1) return NextResponse.json({ error: "The client's numbers weren't saved." }, { status: 500 });
   if (!firstTime) return NextResponse.json({ pricing, applied: false });
 
   const { data: ws } = await supabase
