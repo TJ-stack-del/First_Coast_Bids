@@ -14,6 +14,7 @@ import { DeleteSubmissionButton } from "./DeleteSubmissionButton";
 import { IsTestToggle } from "./IsTestToggle";
 import { SubmissionMessages } from "@/components/ui/SubmissionMessages";
 import { SubmissionDocuments } from "@/components/ui/SubmissionDocuments";
+import { ChecklistSuggestionsPanel } from "./ChecklistSuggestionsPanel";
 import { isKnownTrade } from "@/lib/compliance/known-trades";
 import { computePreflightSummary } from "@/lib/compliance/preflight-summary";
 import { AdminFirstViewTransition } from "./AdminFirstViewTransition";
@@ -66,7 +67,7 @@ export default async function AdminSubmissionDetailPage({
 
   const { data: checklist } = await supabase
     .from("checklist_items")
-    .select("id, label, status, notes")
+    .select("id, label, status, notes, owner, client_notified_at")
     .eq("submission_id", id);
 
   const { data: deliverablesRaw } = await supabase
@@ -139,6 +140,16 @@ export default async function AdminSubmissionDetailPage({
     const signed = await signRfpDocumentUrl(supabase, doc.file_url);
     if (signed) rfpDocumentUrls[doc.file_name] = signed;
   }
+
+  const { data: suggestions } = await supabase
+    .from("checklist_suggestions")
+    .select("id, kind, federal, label, detail, quote, page, source_file, quote_status, found_by, suggested_owner, status")
+    .eq("submission_id", id)
+    .order("created_at", { ascending: true });
+  // Same rule as /api/send-checklist-items: client items not yet emailed and not finished.
+  const unsentClientItems = (checklist ?? []).filter(
+    (c: any) => c.owner === "client" && !c.client_notified_at && c.status !== "done" && c.status !== "waived"
+  ).length;
 
   const { data: auditLog } = await supabase
     .from("audit_log")
@@ -409,6 +420,14 @@ export default async function AdminSubmissionDetailPage({
             />
           </div>
 
+          <ChecklistSuggestionsPanel
+            submissionId={submission.id}
+            initialScan={(submission.checklist_scan ?? null) as any}
+            initialSuggestions={(suggestions ?? []) as any}
+            rfpDocumentUrls={rfpDocumentUrls}
+            hasRfpFiles={(rfpDocs ?? []).length > 0}
+            unsentClientItems={unsentClientItems}
+          />
           <AdminSubmissionActions
             submissionId={submission.id}
             actorId={member.id}

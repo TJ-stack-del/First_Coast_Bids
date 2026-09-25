@@ -179,6 +179,7 @@ export function SubmissionCard({
                     >
                       <span className={`text-body-md text-on-surface ${item.status === "done" ? "line-through" : ""}`}>
                         {item.label}
+                        {item.notes && <span className="block text-body-sm text-on-surface-variant">{item.notes}</span>}
                       </span>
                       <span className="text-label-sm px-2 py-0.5 rounded font-bold bg-surface-container-high text-on-surface-variant uppercase tracking-wider">
                         {CHECKLIST_STATUS_LABELS[item.status] ?? item.status}
