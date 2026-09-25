@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LifecycleStepper, stageNumber } from "@/components/ui/LifecycleStepper";
 import { DeliverablesSection } from "./DeliverablesSection";
 import { SubmissionMessages } from "@/components/ui/SubmissionMessages";
+import { WageCheckNotice } from "./WageCheckNotice";
 import type { Submission, ChecklistItem, Deliverable } from "./page";
 
 const CHECKLIST_STATUS_LABELS: Record<string, string> = {
@@ -126,6 +127,10 @@ export function SubmissionCard({
             </div>
           )}
         </div>
+
+        {/* Always visible (not in the collapsible part): a below-floor
+            warning must never be hidden. */}
+        {submission.wage_check && <WageCheckNotice check={submission.wage_check} />}
 
         {/* Opening drops the details in from under the header; closing is
             instant (exits faster than entrances, and nothing is left to read). */}

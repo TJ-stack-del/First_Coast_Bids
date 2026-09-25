@@ -73,7 +73,6 @@ export function TradesSettings({ trades }: { trades: Trade[] }) {
       keywords: t.keywords,
       active: !t.active,
       wdPositionCode: t.wdPositionCode,
-      productionRate: t.productionRate,
     };
     preview(input, t.active ? `Switch off ${t.label}?` : `Switch on ${t.label}?`);
   }

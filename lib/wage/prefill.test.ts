@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad, readNumberText, pickWdSuggestion, rerateLines, wdRefChanged, prefillGuidance, bidPriceForSave } from "./prefill.ts";
+import { parseWdReference, prefillLines, sanitizeLines, sanitizeNumber, shouldAutoLoad, readNumberText, pickWdSuggestion, rerateLines, wdRefChanged, prefillGuidance, bidPriceForSave, applyPrefilledHours, readOptionalNumberText } from "./prefill.ts";
 import type { ParsedWd } from "./parse-wd.ts";
 
 const WD: ParsedWd = {
@@ -20,7 +20,7 @@ test("the checklist's WD label gives number and revision", () => {
 
 test("hours come from square footage, production rate and days; split into full-time workers", () => {
   const { lines, missingCode, hoursNeeded } = prefillLines({
-    wd: WD, positionCode: "11150", productionRate: 3500, cleanableSqft: 45000, serviceDaysPerWeek: 5, defaults: {},
+    wd: WD, positionCode: "11150", productionRate: 3500, cleanableSqft: 45000, serviceDaysPerWeek: 5
   });
   assert.equal(missingCode, null);
   assert.equal(hoursNeeded, false);
@@ -31,22 +31,23 @@ test("hours come from square footage, production rate and days; split into full-
   assert.equal(lines[0].hoursSource, "from 45,000 sq ft at 3,500 sq ft/hr × 5 days");
 });
 
-test("service days fall back to the business default, then to 5", () => {
-  const a = prefillLines({ wd: WD, positionCode: "11150", productionRate: 3000, cleanableSqft: 30000, serviceDaysPerWeek: null, defaults: { serviceDaysPerWeek: 3 } });
-  assert.equal(a.lines[0].workers * a.lines[0].hoursPerWeek, 30);
-  const b = prefillLines({ wd: WD, positionCode: "11150", productionRate: 3000, cleanableSqft: 30000, serviceDaysPerWeek: null, defaults: {} });
-  assert.equal(b.lines[0].workers * b.lines[0].hoursPerWeek, 50);
+test("service days fall back to 5, and the source says it was assumed", () => {
+  const a = prefillLines({ wd: WD, positionCode: "11150", productionRate: 3000, cleanableSqft: 30000, serviceDaysPerWeek: null });
+  assert.equal(a.lines[0].hoursPerWeek, 50 / 2);
+  assert.equal(a.lines[0].hoursSource, "from 30,000 sq ft at 3,000 sq ft/hr × 5 days (assumed; the solicitation didn't say)");
+  const b = prefillLines({ wd: WD, positionCode: "11150", productionRate: 3000, cleanableSqft: 30000, serviceDaysPerWeek: 3 });
+  assert.equal(b.lines[0].hoursSource, "from 30,000 sq ft at 3,000 sq ft/hr × 3 days");
 });
 
 test("no square footage (or no production rate): hours are left for the admin, flagged", () => {
-  const { lines, hoursNeeded } = prefillLines({ wd: WD, positionCode: "11150", productionRate: null, cleanableSqft: 45000, serviceDaysPerWeek: 5, defaults: {} });
+  const { lines, hoursNeeded } = prefillLines({ wd: WD, positionCode: "11150", productionRate: null, cleanableSqft: 45000, serviceDaysPerWeek: 5 });
   assert.equal(hoursNeeded, true);
   assert.equal(lines[0].workers, 1);
   assert.equal(lines[0].hoursPerWeek, 0);
 });
 
 test("a default position missing from this WD is reported, not guessed", () => {
-  const { lines, missingCode } = prefillLines({ wd: WD, positionCode: "99999", productionRate: 3500, cleanableSqft: 45000, serviceDaysPerWeek: 5, defaults: {} });
+  const { lines, missingCode } = prefillLines({ wd: WD, positionCode: "99999", productionRate: 3500, cleanableSqft: 45000, serviceDaysPerWeek: 5 });
   assert.equal(missingCode, "99999");
   assert.deepEqual(lines, []);
 });
@@ -145,23 +146,44 @@ test("C1: a changed WD number or revision is detected", () => {
   assert.equal(wdRefChanged({ number: "2015-4539", revision: 32 }, null), false);
 });
 
-test("I4: the worksheet says exactly which default is missing", () => {
-  assert.deepEqual(prefillGuidance({ tradeLabel: null, positionCode: null, productionRate: null, cleanableSqft: null, missingCode: null }), [
-    "No trade matched this bid, so no position was pre-filled. Add a position below.",
-  ]);
-  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: null, productionRate: 3500, cleanableSqft: 45000, missingCode: null }), [
+test("guidance names the client for their numbers, and Settings only for the position code", () => {
+  const base = { tradeLabel: "Janitorial", positionCode: "11150", clientName: "Acme Cleaning", productionRate: 3500, cleanableSqft: 45000, missingCode: null, missingPricing: [] };
+  assert.deepEqual(prefillGuidance({ ...base, tradeLabel: null }), ["No trade matched this bid, so no position was pre-filled. Add a position below."]);
+  assert.deepEqual(prefillGuidance({ ...base, positionCode: null }), [
     "Set a wage worksheet position code for Janitorial in Settings → Trades to pre-fill positions.",
   ]);
-  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "11150", productionRate: null, cleanableSqft: 45000, missingCode: null }), [
-    "Set a production rate for Janitorial in Settings → Trades to pre-fill hours.",
-  ]);
-  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "11150", productionRate: 3500, cleanableSqft: null, missingCode: null }), [
-    "The solicitation didn't state square footage, so enter hours per week.",
-  ]);
-  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "99999", productionRate: 3500, cleanableSqft: 45000, missingCode: "99999" }), [
+  assert.deepEqual(prefillGuidance({ ...base, positionCode: "99999", missingCode: "99999" }), [
     "Position 99999 (the Janitorial default) isn't in this wage determination. Add a position below.",
   ]);
-  assert.deepEqual(prefillGuidance({ tradeLabel: "Janitorial", positionCode: "11150", productionRate: 3500, cleanableSqft: 45000, missingCode: null }), []);
+  assert.deepEqual(prefillGuidance({ ...base, productionRate: null }), ["Enter Acme Cleaning's sq ft per hour to pre-fill hours."]);
+  assert.deepEqual(prefillGuidance({ ...base, cleanableSqft: null }), ["The solicitation didn't state square footage, so enter hours per week."]);
+  assert.deepEqual(prefillGuidance({ ...base, missingPricing: ["overhead %", "profit %"] }), ["Missing Acme Cleaning's overhead % and profit %."]);
+  assert.deepEqual(prefillGuidance({ ...base, missingPricing: ["supplies", "overhead %", "profit %"] }), [
+    "Missing Acme Cleaning's supplies, overhead % and profit %.",
+  ]);
+  assert.deepEqual(prefillGuidance(base), []);
+});
+
+test("pre-filled hours replace blank or pre-filled ones, never hours the admin typed", () => {
+  const pre = [{ code: "11150", title: "Janitor", rate: 17.04, workers: 2, hoursPerWeek: 32.14, hoursSource: "from 45,000 sq ft …" }];
+  const blank = [{ ...pre[0], workers: 1, hoursPerWeek: 0, hoursSource: null }];
+  assert.deepEqual(applyPrefilledHours(blank, pre), pre);
+  const oldPrefill = [{ ...pre[0], workers: 3, hoursPerWeek: 30, hoursSource: "from 45,000 sq ft at 2,000 …" }];
+  assert.deepEqual(applyPrefilledHours(oldPrefill, pre), pre);
+  const typed = [{ ...pre[0], workers: 2, hoursPerWeek: 36, hoursSource: null }];
+  assert.deepEqual(applyPrefilledHours(typed, pre), typed);
+  const other = [{ ...pre[0], code: "11210", hoursPerWeek: 0, hoursSource: null }];
+  assert.deepEqual(applyPrefilledHours(other, pre), other);
+});
+
+test("an optional number box: blank is missing, typed text is read, junk keeps the old value", () => {
+  assert.equal(readOptionalNumberText(""), null);
+  assert.equal(readOptionalNumberText("  "), null);
+  assert.equal(readOptionalNumberText("12"), 12);
+  assert.equal(readOptionalNumberText("12."), 12);
+  assert.equal(readOptionalNumberText("$1,500"), 1500);
+  assert.equal(readOptionalNumberText("0"), 0);
+  assert.equal(readOptionalNumberText("abc"), undefined);
 });
 
 test("a bid price that isn't a usable number is saved as empty, never as $0", () => {
@@ -171,4 +193,11 @@ test("a bid price that isn't a usable number is saved as empty, never as $0", ()
   assert.equal(bidPriceForSave("abc"), null);
   assert.equal(bidPriceForSave(90000), 90000);
   assert.equal(bidPriceForSave(0), 0);
+});
+
+test("a pasted '12%' or '12 %' is read as 12, not dropped (final review I1)", () => {
+  assert.equal(readOptionalNumberText("12%"), 12);
+  assert.equal(readOptionalNumberText("12 %"), 12);
+  assert.equal(readNumberText("8%"), 8);
+  assert.equal(readOptionalNumberText("12 percent"), undefined);
 });

@@ -5,18 +5,12 @@ import { parseWd, type ParsedWd } from "@/lib/wage/parse-wd";
 import {
   bidPriceForSave,
   parseWdReference,
-  pickWdSuggestion,
-  prefillGuidance,
-  prefillLines,
   rerateLines,
   sanitizeLines,
   sanitizeNumber,
   wdRefChanged,
-  type PricingDefaults,
 } from "@/lib/wage/prefill";
-import { getOrExtractBidEstimationFacts } from "@/lib/bid-estimation";
-import { loadTrades } from "@/lib/trades/server";
-import { clientTradeIds } from "@/lib/trades/naics-options";
+import { adminFor, prefillContext, guidanceFor, pricingColumns, saveWageCheck, type Ctx } from "@/lib/wage/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -24,79 +18,16 @@ export const maxDuration = 60;
 // The wage worksheet (docs/superpowers/specs/2026-09-25-wage-worksheet-design.md).
 // POST: create it pre-filled on first open, or return the saved one --
 //   { wdNumber } switches it to another WD/revision (positions re-rated),
-//   { refill: true } re-applies the Settings defaults (after they change).
-// PATCH: autosave edits. Admin only.
+//   { refill: true } re-applies the client's numbers (after they change).
+// PATCH: autosave edits, and the client's read-only line. Admin only.
 
-type Supabase = Awaited<ReturnType<typeof createClient>>;
-
-async function adminFor(supabase: Supabase) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase.from("team_members").select("id, org_id").eq("auth_user_id", user.id).eq("role", "admin").maybeSingle();
-  return data;
-}
-
-// Everything the pre-fill needs: the bid's trade (from the match it came
-// from, else the client's NAICS), the solicitation's facts, the defaults,
-// and the WD the checklist found (one rule, shared with the page).
-async function prefillContext(supabase: Supabase, orgId: string, submissionId: string) {
-  const { data: sub } = await supabase
-    .from("submissions")
-    .select("id, bid_estimation_facts, bid_estimation_facts_extracted_at, clients!submissions_client_id_fkey(naics_codes)")
-    .eq("id", submissionId)
-    .maybeSingle();
-  if (!sub) return null;
-  const { data: org } = await supabase.from("organizations").select("pricing_defaults").eq("id", orgId).single();
-  const defaults = ((org?.pricing_defaults ?? {}) as PricingDefaults) || {};
-  const trades = await loadTrades(supabase, orgId);
-  const { data: link } = await supabase
-    .from("audit_log")
-    .select("event_detail")
-    .eq("submission_id", submissionId)
-    .eq("event_type", "submission_created_from_match")
-    .limit(1)
-    .maybeSingle();
-  const opportunityId = (link?.event_detail as { opportunity_id?: string } | null)?.opportunity_id;
-  let tradeId: string | null = null;
-  if (opportunityId) {
-    const { data: m } = await supabase.from("matched_opportunities").select("trade_id").eq("id", opportunityId).maybeSingle();
-    tradeId = m?.trade_id ?? null;
-  }
-  if (!tradeId) {
-    const naics = (sub.clients as unknown as { naics_codes: string[] | null } | null)?.naics_codes ?? [];
-    tradeId = clientTradeIds(naics, trades)[0] ?? null;
-  }
-  const trade = trades.find((t) => t.id === tradeId) ?? null;
-  const facts = await getOrExtractBidEstimationFacts(supabase, sub as never);
-  const { data: suggestions } = await supabase
-    .from("checklist_suggestions")
-    .select("kind, dedupe_key, label, status, created_at")
-    .eq("submission_id", submissionId);
-  return { trade, facts, defaults, currentWd: pickWdSuggestion(suggestions ?? []) };
-}
-
-type Ctx = NonNullable<Awaited<ReturnType<typeof prefillContext>>>;
-
-function guidanceFor(ctx: Ctx, wd: ParsedWd) {
-  const pre = prefillLines({
-    wd,
-    positionCode: ctx.trade?.wdPositionCode ?? null,
-    productionRate: ctx.trade?.productionRate ?? null,
-    cleanableSqft: ctx.facts?.cleanable_sqft ?? null,
-    serviceDaysPerWeek: ctx.facts?.service_days_per_week ?? null,
-    defaults: ctx.defaults,
-  });
-  const guidance = prefillGuidance({
-    tradeLabel: ctx.trade?.label ?? null,
-    positionCode: ctx.trade?.wdPositionCode ?? null,
-    productionRate: ctx.trade?.productionRate ?? null,
-    cleanableSqft: ctx.facts?.cleanable_sqft ?? null,
-    missingCode: pre.missingCode,
-  });
-  return { pre, guidance };
-}
+// A worksheet row's own pricing (null = not given yet).
+const current = (w: { supplies_value: unknown; overhead_pct: unknown; profit_pct: unknown }) => ({
+  suppliesValue: w.supplies_value === null ? null : Number(w.supplies_value),
+  overheadPct: w.overhead_pct === null ? null : Number(w.overhead_pct),
+  profitPct: w.profit_pct === null ? null : Number(w.profit_pct),
+});
+const clientOut = (ctx: Ctx) => ({ name: ctx.client.name, pricing: ctx.client.pricing });
 
 async function fetchAndParse(number: string, revision: number | null) {
   const fetched = await fetchWdText(number, revision);
@@ -123,27 +54,24 @@ export async function POST(request: Request) {
   // flag if the solicitation's WD has changed since (e.g. an amendment).
   if (existing && !typed && !refill) {
     const wd = existing.wd_parsed as ParsedWd;
-    const { guidance } = guidanceFor(ctx, wd);
+    const { guidance } = guidanceFor(ctx, wd, current(existing));
     // A WD the admin chose by hand isn't second-guessed.
     const changed =
       existing.wd_revision_source !== "manual" &&
       wdRefChanged({ number: existing.wd_number, revision: existing.wd_revision }, ctx.currentWd);
-    return NextResponse.json({ worksheet: existing, parsed: wd, guidance, wdChanged: changed ? ctx.currentWd : null });
+    return NextResponse.json({ worksheet: existing, parsed: wd, guidance, wdChanged: changed ? ctx.currentWd : null, client: clientOut(ctx) });
   }
 
-  // Refill: re-apply the Settings defaults to the saved WD.
+  // Refill: re-apply the client's numbers to the saved WD.
   if (existing && refill && !typed) {
     const wd = existing.wd_parsed as ParsedWd;
-    const { pre, guidance } = guidanceFor(ctx, wd);
+    const { pre, guidance } = guidanceFor(ctx, wd, ctx.client.pricing);
     const { data: saved, error } = await supabase
       .from("wage_worksheets")
       .update({
         lines: pre.lines,
-        supplies_mode: ctx.defaults.suppliesMode ?? "percent",
-        supplies_value: ctx.defaults.suppliesValue ?? 0,
-        overhead_pct: ctx.defaults.overheadPct ?? 0,
-        profit_pct: ctx.defaults.profitPct ?? 0,
-        options: { ...(existing.options as object), includeVacation: ctx.defaults.includeVacation ?? true },
+        ...pricingColumns(ctx.client.pricing),
+        options: { ...(existing.options as object), includeVacation: true },
         updated_by: member.id,
         updated_at: new Date().toISOString(),
       })
@@ -151,7 +79,9 @@ export async function POST(request: Request) {
       .select("*")
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ worksheet: saved, parsed: wd, guidance, wdChanged: null });
+    const checkError = await saveWageCheck(supabase, submissionId, saved);
+    if (checkError) return NextResponse.json({ error: checkError }, { status: 500 });
+    return NextResponse.json({ worksheet: saved, parsed: wd, guidance, wdChanged: null, client: clientOut(ctx) });
   }
 
   // Which WD: typed by the admin, else the checklist's.
@@ -171,7 +101,7 @@ export async function POST(request: Request) {
   // stays "solicitation" so a later amendment is still flagged.
   const handPicked = typed !== null && (ctx.currentWd === null || wdRefChanged(typed, ctx.currentWd));
   const revisionSource = fp.fetched.revisionSource === "latest" ? "latest" : handPicked ? "manual" : "solicitation";
-  const { pre, guidance } = guidanceFor(ctx, wd);
+  const { pre, guidance } = guidanceFor(ctx, wd, existing ? current(existing) : ctx.client.pricing);
 
   // Switching an existing worksheet to another WD keeps the admin's
   // positions, hours, pricing and bid; only the WD and its rates change.
@@ -179,11 +109,8 @@ export async function POST(request: Request) {
     ? { lines: rerateLines(existing.lines, wd) }
     : {
         lines: pre.lines,
-        options: { includeVacation: ctx.defaults.includeVacation ?? true, eo13658: false },
-        supplies_mode: ctx.defaults.suppliesMode ?? "percent",
-        supplies_value: ctx.defaults.suppliesValue ?? 0,
-        overhead_pct: ctx.defaults.overheadPct ?? 0,
-        profit_pct: ctx.defaults.profitPct ?? 0,
+        options: { includeVacation: true, eo13658: false },
+        ...pricingColumns(ctx.client.pricing),
       };
   const { data: saved, error } = await supabase
     .from("wage_worksheets")
@@ -202,8 +129,10 @@ export async function POST(request: Request) {
     .select("*")
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const checkError = await saveWageCheck(supabase, submissionId, saved);
+  if (checkError) return NextResponse.json({ error: checkError }, { status: 500 });
   const changed = wdRefChanged({ number: wd.number, revision: wd.revision }, ctx.currentWd);
-  return NextResponse.json({ worksheet: saved, parsed: wd, guidance, wdChanged: changed && !handPicked ? ctx.currentWd : null });
+  return NextResponse.json({ worksheet: saved, parsed: wd, guidance, wdChanged: changed && !handPicked ? ctx.currentWd : null, client: clientOut(ctx) });
 }
 
 export async function PATCH(request: Request) {
@@ -214,25 +143,36 @@ export async function PATCH(request: Request) {
   const member = await adminFor(supabase);
   if (!member) return NextResponse.json({ error: "Admin access required." }, { status: 403 });
 
-  const { data: ws } = await supabase.from("wage_worksheets").select("wd_parsed").eq("submission_id", submissionId).maybeSingle();
+  const { data: ws } = await supabase
+    .from("wage_worksheets")
+    .select("wd_parsed, wd_number, wd_revision")
+    .eq("submission_id", submissionId)
+    .maybeSingle();
   if (!ws) return NextResponse.json({ error: "Worksheet not found." }, { status: 404 });
   const wd = ws.wd_parsed as ParsedWd;
   const options = (body?.options ?? {}) as Record<string, unknown>;
   const updatedAt = new Date().toISOString();
+  const lines = sanitizeLines(body?.lines, wd);
+  const opts = { includeVacation: options.includeVacation !== false, eo13658: options.eo13658 === true };
+  const bid = bidPriceForSave(body?.bidPrice);
   const { error } = await supabase
     .from("wage_worksheets")
     .update({
-      lines: sanitizeLines(body?.lines, wd),
-      options: { includeVacation: options.includeVacation !== false, eo13658: options.eo13658 === true },
+      lines,
+      options: opts,
       supplies_mode: body?.suppliesMode === "flat" ? "flat" : "percent",
-      supplies_value: sanitizeNumber(body?.suppliesValue, 0),
-      overhead_pct: sanitizeNumber(body?.overheadPct, 0),
-      profit_pct: sanitizeNumber(body?.profitPct, 0),
-      bid_price: bidPriceForSave(body?.bidPrice),
+      supplies_value: sanitizeNumber(body?.suppliesValue, null),
+      overhead_pct: sanitizeNumber(body?.overheadPct, null),
+      profit_pct: sanitizeNumber(body?.profitPct, null),
+      bid_price: bid,
       updated_by: member.id,
       updated_at: updatedAt,
     })
     .eq("submission_id", submissionId);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // The client's read-only line on their bid; cleared when there's no bid price.
+  const checkError = await saveWageCheck(supabase, submissionId, { ...ws, lines, options: opts, bid_price: bid });
+  if (checkError) return NextResponse.json({ error: checkError }, { status: 500 });
   return NextResponse.json({ ok: true, updatedAt });
 }

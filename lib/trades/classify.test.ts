@@ -4,7 +4,7 @@ import { classifyOpportunity, keywordMatches, offeredNaicsCodes, tradeFieldsForI
 import type { Trade } from "./types.ts";
 
 function trade(p: Partial<Trade> & { id: string }): Trade {
-  return { label: p.id, naics: [], nigpCodes: [], keywords: [], active: true, sortOrder: 0, wdPositionCode: null, productionRate: null, ...p };
+  return { label: p.id, naics: [], nigpCodes: [], keywords: [], active: true, sortOrder: 0, wdPositionCode: null, ...p };
 }
 
 const JANITORIAL = trade({

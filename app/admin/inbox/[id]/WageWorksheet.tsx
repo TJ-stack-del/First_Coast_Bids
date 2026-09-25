@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { Spinner } from "@/components/ui/Spinner";
 import { computeFloor, computePrice, belowFloor, roundCents, type WorksheetLine } from "@/lib/wage/floor";
 import type { ParsedWd } from "@/lib/wage/parse-wd";
-import { shouldAutoLoad, readNumberText } from "@/lib/wage/prefill";
+import { shouldAutoLoad, readNumberText, readOptionalNumberText } from "@/lib/wage/prefill";
+import type { ClientPricing } from "@/lib/wage/client-pricing";
+import { ClientNumbers } from "./ClientNumbers";
 import { createSaver, type SaveStatus } from "@/lib/wage/saver";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
@@ -36,6 +38,33 @@ function NumberField({ value, onChange, className }: { value: number; onChange: 
   );
 }
 
+// The same for a box where blank means "not given yet" (the client's
+// numbers): shows blank and highlighted when missing, never 0.
+function OptionalNumberField({ value, onChange, className }: { value: number | null; onChange: (n: number | null) => void; className: string }) {
+  const [text, setText] = useState(value === null ? "" : String(value));
+  const focused = useRef(false);
+  useEffect(() => {
+    if (!focused.current) setText(value === null ? "" : String(value));
+  }, [value]);
+  return (
+    <input
+      className={`${className} ${value === null ? "border-error bg-error-container/20" : ""}`}
+      inputMode="decimal"
+      value={text}
+      onFocus={() => (focused.current = true)}
+      onBlur={() => {
+        focused.current = false;
+        setText(value === null ? "" : String(value));
+      }}
+      onChange={(e) => {
+        setText(e.target.value);
+        const n = readOptionalNumberText(e.target.value);
+        if (n !== undefined) onChange(n);
+      }}
+    />
+  );
+}
+
 const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 type Loaded = {
@@ -46,16 +75,18 @@ type Loaded = {
     lines: WorksheetLine[];
     options: { includeVacation: boolean; eo13658: boolean };
     supplies_mode: "percent" | "flat";
-    supplies_value: number;
-    overhead_pct: number;
-    profit_pct: number;
+    supplies_value: number | null;
+    overhead_pct: number | null;
+    profit_pct: number | null;
     bid_price: number | null;
   };
   parsed: ParsedWd;
-  // Which default is missing, if any (Settings), and whether the
-  // solicitation's WD differs from this worksheet's (e.g. an amendment).
+  // What's missing (the client's numbers, or the trade's position code),
+  // and whether the solicitation's WD differs from this worksheet's (e.g. an
+  // amendment).
   guidance: string[];
   wdChanged: { number: string; revision: number | null } | null;
+  client: { name: string; pricing: ClientPricing };
 };
 
 // Opens pre-filled; the admin checks the highlighted numbers and adjusts.
@@ -68,7 +99,12 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
   const [data, setData] = useState<Loaded | null>(null);
   const [lines, setLines] = useState<WorksheetLine[]>([]);
   const [opts, setOpts] = useState({ includeVacation: true, eo13658: false });
-  const [pricing, setPricing] = useState({ suppliesMode: "percent" as "percent" | "flat", suppliesValue: 0, overheadPct: 0, profitPct: 0 });
+  const [pricing, setPricing] = useState<{
+    suppliesMode: "percent" | "flat";
+    suppliesValue: number | null;
+    overheadPct: number | null;
+    profitPct: number | null;
+  }>({ suppliesMode: "percent", suppliesValue: null, overheadPct: null, profitPct: null });
   const [bidPrice, setBidPrice] = useState<string>("");
   const [saveState, setSaveState] = useState<SaveStatus>("idle");
   const [changeWd, setChangeWd] = useState("");
@@ -121,9 +157,9 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
     setOpts(d.worksheet.options);
     setPricing({
       suppliesMode: d.worksheet.supplies_mode,
-      suppliesValue: Number(d.worksheet.supplies_value),
-      overheadPct: Number(d.worksheet.overhead_pct),
-      profitPct: Number(d.worksheet.profit_pct),
+      suppliesValue: d.worksheet.supplies_value === null ? null : Number(d.worksheet.supplies_value),
+      overheadPct: d.worksheet.overhead_pct === null ? null : Number(d.worksheet.overhead_pct),
+      profitPct: d.worksheet.profit_pct === null ? null : Number(d.worksheet.profit_pct),
     });
     setBidPrice(d.worksheet.bid_price === null ? "" : String(d.worksheet.bid_price));
     loadedOnce.current = false;
@@ -178,7 +214,13 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
 
   const wd = data!.parsed;
   const { lines: per, total } = computeFloor(lines, wd, opts);
-  const { supplies, price } = computePrice(total.floor, pricing);
+  const priceReady = pricing.suppliesValue !== null && pricing.overheadPct !== null && pricing.profitPct !== null;
+  const { supplies, price } = computePrice(total.floor, {
+    suppliesMode: pricing.suppliesMode,
+    suppliesValue: pricing.suppliesValue ?? 0,
+    overheadPct: pricing.overheadPct ?? 0,
+    profitPct: pricing.profitPct ?? 0,
+  });
   const short = belowFloor(bidParsed, total.floor);
   const cell = "px-2 py-1 rounded border border-outline-variant w-24 text-right";
 
@@ -224,7 +266,7 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
           <input value={changeWd} onChange={(e) => setChangeWd(e.target.value)} placeholder="Change WD, e.g. 2015-4539 Rev 33" className="px-2 py-1 rounded border border-outline-variant font-code w-64" />
           <button type="submit" className="text-primary font-bold underline">Use this WD</button>
         </form>
-        <button type="button" onClick={() => setConfirmRefill(true)} className="text-primary font-bold underline">Re-fill from Settings</button>
+        <button type="button" onClick={() => setConfirmRefill(true)} className="text-primary font-bold underline">Re-fill from {data!.client.name}&apos;s numbers</button>
       </div>
 
       <table className="mt-4 w-full text-body-sm">
@@ -280,12 +322,37 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
         </label>
       )}
 
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl text-body-sm">
-        <label>Supplies <NumberField className={cell} value={pricing.suppliesValue} onChange={(n) => setPricing({ ...pricing, suppliesValue: n })} /> {pricing.suppliesMode === "percent" ? "%" : "$"}</label>
-        <label>Overhead % <NumberField className={cell} value={pricing.overheadPct} onChange={(n) => setPricing({ ...pricing, overheadPct: n })} /></label>
-        <label>Profit % <NumberField className={cell} value={pricing.profitPct} onChange={(n) => setPricing({ ...pricing, profitPct: n })} /></label>
+      <ClientNumbers
+        key={JSON.stringify(data!.client.pricing)}
+        submissionId={submissionId}
+        clientName={data!.client.name}
+        initial={data!.client.pricing}
+        onSaved={(applied) => {
+          if (applied) load();
+        }}
+      />
+
+      <p className="mt-4 text-label-md font-bold">This bid</p>
+      <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl text-body-sm">
+        <label>
+          Supplies <OptionalNumberField className={cell} value={pricing.suppliesValue} onChange={(n) => setPricing({ ...pricing, suppliesValue: n })} />{" "}
+          <select
+            value={pricing.suppliesMode}
+            onChange={(e) => setPricing({ ...pricing, suppliesMode: e.target.value as "percent" | "flat" })}
+            className="px-1 py-1 rounded border border-outline-variant"
+          >
+            <option value="percent">% of labor</option>
+            <option value="flat">$ per year</option>
+          </select>
+        </label>
+        <label>Overhead % <OptionalNumberField className={cell} value={pricing.overheadPct} onChange={(n) => setPricing({ ...pricing, overheadPct: n })} /></label>
+        <label>Profit % <OptionalNumberField className={cell} value={pricing.profitPct} onChange={(n) => setPricing({ ...pricing, profitPct: n })} /></label>
       </div>
-      <p className="mt-3 text-body-md">Supplies {money(roundCents(supplies))} · <strong>Resulting price {money(roundCents(price))}/year</strong></p>
+      {priceReady ? (
+        <p className="mt-3 text-body-md">Supplies {money(roundCents(supplies))} · <strong>Resulting price {money(roundCents(price))}/year</strong></p>
+      ) : (
+        <p className="mt-3 text-body-md text-error font-bold">Enter {data!.client.name}&apos;s numbers to see a price.</p>
+      )}
 
       <label className="mt-3 flex items-center gap-2 text-body-md">
         Bid price ($/year) <input className={`${cell} w-36`} inputMode="decimal" value={bidPrice} onChange={(e) => setBidPrice(e.target.value)} />
@@ -301,8 +368,8 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
           setConfirmRefill(false);
           load({ refill: true });
         }}
-        title="Re-fill from Settings?"
-        description="This replaces the positions, hours, supplies, overhead and profit with your current Settings defaults. The bid price is kept."
+        title={`Re-fill from ${data!.client.name}'s numbers?`}
+        description={`This replaces the positions, hours, supplies, overhead and profit with ${data!.client.name}'s saved numbers. The bid price is kept.`}
         confirmLabel="Re-fill"
       />
     </section>
