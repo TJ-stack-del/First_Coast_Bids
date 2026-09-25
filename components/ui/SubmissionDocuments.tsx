@@ -93,6 +93,16 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
       return;
     }
 
+    // Read the new solicitation for checklist suggestions. Not awaited:
+    // the upload is done; the admin panel shows the reading's progress.
+    if (docType === "rfp_file") {
+      fetch("/api/checklist-scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId }),
+      }).catch(() => {});
+    }
+
     const signedUrl = await signRfpDocumentUrl(supabase, path);
     setDocs((d) => [{ ...newDoc, file_url: signedUrl }, ...d]);
     setUploading(false);

@@ -107,6 +107,32 @@ export function getMatchWithdrawnEmail(agency: string, companyName: string, soli
   };
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// "Send the client their list" on the admin bid page: the items from the
+// solicitation that are the client's to do (sign, attach, certify).
+export function getChecklistItemsEmail(
+  agency: string,
+  companyName: string,
+  items: { label: string; detail: string | null }[]
+) {
+  const list = items
+    .map((i) => `<li>${escapeHtml(i.label)}${i.detail ? ` <br><span style="color:#555">${escapeHtml(i.detail)}</span>` : ""}</li>`)
+    .join("");
+  return {
+    subject: `What we need from you for the ${agency} bid`,
+    html: `
+      <p>Hi ${escapeHtml(companyName)},</p>
+      <p>We read through the ${escapeHtml(agency)} solicitation. To complete your bid, we need you to take care of these:</p>
+      <ul>${list}</ul>
+      <p>You'll also see this list on your dashboard. Reply or message us there with any questions.</p>
+      <p>— First Coast Bids</p>
+    `,
+  };
+}
+
 export function getContactMessageEmail(name: string, email: string, message: string) {
   return {
     subject: `New contact form message from ${name}`,

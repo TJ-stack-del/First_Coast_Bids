@@ -59,7 +59,7 @@ export type Submission = {
   mandatory_site_visit_explanation: string | null;
 };
 
-export type ChecklistItem = { id: string; submission_id: string; label: string; status: string };
+export type ChecklistItem = { id: string; submission_id: string; label: string; status: string; notes: string | null };
 export type Deliverable = {
   id: string;
   submission_id: string;
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
     cardSubmissionIds.length > 0
       ? await supabase
           .from("checklist_items")
-          .select("id, submission_id, label, status")
+          .select("id, submission_id, label, status, notes")
           .in("submission_id", cardSubmissionIds)
           .order("updated_at", { ascending: true })
       : { data: [] as ChecklistItem[] };

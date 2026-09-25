@@ -7,7 +7,7 @@ import { FadeMessage } from "@/components/ui/FadeMessage";
 import { useToast } from "@/components/Toast";
 
 type Note = { id: string; note: string; created_at: string };
-type ChecklistItem = { id: string; label: string; status: string; notes: string | null };
+type ChecklistItem = { id: string; label: string; status: string; notes: string | null; owner?: string };
 
 const STAGES = [
   "submitted",
@@ -54,6 +54,10 @@ export function AdminSubmissionActions({
   const [noteText, setNoteText] = useState("");
   const [localNotes, setLocalNotes] = useState(notes);
   const [localChecklist, setLocalChecklist] = useState(checklist);
+  // Items approved from the checklist suggestions panel arrive as a new prop
+  // after router.refresh(); without this the list stayed stale until a full
+  // reload (final review, 2026-09-25).
+  useEffect(() => setLocalChecklist(checklist), [checklist]);
   const [checklistLabel, setChecklistLabel] = useState("");
   const [addingChecklistItem, setAddingChecklistItem] = useState(false);
   const [savingStage, setSavingStage] = useState(false);
@@ -224,7 +228,12 @@ export function AdminSubmissionActions({
           <div className="flex flex-col gap-3">
             {localChecklist.map((item) => (
               <div key={item.id} className="flex items-center justify-between gap-3">
-                <span className="text-body-md text-on-surface">{item.label}</span>
+                <span className="text-body-md text-on-surface">
+                  {item.label}
+                  <span className="ml-2 px-1.5 py-0.5 rounded text-label-sm font-bold bg-surface-container-high text-on-surface-variant">
+                    {item.owner === "admin" ? "You" : "Client"}
+                  </span>
+                </span>
                 <div className="flex items-center gap-2">
                   <FadeMessage show={!!savedChecklistIds[item.id]} className="text-label-md text-primary">
                     Saved
