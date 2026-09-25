@@ -166,7 +166,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "The wage determination couldn't be read.", missing: fp.parsed.missing }, { status: 422 });
   }
   const wd = fp.parsed.wd as ParsedWd;
-  const revisionSource = fp.fetched.revisionSource === "latest" ? "latest" : typed ? "manual" : "solicitation";
+  // The banner's "Update the worksheet" sends the solicitation's own WD; that
+  // stays "solicitation" so a later amendment is still flagged.
+  const handPicked = typed !== null && (ctx.currentWd === null || wdRefChanged(typed, ctx.currentWd));
+  const revisionSource = fp.fetched.revisionSource === "latest" ? "latest" : handPicked ? "manual" : "solicitation";
   const { pre, guidance } = guidanceFor(ctx, wd);
 
   // Switching an existing worksheet to another WD keeps the admin's
@@ -199,7 +202,7 @@ export async function POST(request: Request) {
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const changed = wdRefChanged({ number: wd.number, revision: wd.revision }, ctx.currentWd);
-  return NextResponse.json({ worksheet: saved, parsed: wd, guidance, wdChanged: changed && !typed ? ctx.currentWd : null });
+  return NextResponse.json({ worksheet: saved, parsed: wd, guidance, wdChanged: changed && !handPicked ? ctx.currentWd : null });
 }
 
 export async function PATCH(request: Request) {
