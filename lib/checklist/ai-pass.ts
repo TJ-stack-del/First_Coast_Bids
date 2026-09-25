@@ -26,7 +26,12 @@ Rules:
 - "source_file" is copied from the "--- Document: <name> ---" marker; use "" if unknown.
 - "suggested_owner": "client" for things the bidder signs, completes, attaches or certifies; "admin" for rules to check (deadline, method, format, evaluation, wage determination, SAM check).
 - "federal": true only for items that exist because the buyer is a federal agency (SF forms, FAR provisions, wage determinations, SAM).
-- Do not list background, scope of work, or contract performance terms that need nothing at bid time.`;
+- Do not list background, scope of work, or contract performance terms that need nothing at bid time.
+
+Keep the list short -- one person reviews it under a tight deadline:
+- Combine related items into one. All the forms of the response package are ONE item whose detail names each form (e.g. "Forms 1-11: Response Form, Award Notice, ..."). All formatting rules (page size, font, page limit, copies, binding) are ONE item. Deadline, method, address and labelling are ONE submission item. All evaluation information is ONE item.
+- Keep an item separate only when it needs its own action: a bid bond, an insurance certificate, a specific license, each amendment or addendum to acknowledge, each FAR representation.
+- List no more than 12 items for the text you are given.`;
 
 const ITEM_SCHEMA = {
   type: "object",

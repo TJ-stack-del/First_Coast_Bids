@@ -8,6 +8,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { useToast } from "@/components/Toast";
 import { isScanStale, needsRescan, type ScanState } from "@/lib/checklist/scan-state";
 import { describeSendResult } from "@/lib/checklist/send-result";
+import { splitForReview } from "@/lib/checklist/attention";
 
 export type Suggestion = {
   id: string;
@@ -23,13 +24,6 @@ export type Suggestion = {
   suggested_owner: "client" | "admin";
   status: "pending" | "approved" | "rejected";
 };
-
-const GROUPS: { title: string; kinds: string[] }[] = [
-  { title: "Forms & signatures", kinds: ["form", "sworn_statement", "bond", "license_insurance", "other"] },
-  { title: "Amendments", kinds: ["amendment"] },
-  { title: "Submission rules", kinds: ["submission_rule", "evaluation_method"] },
-  { title: "Federal", kinds: ["far_provision", "wage_determination", "sam_registration"] },
-];
 
 const QUOTE_BADGE: Record<Suggestion["quote_status"], { text: string; className: string }> = {
   verified: { text: "Quote verified", className: "bg-secondary-container text-on-secondary-container" },
@@ -64,6 +58,8 @@ export function ChecklistSuggestionsPanel({
   const [busy, setBusy] = useState<string | null>(null);
   const [showRejected, setShowRejected] = useState(false);
   const [confirmAll, setConfirmAll] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [showRoutine, setShowRoutine] = useState(false);
 
   const running = scan?.status === "running" && !isScanStale(scan, new Date());
   const timedOut = scan?.status === "running" && isScanStale(scan, new Date());
@@ -124,7 +120,9 @@ export function ChecklistSuggestionsPanel({
   }
 
   const pending = initialSuggestions.filter((s) => s.status === "pending");
-  const verifiedPending = pending.filter((s) => s.quote_status === "verified");
+  // One person, 48-hour turnaround: items needing a look come first; the
+  // routine rest (verified, non-federal, client-owned) go through one button.
+  const { attention, routine } = splitForReview(pending);
   const rejected = initialSuggestions.filter((s) => s.status === "rejected");
 
   async function approveAll() {
@@ -133,7 +131,7 @@ export function ChecklistSuggestionsPanel({
     const res = await fetch("/api/checklist-suggestions/approve-verified", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId, expected: verifiedPending.length, owners }),
+      body: JSON.stringify({ submissionId, expected: routine.length, ids: routine.map((r) => r.id), owners }),
     });
     const body = await res.json().catch(() => null);
     setBusy(null);
@@ -155,59 +153,76 @@ export function ChecklistSuggestionsPanel({
     router.refresh();
   }
 
+  // One line per item; the detail and quote open on click.
   function row(s: Suggestion) {
     const docUrl = s.source_file ? rfpDocumentUrls[s.source_file] : undefined;
     const owner = owners[s.id] ?? s.suggested_owner;
+    const open = !!expanded[s.id];
     return (
-      <li key={s.id} className="py-3 flex flex-col gap-2">
+      <li key={s.id} className="py-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-body-md font-bold text-on-surface">{s.label}</span>
-          <span className={`px-2 py-0.5 rounded text-label-sm font-bold ${QUOTE_BADGE[s.quote_status].className}`}>
-            {QUOTE_BADGE[s.quote_status].text}
-          </span>
-          {s.found_by === "detector" && <span className="text-label-sm text-on-surface-variant">Found by: plain-code check</span>}
-        </div>
-        {s.detail && <p className="text-body-sm text-on-surface-variant">{s.detail}</p>}
-        <blockquote className="text-body-sm text-on-surface-variant border-l-2 border-outline-variant pl-3 italic">
-          &ldquo;{s.quote}&rdquo;
-          {docUrl && s.page != null ? (
-            <a href={`${docUrl}#page=${s.page}`} target="_blank" rel="noreferrer" className="not-italic ml-2 text-primary font-bold underline">
-              {s.source_file}, p. {s.page}
-            </a>
-          ) : (
-            <span className="not-italic ml-2">
-              {s.source_file ?? ""}
-              {s.page != null ? `, p. ${s.page}` : ""}
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => setExpanded((m) => ({ ...m, [s.id]: !open }))}
+            className="min-w-0 flex-1 text-left text-body-md font-bold text-on-surface hover:underline"
+          >
+            {s.label}
+          </button>
+          {s.quote_status !== "verified" && (
+            <span className={`px-2 py-0.5 rounded text-label-sm font-bold ${QUOTE_BADGE[s.quote_status].className}`}>
+              {QUOTE_BADGE[s.quote_status].text}
             </span>
           )}
-        </blockquote>
-        {s.status === "pending" ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <div role="group" aria-label="Owner" className="inline-flex rounded-lg border border-outline-variant overflow-hidden">
-              {(["admin", "client"] as const).map((o) => (
-                <button
-                  key={o}
-                  type="button"
-                  aria-pressed={owner === o}
-                  onClick={() => setOwners((m) => ({ ...m, [s.id]: o }))}
-                  className={`px-3 py-1 text-label-sm font-bold ${owner === o ? "bg-primary text-on-primary" : "bg-surface text-on-surface"}`}
-                >
-                  {o === "admin" ? "Me" : "Client"}
-                </button>
-              ))}
+          {s.federal && <span className="px-2 py-0.5 rounded text-label-sm font-bold bg-tertiary-container text-on-tertiary-container">Federal</span>}
+          {s.status === "pending" ? (
+            <div className="flex items-center gap-2">
+              <div role="group" aria-label="Owner" className="inline-flex rounded-lg border border-outline-variant overflow-hidden">
+                {(["admin", "client"] as const).map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    aria-pressed={owner === o}
+                    onClick={() => setOwners((m) => ({ ...m, [s.id]: o }))}
+                    className={`px-2.5 py-1 text-label-sm font-bold ${owner === o ? "bg-primary text-on-primary" : "bg-surface text-on-surface"}`}
+                  >
+                    {o === "admin" ? "Me" : "Client"}
+                  </button>
+                ))}
+              </div>
+              <button type="button" disabled={busy !== null} onClick={() => decide(s, "approve")} className="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-label-sm font-bold disabled:opacity-40">
+                Approve
+              </button>
+              <button type="button" disabled={busy !== null} onClick={() => decide(s, "reject")} className="px-2.5 py-1 rounded-lg border border-outline-variant text-on-surface text-label-sm font-bold disabled:opacity-40">
+                Reject
+              </button>
+              {busy === s.id && <Spinner />}
             </div>
-            <button type="button" disabled={busy !== null} onClick={() => decide(s, "approve")} className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-label-sm font-bold disabled:opacity-40">
-              Approve
+          ) : (
+            <button type="button" disabled={busy !== null} onClick={() => decide(s, "restore")} className="text-primary text-label-sm font-bold">
+              Restore
             </button>
-            <button type="button" disabled={busy !== null} onClick={() => decide(s, "reject")} className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface text-label-sm font-bold disabled:opacity-40">
-              Reject
-            </button>
-            {busy === s.id && <Spinner />}
+          )}
+        </div>
+        {open && (
+          <div className="mt-2 flex flex-col gap-1">
+            {s.detail && <p className="text-body-sm text-on-surface-variant">{s.detail}</p>}
+            <blockquote className="text-body-sm text-on-surface-variant border-l-2 border-outline-variant pl-3 italic">
+              &ldquo;{s.quote}&rdquo;
+              {docUrl && s.page != null ? (
+                <a href={`${docUrl}#page=${s.page}`} target="_blank" rel="noreferrer" className="not-italic ml-2 text-primary font-bold underline">
+                  {s.source_file}, p. {s.page}
+                </a>
+              ) : (
+                <span className="not-italic ml-2">
+                  {s.source_file ?? ""}
+                  {s.page != null ? `, p. ${s.page}` : ""}
+                </span>
+              )}
+              {s.quote_status === "verified" && <span className="not-italic ml-2 text-secondary font-bold">Quote verified</span>}
+              {s.found_by === "detector" && <span className="not-italic ml-2">(found by plain-code check)</span>}
+            </blockquote>
           </div>
-        ) : (
-          <button type="button" disabled={busy !== null} onClick={() => decide(s, "restore")} className="self-start text-primary text-label-sm font-bold">
-            Restore
-          </button>
         )}
       </li>
     );
@@ -251,21 +266,34 @@ export function ChecklistSuggestionsPanel({
         </p>
       ))}
 
-      {GROUPS.map((g) => {
-        const items = pending.filter((s) => g.kinds.includes(s.kind));
-        if (items.length === 0) return null;
-        return (
-          <div key={g.title} className="mt-5">
-            <h3 className="text-label-md uppercase tracking-wider font-bold text-on-surface-variant">{g.title}</h3>
-            <ul className="divide-y divide-outline-variant">{items.map(row)}</ul>
-          </div>
-        );
-      })}
+      {attention.length > 0 && (
+        <div className="mt-5">
+          <h3 className="text-label-md uppercase tracking-wider font-bold text-on-surface-variant">
+            Needs a look ({attention.length})
+          </h3>
+          <p className="text-body-sm text-on-surface-variant">Federal items, items for you, and quotes that couldn&apos;t be verified.</p>
+          <ul className="divide-y divide-outline-variant">{attention.map(row)}</ul>
+        </div>
+      )}
+      {routine.length > 0 && (
+        <div className="mt-5">
+          <button
+            type="button"
+            aria-expanded={showRoutine}
+            onClick={() => setShowRoutine((v) => !v)}
+            className="text-label-md uppercase tracking-wider font-bold text-on-surface-variant hover:underline"
+          >
+            {showRoutine ? "Hide" : "Show"} routine items ({routine.length})
+          </button>
+          <p className="text-body-sm text-on-surface-variant">Verified quotes, for the client. Safe to approve together.</p>
+          {showRoutine && <ul className="divide-y divide-outline-variant">{routine.map(row)}</ul>}
+        </div>
+      )}
 
       <div className="mt-5 flex flex-wrap gap-3">
-        {verifiedPending.length > 0 && (
+        {routine.length > 0 && (
           <button type="button" disabled={busy !== null} onClick={() => setConfirmAll(true)} className="px-4 py-2 rounded-lg bg-primary text-on-primary text-label-md font-bold disabled:opacity-40">
-            Approve all verified ({verifiedPending.length})
+            Approve routine items ({routine.length})
           </button>
         )}
         {unsentClientItems > 0 && (
@@ -286,8 +314,8 @@ export function ChecklistSuggestionsPanel({
         open={confirmAll}
         onClose={() => setConfirmAll(false)}
         onConfirm={approveAll}
-        title="Approve all verified suggestions?"
-        description={`This adds ${verifiedPending.length} items to the bid's checklist, each with the owner shown. Nothing is emailed until you send the client their list.`}
+        title="Approve the routine items?"
+        description={`This adds ${routine.length} verified client items to the bid's checklist. Items under "Needs a look" aren't included. Nothing is emailed until you send the client their list.`}
         confirmLabel="Approve all"
       />
     </section>
