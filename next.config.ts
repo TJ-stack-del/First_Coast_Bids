@@ -10,6 +10,11 @@ import type { NextConfig } from "next";
 // normally from node_modules instead.
 const nextConfig: NextConfig = {
   serverExternalPackages: ["playwright-core", "@sparticuz/chromium"],
+  // The blog was replaced by the evergreen "New to bidding?" guide on
+  // 2026-09-26; old links and bookmarks land on the guide, not a 404.
+  async redirects() {
+    return [{ source: "/blog", destination: "/guide", permanent: true }];
+  },
 };
 
 export default nextConfig;

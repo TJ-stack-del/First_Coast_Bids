@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PricingSpec } from "@/components/marketing/PricingSpec";
 import s from "@/components/marketing/press.module.css";
+import { pilotPriceLine } from "@/lib/pilot-offer";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -34,7 +35,7 @@ const RETAINER_STARTING_PRICE = "Starting at $649/mo";
 // rather than a standing one. Deliberately NOT an automated DB
 // counter/admin toggle: pre-revenue with zero real signups yet, so
 // building real-time cap enforcement now would mean sizing a threshold
-// with no actual demand data behind it. Flip PILOT_FREE_COHORT_OPEN to
+// with no actual demand data behind it. Flip PILOT_FREE_COHORT_OPEN (lib/pilot-offer.ts) to
 // false by hand (ask Claude, or edit directly) once PILOT_COHORT_SIZE
 // free Pilots have gone out, and redeploy. What Pilot costs after that
 // point is deliberately undecided -- real cost-per-bid and conversion
@@ -43,11 +44,9 @@ const RETAINER_STARTING_PRICE = "Starting at $649/mo";
 // project_bidpulse_package_pricing.md) -- so post-cap Pilot falls back
 // to the same "confirmed with you directly" pattern already used
 // elsewhere on this page, not a fabricated number.
-const PILOT_FREE_COHORT_OPEN = true;
-const PILOT_COHORT_SIZE = 10;
-const PILOT_PRICE_LINE = PILOT_FREE_COHORT_OPEN
-  ? `Free for the first ${PILOT_COHORT_SIZE} clients`
-  : "Pricing confirmed with you directly";
+// The flip itself now lives in lib/pilot-offer.ts (shared with the homepage
+// and the guide, 2026-09-26), so the price line can't drift between pages.
+const PILOT_PRICE_LINE = pilotPriceLine();
 
 const PACKAGES = [
   {

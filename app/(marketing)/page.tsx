@@ -6,6 +6,7 @@ import { KNOWN_TRADES, assertNoMissingTradeCards } from "@/lib/compliance/known-
 import { SampleSpecimen } from "@/components/marketing/SampleSpecimen";
 import { PricingSpec } from "@/components/marketing/PricingSpec";
 import s from "@/components/marketing/press.module.css";
+import { pilotPriceLine } from "@/lib/pilot-offer";
 
 export const metadata: Metadata = {
   description: "We help you win local government contracts. Send us the bid papers. Our team handles the paperwork so you can send in a strong bid.",
@@ -140,11 +141,9 @@ assertNoMissingTradeCards(
 // Price lines and the Pilot free-cohort flip are kept in sync with
 // pricing/page.tsx's own constants -- see that file's comments for the
 // full reasoning (2026-09-16 pricing-transparency + Pilot-cap decisions).
-const PILOT_FREE_COHORT_OPEN = true;
-const PILOT_COHORT_SIZE = 10;
-const PILOT_PRICE_LINE = PILOT_FREE_COHORT_OPEN
-  ? `Free for the first ${PILOT_COHORT_SIZE} clients`
-  : "Pricing confirmed with you directly";
+// Now read from lib/pilot-offer.ts, shared with the pricing page and the
+// guide (2026-09-26).
+const PILOT_PRICE_LINE = pilotPriceLine();
 
 const PRICING_PREVIEW = [
   {
@@ -239,6 +238,9 @@ function Home() {
             See how it works
           </a>
         </div>
+        <p>
+          <Link href="/guide" className={s.inlineLink}>New to government bids? Start here</Link>
+        </p>
         {/* The one proof signal above the fold (landing-page skill): a claim
             the sample sheet below backs up, not an invented stat. */}
         <a href="#sample" className={s.proofline}>
@@ -426,6 +428,7 @@ function Home() {
           Start a pilot bid
         </Link>
         <span className={s.risk}>No card required to get started.</span>
+        <Link href="/guide" className={s.inlineLink}>New to government bids? Start here</Link>
       </section>
     </>
   );

@@ -24,10 +24,10 @@ import { TAGLINE } from "@/lib/brand";
 
 const NAV_LINKS = [
   { href: "/pricing", label: "Pricing" },
-  { href: "/quiz", label: "Fit-Score Quiz" },
+  { href: "/quiz", label: "Where do I start?" },
   { href: "/gallery", label: "Gallery" },
   { href: "/faq", label: "FAQ" },
-  { href: "/blog", label: "Blog" },
+  { href: "/guide", label: "New to bidding?" },
 ];
 
 export function MarketingShell({ children }: { children: React.ReactNode }) {
