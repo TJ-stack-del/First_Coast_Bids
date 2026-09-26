@@ -50,6 +50,8 @@ export function ClientNumbers({
     setBusy(false);
     if (!res.ok) return setError(body?.error ?? `Not saved (HTTP ${res.status}).`);
     setSaved(true);
+    // The CLIN panel prices option years from the yearly increase.
+    window.dispatchEvent(new Event("pricing-changed"));
     onSaved(body.applied === true);
   }
 

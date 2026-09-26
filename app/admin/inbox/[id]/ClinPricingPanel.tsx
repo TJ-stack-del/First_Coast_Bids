@@ -6,13 +6,14 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import type { ClinLine } from "@/lib/clins/types";
 import type { PricedLine } from "@/lib/clins/price";
+import { needsRescan, type ScanState } from "@/lib/checklist/scan-state";
 
 // The solicitation's own price table (CLINs), read with verified quotes and
 // priced from the wage worksheet's bid price, the client's yearly increase
 // and the split (docs/superpowers/specs/2026-09-25-clin-pricing-design.md).
 // Attention-first: only lines that need the admin are highlighted.
 
-type Scan = { status: "running" | "done" | "failed"; finished_at?: string; error?: string | null; excel_attachments?: string[]; found?: number } | null;
+type Scan = { status: "running" | "done" | "failed"; started_at?: string; files_fingerprint?: string; finished_at?: string; error?: string | null; excel_attachments?: string[]; found?: number } | null;
 type View = {
   lines: ClinLine[];
   priced: { lines: PricedLine[]; total: number | null; missing: number; sharesProblem: string | null };
@@ -44,7 +45,20 @@ function Cell({ value, onSave, className, placeholder }: { value: string; onSave
   );
 }
 
-export function ClinPricingPanel({ submissionId, rfpDocumentUrls }: { submissionId: string; rfpDocumentUrls: Record<string, string> }) {
+export function ClinPricingPanel({
+  submissionId,
+  rfpDocumentUrls,
+  currentFingerprint,
+  serverScanKey,
+}: {
+  submissionId: string;
+  rfpDocumentUrls: Record<string, string>;
+  currentFingerprint: string | null;
+  // The reading's state as the page last rendered it: when an upload (or a
+  // reading finishing) refreshes the page, this changes and the panel
+  // refetches -- found in the dev run, where the lines never appeared.
+  serverScanKey: string;
+}) {
   const { showToast } = useToast();
   const [view, setView] = useState<View | null>(null);
   const [busy, setBusy] = useState(false);
@@ -56,7 +70,24 @@ export function ClinPricingPanel({ submissionId, rfpDocumentUrls }: { submission
   }
   useEffect(() => {
     refresh();
+  }, [submissionId, serverScanKey, currentFingerprint]);
+  // The worksheet's bid price or the client's yearly increase changed.
+  useEffect(() => {
+    const on = () => void refresh();
+    window.addEventListener("pricing-changed", on);
+    return () => window.removeEventListener("pricing-changed", on);
   }, [submissionId]);
+  // Files added while a reading ran (a solicitation and its amendment
+  // uploaded back to back) are read automatically, once per set of files --
+  // the same rule as the checklist panel.
+  const [autoStartedFor, setAutoStartedFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!view || !currentFingerprint || autoStartedFor === currentFingerprint) return;
+    if (!needsRescan(view.scan as ScanState | null, currentFingerprint, new Date())) return;
+    setAutoStartedFor(currentFingerprint);
+    void read(false);
+  }, [view, currentFingerprint, autoStartedFor]);
+
   // Poll while the price table is being read.
   useEffect(() => {
     if (view?.scan?.status !== "running") return;
@@ -143,10 +174,11 @@ export function ClinPricingPanel({ submissionId, rfpDocumentUrls }: { submission
       ))}
 
       {lines.length > 0 && (
-        <table className="mt-4 w-full text-body-sm">
+        <div className="mt-4 overflow-x-auto">
+        <table className="w-full min-w-[44rem] text-body-sm">
           <thead>
             <tr className="text-left text-on-surface-variant">
-              <th>CLIN</th><th>Description</th><th>Qty</th><th>Unit</th><th>Period</th><th>Split %</th><th className="text-right">Unit price</th><th className="text-right">Amount</th><th />
+              <th>CLIN</th><th>Description</th><th>Qty</th><th>Unit</th><th>Period</th><th>Split&nbsp;%</th><th className="text-right">Unit price</th><th className="text-right">Amount</th><th />
             </tr>
           </thead>
           <tbody>
@@ -156,9 +188,9 @@ export function ClinPricingPanel({ submissionId, rfpDocumentUrls }: { submission
               const lump = l.unit_kind === "lump";
               return (
                 <tr key={l.id} className="border-t border-outline-variant align-top">
-                  <td className="py-2"><Cell className="w-20 font-code" value={l.clin} onSave={(v) => send("PATCH", { id: l.id, clin: v })} /></td>
+                  <td className="py-2"><Cell className="w-16 font-code" value={l.clin} onSave={(v) => send("PATCH", { id: l.id, clin: v })} /></td>
                   <td className="py-2">
-                    <Cell className="w-full min-w-48" value={l.description} onSave={(v) => send("PATCH", { id: l.id, description: v })} />
+                    <Cell className="w-full min-w-36" value={l.description} onSave={(v) => send("PATCH", { id: l.id, description: v })} />
                     <span className="block mt-1 text-on-surface-variant">
                       {l.quote && <i>“{l.quote}”</i>}
                       {docUrl && l.page && (
@@ -172,16 +204,16 @@ export function ClinPricingPanel({ submissionId, rfpDocumentUrls }: { submission
                     </span>
                   </td>
                   <td className="py-2">
-                    {lump ? "1" : <Cell className={`w-14 text-right ${p.problem === "no_quantity" ? flag : ""}`} value={l.quantity?.toString() ?? ""} onSave={(v) => send("PATCH", { id: l.id, quantity: v })} />}
+                    {lump ? "1" : <Cell className={`w-12 text-right ${p.problem === "no_quantity" ? flag : ""}`} value={l.quantity?.toString() ?? ""} onSave={(v) => send("PATCH", { id: l.id, quantity: v })} />}
                   </td>
                   <td className="py-2">
-                    {lump ? "Lump sum" : <Cell className={`w-16 ${p.problem === "unit" ? flag : ""}`} value={l.unit ?? ""} onSave={(v) => send("PATCH", { id: l.id, unit: v })} />}
+                    {lump ? "Lump sum" : <Cell className={`w-14 ${p.problem === "unit" ? flag : ""}`} value={l.unit ?? ""} onSave={(v) => send("PATCH", { id: l.id, unit: v })} />}
                   </td>
                   <td className="py-2">
                     <select
                       value={l.period_index === null ? "" : String(l.period_index)}
                       onChange={(e) => send("PATCH", { id: l.id, period_index: e.target.value })}
-                      className={`px-1 py-1 rounded border border-outline-variant ${l.period_index === null ? flag : ""}`}
+                      className={`w-24 px-1 py-1 rounded border border-outline-variant ${l.period_index === null ? flag : ""}`}
                     >
                       <option value="">?</option>
                       {PERIODS.map((name, k) => <option key={k} value={k}>{name}</option>)}
@@ -190,7 +222,7 @@ export function ClinPricingPanel({ submissionId, rfpDocumentUrls }: { submission
                   <td className="py-2">
                     {splitHere(l) && l.period_index === 0 ? (
                       <Cell
-                        className={`w-14 text-right ${p.problem === "no_share" ? flag : ""}`}
+                        className={`w-12 text-right ${p.problem === "no_share" ? flag : ""}`}
                         value={view.shares[String(l.position)]?.toString() ?? ""}
                         onSave={(v) => send("PUT", { shares: { ...view.shares, [String(l.position)]: v } })}
                       />
@@ -200,7 +232,7 @@ export function ClinPricingPanel({ submissionId, rfpDocumentUrls }: { submission
                   </td>
                   <td className="py-2 text-right">
                     <Cell
-                      className={`w-28 text-right ${p.unitPrice === null ? flag : ""}`}
+                      className={`w-24 text-right ${p.unitPrice === null ? flag : ""}`}
                       value={l.unit_price_override !== null ? String(l.unit_price_override) : ""}
                       placeholder={p.unitPrice !== null && !p.typed ? money(p.unitPrice) : ""}
                       onSave={(v) => send("PATCH", { id: l.id, unit_price_override: v })}
@@ -216,6 +248,7 @@ export function ClinPricingPanel({ submissionId, rfpDocumentUrls }: { submission
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {lines.length > 0 && (

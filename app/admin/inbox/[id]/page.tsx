@@ -449,7 +449,12 @@ export default async function AdminSubmissionDetailPage({
             />
           )}
           {(isFederalAgency(submission.agency) || (suggestions ?? []).some((s: any) => s.federal)) && (
-            <ClinPricingPanel submissionId={submission.id} rfpDocumentUrls={rfpDocumentUrls} />
+            <ClinPricingPanel
+              submissionId={submission.id}
+              rfpDocumentUrls={rfpDocumentUrls}
+              currentFingerprint={(rfpDocs ?? []).length > 0 ? filesFingerprint(rfpDocs ?? []) : null}
+              serverScanKey={`${(submission as any).clin_scan?.status ?? ""}|${(submission as any).clin_scan?.started_at ?? ""}|${(submission as any).clin_scan?.finished_at ?? ""}`}
+            />
           )}
           <AdminSubmissionActions
             submissionId={submission.id}
