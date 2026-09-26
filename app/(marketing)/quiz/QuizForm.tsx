@@ -1,56 +1,84 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import s from "@/components/marketing/press.module.css";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { nextSteps } from "@/lib/guide/next-steps";
+import { getArticle } from "@/lib/guide/articles";
+import type { Answers } from "@/lib/guide/types";
+import { PILOT_CTA, pilotPriceLine } from "@/lib/pilot-offer";
 
-// 4-question RFP fit-score quiz per BUILD-ORDER-BIDPULSE.md Step 3 — pure
-// lead-gen, no schema table for it, so nothing here is persisted.
-
-const QUESTIONS = [
-  "Do you have an upcoming RFP deadline in the next 30 days?",
-  "Have you submitted a government or agency bid before?",
-  "Do you already have a compliance matrix or capability statement ready?",
-  "Are you a certified small business (WOSB, SDVOSB, 8(a), HUBZone, etc.)?",
+// "Where do I start?" (docs/superpowers/specs/2026-09-26-newcomer-guide-design.md):
+// four yes/no questions, then one to three next steps from nextSteps() --
+// guide articles, or the Pilot when a bid is in hand. For newcomers and
+// people already bidding alike. Nothing here is stored or sent.
+const QUESTIONS: { key: keyof Answers; text: string }[] = [
+  { key: "bidBefore", text: "Have you bid on a government job before?" },
+  { key: "registered", text: "Are you registered in SAM.gov or on a local bid site?" },
+  { key: "licensed", text: "Do you have your business license and insurance?" },
+  { key: "bidInHand", text: "Do you have a bid (an RFP or ITB) in hand right now?" },
 ];
 
 export function QuizForm() {
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<boolean[]>([]);
+  const [answers, setAnswers] = useState<Partial<Answers>>({});
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const prefersReducedMotion = useReducedMotion();
+  // After the last answer the Yes/No buttons disappear: move focus to the
+  // result so keyboard and screen-reader users land on it (final review 13).
+  const resultRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (step >= QUESTIONS.length) resultRef.current?.focus();
+  }, [step]);
   const reduceMotion = mounted && prefersReducedMotion;
 
   function answer(value: boolean) {
-    setAnswers((a) => [...a, value]);
+    const key = QUESTIONS[step].key;
+    setAnswers((a) => ({ ...a, [key]: value }));
     setStep((s) => s + 1);
   }
 
   if (step >= QUESTIONS.length) {
-    const yesCount = answers.filter(Boolean).length;
+    const steps = nextSteps(answers as Answers);
     return (
-      <div className={`${s.formSheet} grid gap-4`}>
-        <h2 className={s.rowTitle}>
-          {yesCount >= 2 ? "You're a strong fit." : "We can still help."}
-        </h2>
-        <p className={s.muted}>
-          {yesCount >= 2
-            ? "Based on your answers, you're well-positioned to bid. Let's get your submission prepared."
-            : "Every bidder starts somewhere. Send us your RFP and we'll take it from there."}
+      <div className={`${s.formSheet} grid gap-6`}>
+        <h2 ref={resultRef} tabIndex={-1} className={`${s.rowTitle} outline-none`}>Here&apos;s where to start.</h2>
+        <ol className="grid gap-5 list-decimal pl-6">
+          {steps.map((st) => {
+            if (st.target === "pilot")
+              return (
+                <li key="pilot">
+                  <p>{st.why}</p>
+                  <Link href={PILOT_CTA.href} className={`${s.btn} ${s.btnPrimary} mt-2 inline-flex`}>
+                    {PILOT_CTA.label}
+                  </Link>
+                  <p className={`${s.muted} mt-1`}>Pilot: {pilotPriceLine()}.</p>
+                </li>
+              );
+            const article = getArticle(st.target);
+            return (
+              <li key={st.target}>
+                <Link href={`/guide/${st.target}`} className={s.inlineLink}>{article?.title ?? st.target}</Link>
+                <p className={s.muted}>{st.why}</p>
+              </li>
+            );
+          })}
+        </ol>
+        <p className="flex flex-wrap gap-4 items-center">
+          <button type="button" onClick={() => { setStep(0); setAnswers({}); }} className={`${s.btn} ${s.btnQuiet}`}>
+            Start over
+          </button>
+          <Link href="/guide" className={s.inlineLink}>Browse the whole guide</Link>
         </p>
-        {/* The site's one main action (2026-09-23). */}
-        <Link href="/intake?package=pilot" className={`${s.btn} ${s.btnPrimary} justify-self-start`}>
-          Start a pilot bid
-        </Link>
       </div>
     );
   }
 
   return (
     <div className={`${s.formSheet} grid gap-8`}>
-      <div className={s.progress} role="progressbar" aria-valuemin={1} aria-valuemax={QUESTIONS.length} aria-valuenow={step + 1}>
+      <div className={s.progress} role="progressbar" aria-label="Progress" aria-valuetext={`Question ${step + 1} of ${QUESTIONS.length}`} aria-valuemin={1} aria-valuemax={QUESTIONS.length} aria-valuenow={step + 1}>
         <div className={s.progressFill} style={{ transform: `scaleX(${(step + 1) / QUESTIONS.length})` }} />
       </div>
 
@@ -71,7 +99,7 @@ export function QuizForm() {
           <span className={`${s.meta} mb-2`}>
             Question <span className={s.mono}>{step + 1}</span> of <span className={s.mono}>{QUESTIONS.length}</span>
           </span>
-          <h2 className={s.rowTitle}>{QUESTIONS[step]}</h2>
+          <h2 className={s.rowTitle} aria-live="polite">{QUESTIONS[step].text}</h2>
         </motion.div>
       </AnimatePresence>
 

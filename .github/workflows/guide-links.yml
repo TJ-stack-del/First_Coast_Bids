@@ -1,0 +1,21 @@
+name: Guide source links
+
+# The "New to bidding?" guide cites official pages (statutes, SAM.gov,
+# agency purchasing pages). Agencies move pages without warning, so check
+# every source weekly, not just when the guide changes.
+
+on:
+  schedule:
+    - cron: "0 13 * * 1" # Mondays 13:00 UTC
+  workflow_dispatch:
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check guide source links
+        run: npm run check:links

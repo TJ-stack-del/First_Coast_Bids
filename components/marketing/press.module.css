@@ -991,7 +991,9 @@
   color: rgb(var(--color-on-surface-variant));
   text-wrap: pretty;
 }
-.prose a {
+/* Text links only: a button inside prose (the guide's "Next step" block)
+   keeps its own button colors. */
+.prose a:not(.btn) {
   color: rgb(var(--color-primary));
   font-weight: 500;
   text-decoration: underline;
