@@ -3,16 +3,16 @@ import { QuizForm } from "./QuizForm";
 import s from "@/components/marketing/press.module.css";
 
 export const metadata: Metadata = {
-  title: "Fit-Score Quiz",
-  description: "Four quick questions to see if your business is ready to bid on a local government contract.",
+  title: "Where do I start?",
+  description: "Four yes-or-no questions that point you to your next step with government bids, whether you're brand new or already bidding.",
 };
 
 export default function QuizPage() {
   return (
     <>
       <header className={s.pageHead}>
-        <h1 className={s.pageTitle}>Are you ready to bid?</h1>
-        <p className={s.lede}>Four quick questions.</p>
+        <h1 className={s.pageTitle}>Where do I start?</h1>
+        <p className={s.lede}>Four yes-or-no questions. New to bids or already bidding, you&apos;ll get your next step.</p>
       </header>
       <QuizForm />
     </>
