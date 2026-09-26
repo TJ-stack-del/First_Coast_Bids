@@ -10,8 +10,14 @@ export function GuideBlocks({ blocks }: { blocks: Block[] }) {
         if (b.kind === "h2") return <h2 key={i}>{b.text}</h2>;
         if (b.kind === "p") return <p key={i}>{b.text}</p>;
         if (b.kind === "list") {
-          const items = b.items.map((it, j) => <li key={j}>{it}</li>);
-          return b.ordered ? <ol key={i}>{items}</ol> : <ul key={i}>{items}</ul>;
+          // The press styles reset list markers; guide lists need them
+          // (numbered steps, bulleted checklists), so they're set here.
+          const items = b.items.map((it, j) => <li key={j} className="pl-1">{it}</li>);
+          return b.ordered ? (
+            <ol key={i} className="list-decimal pl-6 flex flex-col gap-2 my-4">{items}</ol>
+          ) : (
+            <ul key={i} className="list-disc pl-6 flex flex-col gap-2 my-4">{items}</ul>
+          );
         }
         if (b.kind === "callout")
           return (
@@ -21,7 +27,7 @@ export function GuideBlocks({ blocks }: { blocks: Block[] }) {
             </div>
           );
         return (
-          <dl key={i}>
+          <dl key={i} className="my-4">
             {b.items.map((t) => (
               <div key={t.term} className="mb-3">
                 <dt><strong>{t.term}</strong></dt>
