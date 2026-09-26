@@ -13,10 +13,11 @@ export function CompleteBidFile({ submissionId, clientId }: { submissionId: stri
 
   return (
     <div className="bg-surface-container-lowest border-2 border-primary rounded-xl p-6">
-      <h2 className="text-title-lg text-primary mb-2 flex items-center gap-2">
-        <span className="material-symbols-outlined text-primary text-[20px]">upload_file</span>
+      {/* h4: sits inside a bid row's h3 on the dashboard (BidLedger.tsx). */}
+      <h4 className="text-title-lg text-primary mb-2 flex items-center gap-2">
+        <span className="material-symbols-outlined text-primary text-[20px]" aria-hidden="true">upload_file</span>
         Your bid file
-      </h2>
+      </h4>
       <p className="text-body-md text-on-surface-variant mb-4">
         We already have the agency and job details for this one. Add the bid file, if you have it, and send it
         our way, or save it for later.

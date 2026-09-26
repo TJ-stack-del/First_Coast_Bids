@@ -26,6 +26,7 @@ export function SubmissionMessages({
   senderName,
   senderEmail,
   adminId,
+  headingLevel = 2,
 }: {
   submissionId: string;
   orgId: string;
@@ -34,7 +35,11 @@ export function SubmissionMessages({
   senderName: string;
   senderEmail: string;
   adminId?: string;
+  // 4 when nested under a heading of its own, as on the client dashboard,
+  // where each bid row is an h3 (app/dashboard/BidLedger.tsx). Admin keeps 2.
+  headingLevel?: 2 | 4;
 }) {
+  const Heading = headingLevel === 4 ? "h4" : "h2";
   const [messages, setMessages] = useState<Message[] | null>(null);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -97,10 +102,10 @@ export function SubmissionMessages({
 
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
-      <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
+      <Heading className="text-title-lg text-primary mb-4 flex items-center gap-2">
         <span className="material-symbols-outlined text-primary text-[20px]">chat</span>
         Messages
-      </h2>
+      </Heading>
 
       {messages === null ? (
         <div className="flex justify-center py-6">

@@ -4,6 +4,7 @@ import { LifecycleStepper, stageNumber } from "@/components/ui/LifecycleStepper"
 import { DeliverablesSection } from "./DeliverablesSection";
 import { SubmissionMessages } from "@/components/ui/SubmissionMessages";
 import { WageCheckNotice } from "./WageCheckNotice";
+import { formatDue } from "@/lib/dashboard/format-due";
 import type { Submission, ChecklistItem, Deliverable } from "./page";
 
 const CHECKLIST_STATUS_LABELS: Record<string, string> = {
@@ -74,7 +75,7 @@ export function SubmissionCard({
         <div className="bg-surface-container-lowest rounded-lg p-space-md">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Submission deadline</p>
           <p className="text-body-lg text-on-surface font-bold mt-0.5 font-code">
-            {submission.due_date ? new Date(submission.due_date).toLocaleDateString() : "Not set"}
+            {formatDue(submission.due_date) ?? "Not set"}
           </p>
         </div>
         {formattedValue && (
@@ -167,6 +168,7 @@ export function SubmissionCard({
         orgId={orgId}
         clientId={clientId}
         viewerRole="client"
+        headingLevel={4}
         senderName={senderName}
         senderEmail={senderEmail}
       />

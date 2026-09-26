@@ -6,6 +6,7 @@ import { BidLedger, type BidRow } from "./BidLedger";
 import { clientTasks, standingLabel } from "@/lib/dashboard/client-tasks";
 import { wageCheckLines } from "@/lib/wage/wage-check";
 import { displayAgency } from "@/lib/agency-display";
+import { formatDue } from "@/lib/dashboard/format-due";
 import s from "@/components/marketing/press.module.css";
 import { CompleteBidFile } from "./CompleteBidFile";
 import { SubmissionCard } from "./SubmissionCard";
@@ -32,13 +33,6 @@ export const dynamic = "force-dynamic";
 // "Needs you" first, then every bid as a one-line row that opens to its
 // details (BidLedger.tsx), then a one-line summary of the client's file
 // (profile completeness, credentials) and the bid process reminders.
-
-// Due dates are plain calendar dates ("2026-10-01"), stored without a time
-// zone -- formatted in UTC so the day never shifts.
-function formatDue(due: string | null): string | null {
-  if (!due) return null;
-  return new Date(due).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-}
 
 // Exported for SubmissionCard.tsx, which renders these but doesn't fetch
 // them -- keeping one shared definition rather than a duplicate that could

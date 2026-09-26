@@ -43,6 +43,13 @@ function Meta({ solicitation, due }: { solicitation: string | null; due: string 
 
 export function BidLedger({ rows, tasks }: { rows: BidRow[]; tasks: ClientTask[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
+  // Rows opened at least once stay mounted (hidden while closed), so a
+  // half-typed message or a picked bid file survives opening another row.
+  const [mounted, setMounted] = useState<Set<string>>(() => new Set());
+  function show(id: string | null) {
+    setOpenId(id);
+    if (id) setMounted((m) => (m.has(id) ? m : new Set(m).add(id)));
+  }
   const [filter, setFilter] = useState<Filter>("all");
   const rowsById = new Map(rows.map((r) => [r.id, r]));
 
@@ -52,7 +59,7 @@ export function BidLedger({ rows, tasks }: { rows: BidRow[]; tasks: ClientTask[]
   function openBid(task: ClientTask) {
     const id = task.bidId;
     setFilter("all");
-    setOpenId(id);
+    show(id);
     requestAnimationFrame(() => {
       const row = document.getElementById(`bid-${id}`);
       const part =
@@ -153,8 +160,8 @@ export function BidLedger({ rows, tasks }: { rows: BidRow[]; tasks: ClientTask[]
                       type="button"
                       data-bid-toggle
                       aria-expanded={open}
-                      aria-controls={`bid-${row.id}-detail`}
-                      onClick={() => setOpenId(open ? null : row.id)}
+                      aria-controls={mounted.has(row.id) ? `bid-${row.id}-detail` : undefined}
+                      onClick={() => show(open ? null : row.id)}
                       className="w-full min-h-[56px] py-4 flex items-start gap-4 text-left rounded focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary group"
                     >
                       <span className="flex-1 min-w-0 flex flex-col gap-1">
@@ -193,11 +200,12 @@ export function BidLedger({ rows, tasks }: { rows: BidRow[]; tasks: ClientTask[]
                       </span>
                     </button>
                   </h3>
-                  {open && (
+                  {mounted.has(row.id) && (
                     <div
                       id={`bid-${row.id}-detail`}
                       role="region"
                       aria-label={`Details: ${row.title}`}
+                      hidden={!open}
                       className="animate-disclose pb-6"
                     >
                       {row.detail}

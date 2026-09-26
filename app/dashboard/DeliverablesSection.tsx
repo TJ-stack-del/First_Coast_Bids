@@ -68,10 +68,11 @@ export function DeliverablesSection({
   return (
     <div className="bg-surface-container-low rounded-xl shadow-sm overflow-hidden">
       <div className="px-space-base py-space-sm border-b border-outline-variant bg-surface-container-high flex items-center justify-between">
-        <h2 className="text-[16px] font-headline font-bold text-on-surface flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-[20px]">download</span>
+        {/* h4: sits inside a bid row's h3 on the dashboard (BidLedger.tsx). */}
+        <h4 className="text-[16px] font-headline font-bold text-on-surface flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-[20px]" aria-hidden="true">download</span>
           Your deliverables
-        </h2>
+        </h4>
         {deliverables.length > 0 && (
           <span className="text-label-sm text-secondary font-bold font-code">
             {readyCount} of {present.length} ready
