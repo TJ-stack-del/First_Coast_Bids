@@ -95,8 +95,8 @@ export function RequestInfoForm({
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         {openItems.length > 0 && (
           <div>
-            <label className="text-label-md text-on-surface-variant block mb-1">What do you need?</label>
-            <select
+            <label htmlFor="request-info-what-do-you-need" className="text-label-md text-on-surface-variant block mb-1">What do you need?</label>
+            <select id="request-info-what-do-you-need"
               value={selected}
               onChange={(e) => handleSelect(e.target.value)}
               className="w-full px-3 py-2 rounded border border-outline-variant bg-surface text-body-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"

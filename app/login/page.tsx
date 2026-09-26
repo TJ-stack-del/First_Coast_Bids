@@ -138,7 +138,7 @@ export default async function LoginPage({
             Submitting a bid for the first time?{" "}
             <Link
               href="/intake"
-              className="text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm"
+              className="text-primary underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm"
             >
               Start here
             </Link>

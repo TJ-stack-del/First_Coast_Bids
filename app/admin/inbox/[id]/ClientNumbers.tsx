@@ -72,6 +72,7 @@ export function ClientNumbers({
           <span className="flex items-center gap-1">
             <input className={box(text.suppliesValue)} inputMode="decimal" value={text.suppliesValue} onChange={(e) => edit("suppliesValue", e.target.value)} />
             <select
+              aria-label="Supplies as a percent of labor or dollars per year"
               value={p.suppliesMode}
               onChange={(e) => {
                 setP({ ...p, suppliesMode: e.target.value as "percent" | "flat" });

@@ -44,11 +44,12 @@ const PERIODS = ["Base", "Option 1", "Option 2", "Option 3", "Option 4"];
 const flag = "border-error bg-error-container/20";
 
 // A text box that saves on leaving it, only when the value changed.
-function Cell({ value, onSave, className, placeholder }: { value: string; onSave: (v: string) => void; className: string; placeholder?: string }) {
+function Cell({ value, onSave, className, placeholder, label }: { value: string; onSave: (v: string) => void; className: string; placeholder?: string; label: string }) {
   const [text, setText] = useState(value);
   useEffect(() => setText(value), [value]);
   return (
     <input
+      aria-label={label}
       className={`px-1.5 py-1 rounded border border-outline-variant ${className}`}
       value={text}
       placeholder={placeholder}
@@ -222,7 +223,7 @@ export function ClinPricingPanel({
         <table className="w-full min-w-[44rem] text-body-sm">
           <thead>
             <tr className="text-left text-on-surface-variant">
-              <th>CLIN</th><th>Description</th><th>Qty</th><th>Unit</th><th>Period</th><th>Split&nbsp;%</th><th className="text-right">Unit price</th><th className="text-right">Amount</th><th />
+              <th>CLIN</th><th>Description</th><th>Qty</th><th>Unit</th><th>Period</th><th>Split&nbsp;%</th><th className="text-right">Unit price</th><th className="text-right">Amount</th><th className="relative"><span className="sr-only">Remove</span></th>
             </tr>
           </thead>
           <tbody>
@@ -232,9 +233,9 @@ export function ClinPricingPanel({
               const lump = l.unit_kind === "lump";
               return (
                 <tr key={l.id} className="border-t border-outline-variant align-top">
-                  <td className="py-2"><Cell className="w-16 font-code" value={l.clin} onSave={(v) => send("PATCH", { id: l.id, clin: v })} /></td>
+                  <td className="py-2"><Cell label={`CLIN number, line ${i + 1}`} className="w-16 font-code" value={l.clin} onSave={(v) => send("PATCH", { id: l.id, clin: v })} /></td>
                   <td className="py-2">
-                    <Cell className="w-full min-w-36" value={l.description} onSave={(v) => send("PATCH", { id: l.id, description: v })} />
+                    <Cell label={`Description, CLIN ${l.clin}`} className="w-full min-w-36" value={l.description} onSave={(v) => send("PATCH", { id: l.id, description: v })} />
                     <span className="block mt-1 text-on-surface-variant">
                       {l.quote && <i>“{l.quote}”</i>}
                       {docUrl && l.page && (
@@ -251,13 +252,14 @@ export function ClinPricingPanel({
                     </span>
                   </td>
                   <td className="py-2">
-                    {lump ? "1" : <Cell className={`w-12 text-right ${p.problem === "no_quantity" ? flag : ""}`} value={l.quantity?.toString() ?? ""} onSave={(v) => send("PATCH", { id: l.id, quantity: v })} />}
+                    {lump ? "1" : <Cell label={`Quantity, CLIN ${l.clin}`} className={`w-12 text-right ${p.problem === "no_quantity" ? flag : ""}`} value={l.quantity?.toString() ?? ""} onSave={(v) => send("PATCH", { id: l.id, quantity: v })} />}
                   </td>
                   <td className="py-2">
-                    {lump ? "Lump sum" : <Cell className={`w-14 ${p.problem === "unit" ? flag : ""}`} value={l.unit ?? ""} onSave={(v) => send("PATCH", { id: l.id, unit: v })} />}
+                    {lump ? "Lump sum" : <Cell label={`Unit, CLIN ${l.clin}`} className={`w-14 ${p.problem === "unit" ? flag : ""}`} value={l.unit ?? ""} onSave={(v) => send("PATCH", { id: l.id, unit: v })} />}
                   </td>
                   <td className="py-2">
                     <select
+                      aria-label={`Period, CLIN ${l.clin}`}
                       value={l.period_index === null ? "" : String(l.period_index)}
                       onChange={(e) => send("PATCH", { id: l.id, period_index: e.target.value })}
                       className={`w-24 px-1 py-1 rounded border border-outline-variant ${l.period_index === null ? flag : ""}`}
@@ -269,6 +271,7 @@ export function ClinPricingPanel({
                   <td className="py-2">
                     {boxes.has(l.clin) ? (
                       <Cell
+                        label={`Split percent, CLIN ${l.clin}`}
                         className={`w-12 text-right ${p.problem === "no_share" ? flag : ""}`}
                         value={view.shares[String(l.position)]?.toString() ?? ""}
                         onSave={(v) => send("PUT", { shares: { ...view.shares, [String(l.position)]: v } })}
@@ -279,6 +282,7 @@ export function ClinPricingPanel({
                   </td>
                   <td className="py-2 text-right">
                     <Cell
+                      label={`Unit price, CLIN ${l.clin}`}
                       className={`w-24 text-right ${p.unitPrice === null ? flag : ""}`}
                       value={l.unit_price_override !== null ? String(l.unit_price_override) : ""}
                       placeholder={p.unitPrice !== null && !p.typed ? money(p.unitPrice) : ""}

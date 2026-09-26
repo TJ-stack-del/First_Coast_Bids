@@ -23,6 +23,7 @@ import { pickWdSuggestion } from "@/lib/wage/prefill";
 import { isKnownTrade } from "@/lib/compliance/known-trades";
 import { computePreflightSummary } from "@/lib/compliance/preflight-summary";
 import { AdminFirstViewTransition } from "./AdminFirstViewTransition";
+import { displayAgency } from "@/lib/agency-display";
 
 // The actual review workspace: full intake info, stage editing, internal
 // notes, checklist, deliverables. This is where the "admin does the real
@@ -277,7 +278,7 @@ export default async function AdminSubmissionDetailPage({
               <span className="font-code text-primary"> · {submission.solicitation_number}</span>
             )}
           </p>
-          <h1 className="text-headline-lg text-primary">{submission.agency}</h1>
+          <h1 className="text-headline-lg text-primary">{displayAgency(submission.agency)}</h1>
         </div>
         <span className="inline-flex px-3 py-1 rounded-full text-label-md font-bold uppercase tracking-wider bg-secondary-container text-on-secondary-container">
           {STAGE_LABELS[submission.stage] ?? submission.stage}

@@ -13,7 +13,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 // A number box that keeps exactly what's typed (so "35." keeps its point
 // while "35.5" is entered) and passes the math the value it reads. Shows the
 // saved value again when you leave the box.
-function NumberField({ value, onChange, className }: { value: number; onChange: (n: number) => void; className: string }) {
+function NumberField({ value, onChange, className, label }: { value: number; onChange: (n: number) => void; className: string; label?: string }) {
   const [text, setText] = useState(String(value));
   const focused = useRef(false);
   useEffect(() => {
@@ -21,6 +21,7 @@ function NumberField({ value, onChange, className }: { value: number; onChange: 
   }, [value]);
   return (
     <input
+      aria-label={label}
       className={className}
       inputMode="decimal"
       value={text}
@@ -40,7 +41,7 @@ function NumberField({ value, onChange, className }: { value: number; onChange: 
 
 // The same for a box where blank means "not given yet" (the client's
 // numbers): shows blank and highlighted when missing, never 0.
-function OptionalNumberField({ value, onChange, className }: { value: number | null; onChange: (n: number | null) => void; className: string }) {
+function OptionalNumberField({ value, onChange, className, label }: { value: number | null; onChange: (n: number | null) => void; className: string; label?: string }) {
   const [text, setText] = useState(value === null ? "" : String(value));
   const focused = useRef(false);
   useEffect(() => {
@@ -48,6 +49,7 @@ function OptionalNumberField({ value, onChange, className }: { value: number | n
   }, [value]);
   return (
     <input
+      aria-label={label}
       className={`${className} ${value === null ? "border-error bg-error-container/20" : ""}`}
       inputMode="decimal"
       value={text}
@@ -148,7 +150,7 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
       body: JSON.stringify({ submissionId, ...(opts?.wdNumber ? { wdNumber: opts.wdNumber } : {}), ...(opts?.refill ? { refill: true } : {}) }),
     });
     const body = await res.json().catch(() => null);
-    if (res.status === 404 && body?.error === "no_wd") return setState("no_wd");
+    if (body?.state === "no_wd") return setState("no_wd");
     if (!res.ok) {
       setError(body?.missing ? `${body.error} Missing: ${body.missing.join(", ")}.` : body?.error ?? `HTTP ${res.status}`);
       return setState("error");
@@ -274,7 +276,7 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
       <table className="mt-4 w-full text-body-sm">
         <thead>
           <tr className="text-left text-on-surface-variant">
-            <th>Position</th><th>Rate</th><th>Workers</th><th>Hours/week each</th><th className="text-right">Floor/year</th><th />
+            <th>Position</th><th>Rate</th><th>Workers</th><th>Hours/week each</th><th className="text-right">Floor/year</th><th className="relative"><span className="sr-only">Remove</span></th>
           </tr>
         </thead>
         <tbody>
@@ -282,9 +284,10 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
             <tr key={i} className="border-t border-outline-variant">
               <td className="py-2">{l.code} {l.title}{l.hoursSource && <span className="block text-on-surface-variant">{l.hoursSource}</span>}</td>
               <td>{money(per[i].wage)}</td>
-              <td><NumberField className={cell} value={l.workers} onChange={(n) => setLines(lines.map((x, j) => (j === i ? { ...x, workers: n } : x)))} /></td>
+              <td><NumberField label={`Workers, ${l.title}`} className={cell} value={l.workers} onChange={(n) => setLines(lines.map((x, j) => (j === i ? { ...x, workers: n } : x)))} /></td>
               <td>
                 <NumberField
+                  label={`Hours per week each, ${l.title}`}
                   className={`${cell} ${l.hoursPerWeek === 0 ? "border-error bg-error-container/20" : ""}`}
                   value={l.hoursPerWeek}
                   onChange={(n) => setLines(lines.map((x, j) => (j === i ? { ...x, hoursPerWeek: n, hoursSource: null } : x)))}
@@ -297,6 +300,7 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
         </tbody>
       </table>
       <select
+        aria-label="Add a position from this wage determination"
         className="mt-2 px-2 py-1 rounded border border-outline-variant text-body-sm"
         value=""
         onChange={(e) => {
@@ -339,6 +343,7 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
         <label>
           Supplies <OptionalNumberField className={cell} value={pricing.suppliesValue} onChange={(n) => setPricing({ ...pricing, suppliesValue: n })} />{" "}
           <select
+            aria-label="Supplies as a percent of labor or dollars per year"
             value={pricing.suppliesMode}
             onChange={(e) => setPricing({ ...pricing, suppliesMode: e.target.value as "percent" | "flat" })}
             className="px-1 py-1 rounded border border-outline-variant"

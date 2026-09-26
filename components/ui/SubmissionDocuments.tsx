@@ -135,6 +135,7 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
     <div className="flex flex-col gap-3">
       <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
         <select
+          aria-label="Document type"
           value={docType}
           onChange={(e) => setDocType(e.target.value)}
           className="px-3 py-2 rounded border border-outline-variant bg-surface text-body-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"

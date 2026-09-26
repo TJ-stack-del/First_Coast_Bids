@@ -63,7 +63,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
           {/* Full nav from lg (1024px) up; below that, the menu button. At md
               (768-1023px) five links plus Log in and the Pilot button didn't
               fit: the wordmark and several links wrapped to two lines. */}
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav aria-label="Main" className="hidden lg:flex items-center gap-6">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -104,7 +104,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {menuOpen && (
-          <nav className="lg:hidden absolute top-full inset-x-0 z-40 border-t border-outline-variant bg-surface px-margin-mobile py-4 flex flex-col gap-2 max-h-[calc(100vh-4.5rem)] overflow-y-auto shadow-lg">
+          <nav aria-label="Main" className="lg:hidden absolute top-full inset-x-0 z-40 border-t border-outline-variant bg-surface px-margin-mobile py-4 flex flex-col gap-2 max-h-[calc(100vh-4.5rem)] overflow-y-auto shadow-lg">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -154,12 +154,12 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
               <span className="text-body-sm text-on-surface-variant">© {new Date().getFullYear()} First Coast Bids</span>
             </div>
           </div>
-          <nav className="flex flex-wrap justify-center gap-6">
+          <nav aria-label="Footer" className="flex flex-wrap justify-center gap-x-6 gap-y-1">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-label-sm text-on-surface-variant hover:text-primary transition"
+                className="inline-block py-2 text-label-sm text-on-surface-variant hover:text-primary transition"
               >
                 {link.label}
               </Link>
@@ -167,11 +167,11 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
         <div className="border-t border-outline-variant px-margin-mobile md:px-margin-desktop py-3 max-w-container-max mx-auto flex flex-col items-center gap-2">
-          <nav className="flex items-center gap-4">
-            <Link href="/privacy" className="text-label-sm text-on-surface-variant hover:text-primary transition">
+          <nav aria-label="Legal" className="flex items-center gap-4">
+            <Link href="/privacy" className="inline-block py-2 text-label-sm text-on-surface-variant hover:text-primary transition">
               Privacy
             </Link>
-            <Link href="/terms" className="text-label-sm text-on-surface-variant hover:text-primary transition">
+            <Link href="/terms" className="inline-block py-2 text-label-sm text-on-surface-variant hover:text-primary transition">
               Terms
             </Link>
           </nav>

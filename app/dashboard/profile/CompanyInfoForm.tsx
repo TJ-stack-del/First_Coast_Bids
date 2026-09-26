@@ -158,8 +158,9 @@ export function CompanyInfoForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {FIELDS.map((f) => (
           <div key={f.key}>
-            <label className="text-label-md text-on-surface-variant block mb-1">{f.label}</label>
+            <label htmlFor={`company-${f.key}`} className="text-label-md text-on-surface-variant block mb-1">{f.label}</label>
             <input
+              id={`company-${f.key}`}
               type={f.type ?? "text"}
               value={values[f.key] ?? ""}
               onChange={(e) => setField(f.key, e.target.value)}
@@ -179,8 +180,8 @@ export function CompanyInfoForm({
         }}
       />
       <div>
-        <label className="text-label-md text-on-surface-variant block mb-1">Other NAICS code</label>
-        <input
+        <label htmlFor="company-other-naics-code" className="text-label-md text-on-surface-variant block mb-1">Other NAICS code</label>
+        <input id="company-other-naics-code"
           type="text"
           value={naicsOther}
           onChange={(e) => {
@@ -211,10 +212,8 @@ export function CompanyInfoForm({
         }}
       />
       <div>
-        <label className="text-label-md text-on-surface-variant block mb-1">
-          Other set-aside (e.g. a local/regional category)
-        </label>
-        <input
+        <label htmlFor="company-other-set-aside-e-g-a-local-regional-cat" className="text-label-md text-on-surface-variant block mb-1">Other set-aside (e.g. a local/regional category)</label>
+        <input id="company-other-set-aside-e-g-a-local-regional-cat"
           type="text"
           value={setAsideOther}
           onChange={(e) => {
@@ -226,10 +225,8 @@ export function CompanyInfoForm({
       </div>
 
       <div>
-        <label className="text-label-md text-on-surface-variant block mb-1">
-          Differentiators / notable past projects
-        </label>
-        <textarea
+        <label htmlFor="company-differentiators-notable-past-projects" className="text-label-md text-on-surface-variant block mb-1">Differentiators / notable past projects</label>
+        <textarea id="company-differentiators-notable-past-projects"
           value={values.differentiators ?? ""}
           onChange={(e) => setField("differentiators", e.target.value)}
           rows={4}

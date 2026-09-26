@@ -23,7 +23,7 @@ export default function ResetPasswordPage() {
             <Logo variant="stacked" priority iconClassName="h-[var(--auth-logo-height)] w-auto" />
           </Link>
           <Reveal mode="mount" as="div">
-            <span className="font-bold text-headline-lg text-primary">Reset your password</span>
+            <h1 className="font-bold text-headline-lg text-primary">Reset your password</h1>
             <p className="text-body-md text-on-surface-variant mt-2">Choose a new password below.</p>
           </Reveal>
         </div>

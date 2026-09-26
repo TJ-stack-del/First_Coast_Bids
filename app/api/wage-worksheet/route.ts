@@ -86,7 +86,9 @@ export async function POST(request: Request) {
 
   // Which WD: typed by the admin, else the checklist's.
   const ref = typed ?? ctx.currentWd;
-  if (!ref) return NextResponse.json({ error: "no_wd" }, { status: 404 });
+  // Not an error: the bid simply has no wage determination yet (the panel
+  // asks for one). 200, so the browser doesn't log it as a failed request.
+  if (!ref) return NextResponse.json({ state: "no_wd" });
   let fp: Awaited<ReturnType<typeof fetchAndParse>>;
   try {
     fp = await fetchAndParse(ref.number, ref.revision);

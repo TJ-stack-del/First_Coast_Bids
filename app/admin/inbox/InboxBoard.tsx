@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { displayAgency } from "@/lib/agency-display";
 
 type Submission = {
   id: string;
@@ -258,7 +259,7 @@ export function InboxBoard({
                         key={sub.id}
                         href={`/admin/inbox/${sub.id}`}
                         className={`bg-surface-container p-3 rounded-lg shadow-sm hover:bg-surface-container-high transition-colors flex flex-col gap-2 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                          sub.is_test ? "opacity-80" : ""
+                          sub.is_test ? "border border-dashed border-outline" : ""
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -280,7 +281,7 @@ export function InboxBoard({
                         </div>
                         <div className="flex items-center gap-1.5 text-body-sm text-on-surface-variant min-w-0">
                           <span className="material-symbols-outlined text-xs text-outline shrink-0">account_balance</span>
-                          <span className="truncate">{sub.agency}</span>
+                          <span className="truncate">{displayAgency(sub.agency)}</span>
                         </div>
                         {(() => {
                           const showDrafted = stage !== "submitted" && stage !== "closed";
@@ -374,7 +375,7 @@ export function InboxBoard({
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-on-surface-variant break-words">{sub.agency}</td>
+                <td className="px-4 py-3 text-on-surface-variant break-words">{displayAgency(sub.agency)}</td>
                 <td className="px-4 py-3">
                   <span
                     className={`inline-flex px-2.5 py-1 rounded-full text-label-sm font-medium ${
@@ -429,7 +430,7 @@ export function InboxBoard({
                 </div>
                 <div className="min-w-0">
                   <p className="font-semibold text-on-surface break-words">{sub.clients?.company_name ?? "—"}</p>
-                  <p className="text-label-md text-on-surface-variant break-words">{sub.agency}</p>
+                  <p className="text-label-md text-on-surface-variant break-words">{displayAgency(sub.agency)}</p>
                 </div>
               </div>
               <span className="shrink-0 inline-flex px-3 py-1.5 rounded bg-primary-container text-on-primary-container text-label-md font-semibold">

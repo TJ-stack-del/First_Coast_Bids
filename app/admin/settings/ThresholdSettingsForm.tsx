@@ -40,8 +40,8 @@ export function ThresholdSettingsForm({ orgId, initialThreshold }: { orgId: stri
   return (
     <form onSubmit={handleSave} className="flex items-end gap-3 flex-wrap">
       <div>
-        <label className="text-label-md text-on-surface-variant block mb-1">Threshold (USD)</label>
-        <input
+        <label htmlFor="lean-threshold-threshold-usd" className="text-label-md text-on-surface-variant block mb-1">Threshold (USD)</label>
+        <input id="lean-threshold-threshold-usd"
           type="number"
           min="0"
           step="1000"

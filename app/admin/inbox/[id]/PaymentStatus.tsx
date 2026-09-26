@@ -197,6 +197,7 @@ export function PaymentStatus({
           {mode === "existing" && existingPackages.length > 0 ? (
             <div className="flex flex-col gap-3">
               <select
+                aria-label="Package already on file for this client"
                 value={selectedExistingId}
                 onChange={(e) => setSelectedExistingId(e.target.value)}
                 className="px-3 py-2 rounded border border-outline-variant bg-surface text-body-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
@@ -221,8 +222,8 @@ export function PaymentStatus({
           ) : (
             <div className="flex flex-col gap-3">
               <div>
-                <label className="text-label-md text-on-surface-variant block mb-1">Package type</label>
-                <select
+                <label htmlFor="payment-package-type" className="text-label-md text-on-surface-variant block mb-1">Package type</label>
+                <select id="payment-package-type"
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
                   className="px-3 py-2 rounded border border-outline-variant bg-surface text-body-md text-on-surface outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
@@ -234,10 +235,8 @@ export function PaymentStatus({
                 </select>
               </div>
               <div>
-                <label className="text-label-md text-on-surface-variant block mb-1">
-                  Price note (manual invoicing)
-                </label>
-                <input
+                <label htmlFor="payment-price-note-manual-invoicing" className="text-label-md text-on-surface-variant block mb-1">Price note (manual invoicing)</label>
+                <input id="payment-price-note-manual-invoicing"
                   type="text"
                   value={newPriceNote}
                   onChange={(e) => setNewPriceNote(e.target.value)}

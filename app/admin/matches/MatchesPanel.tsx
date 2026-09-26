@@ -518,8 +518,8 @@ export function MatchesPanel({
         <RfpDocumentUpload onExtracted={handleOpportunityExtracted} />
         <div className="flex flex-col md:flex-row gap-space-base items-end flex-wrap">
           <div className="flex-1 min-w-[160px] flex flex-col gap-space-2xs">
-            <label className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Title</label>
-            <input
+            <label htmlFor="log-opportunity-title" className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Title</label>
+            <input id="log-opportunity-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -527,8 +527,8 @@ export function MatchesPanel({
             />
           </div>
           <div className="flex-1 min-w-[160px] flex flex-col gap-space-2xs">
-            <label className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Agency</label>
-            <input
+            <label htmlFor="log-opportunity-agency" className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Agency</label>
+            <input id="log-opportunity-agency"
               value={agency}
               onChange={(e) => setAgency(e.target.value)}
               required
@@ -536,16 +536,16 @@ export function MatchesPanel({
             />
           </div>
           <div className="flex-1 min-w-[160px] flex flex-col gap-space-2xs">
-            <label className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Solicitation number</label>
-            <input
+            <label htmlFor="log-opportunity-solicitation-number" className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Solicitation number</label>
+            <input id="log-opportunity-solicitation-number"
               value={solicitationNumber}
               onChange={(e) => setSolicitationNumber(e.target.value)}
               className="w-full border-0 bg-surface-container-low text-on-surface text-body-md px-space-md py-space-sm rounded-lg placeholder:text-outline outline-none focus:bg-surface-container-highest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
             />
           </div>
           <div className="flex flex-col gap-space-2xs">
-            <label className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Due date</label>
-            <input
+            <label htmlFor="log-opportunity-due-date" className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Due date</label>
+            <input id="log-opportunity-due-date"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
@@ -554,8 +554,8 @@ export function MatchesPanel({
           </div>
         </div>
         <div className="flex flex-col gap-space-2xs">
-          <label className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Scope of work</label>
-          <textarea
+          <label htmlFor="log-opportunity-scope-of-work" className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Scope of work</label>
+          <textarea id="log-opportunity-scope-of-work"
             value={scope}
             onChange={(e) => setScope(e.target.value)}
             rows={3}
@@ -618,7 +618,7 @@ export function MatchesPanel({
               <th className="text-left px-space-base py-space-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold w-[16%]">Deadline</th>
               <th className="text-left px-space-base py-space-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold w-[8%]">Score</th>
               <th className="text-left px-space-base py-space-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold w-[12%]">Status</th>
-              <th className="text-left px-space-base py-space-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold w-[24%]"></th>
+              <th className="text-left px-space-base py-space-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold w-[24%] relative"><span className="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody>

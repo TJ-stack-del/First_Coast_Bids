@@ -6,6 +6,7 @@ import { DeliverablesSection } from "./DeliverablesSection";
 import { SubmissionMessages } from "@/components/ui/SubmissionMessages";
 import { WageCheckNotice } from "./WageCheckNotice";
 import type { Submission, ChecklistItem, Deliverable } from "./page";
+import { displayAgency } from "@/lib/agency-display";
 
 const CHECKLIST_STATUS_LABELS: Record<string, string> = {
   not_started: "Not started",
@@ -65,7 +66,7 @@ export function SubmissionCard({
               <span className="text-outline-variant">·</span>
               <span className="text-on-surface-variant normal-case font-medium">{companyName}</span>
             </div>
-            <h3 className="text-headline-md font-headline text-on-surface font-bold mt-1">{submission.agency}</h3>
+            <h3 className="text-headline-md font-headline text-on-surface font-bold mt-1">{displayAgency(submission.agency)}</h3>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {pkg && (

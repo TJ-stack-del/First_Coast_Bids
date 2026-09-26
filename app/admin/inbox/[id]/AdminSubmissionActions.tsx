@@ -239,6 +239,7 @@ export function AdminSubmissionActions({
                     Saved
                   </FadeMessage>
                   <select
+                    aria-label={`Status: ${item.label}`}
                     defaultValue={item.status}
                     onChange={(e) => handleChecklistChange(item.id, e.target.value)}
                     className="px-2 py-1 rounded border border-outline-variant bg-surface text-body-md text-on-surface transition outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"

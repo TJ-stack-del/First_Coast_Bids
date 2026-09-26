@@ -34,7 +34,7 @@ function Section({ id, open, children }: { id: SectionId; open: boolean; childre
     <details id={id} open={open} className="group border-b border-outline-variant last:border-b-0 scroll-mt-6">
       <summary className="flex items-center gap-2 py-3 cursor-pointer list-none text-title-md font-bold text-on-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary rounded">
         <span aria-hidden className="material-symbols-outlined text-[20px] text-primary">{s.icon}</span>
-        {s.title}
+        <h2 className="text-title-md font-bold text-on-surface">{s.title}</h2>
         <span aria-hidden className="material-symbols-outlined ml-auto text-[20px] text-on-surface-variant transition-transform group-open:rotate-180 motion-reduce:transition-none">
           expand_more
         </span>
