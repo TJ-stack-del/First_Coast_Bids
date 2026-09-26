@@ -46,3 +46,15 @@ test("a unit price the admin typed wins and is marked", () => {
   assert.deepEqual([r.lines[0].unitPrice, r.lines[0].amount, r.lines[0].typed, r.lines[0].problem], [250, 1000, true, null]);
   assert.equal(r.total, 1000);
 });
+
+test("lump sums: a period's share of the year by its months (MVY's 9-month base)", () => {
+  const lump = (clin: string, p: number, months: number) => L(clin, p, 1, { quantity: null, unit: null, unit_kind: "lump", period_months: months });
+  const r = priceLines({ lines: [lump("00001", 0, 9), lump("00002", 1, 12)], bidPrice: 120000, increasePct: 3, shares: {} });
+  assert.deepEqual(r.lines.map((l) => [l.unitPrice, l.amount, l.problem]), [[90000, 90000, null], [123600, 123600, null]]);
+  assert.equal(r.total, 213600);
+});
+
+test("a typed price on a lump-sum line is one lump", () => {
+  const r = priceLines({ lines: [L("00001", 0, 1, { quantity: null, unit: null, unit_kind: "lump", period_months: 12, unit_price_override: 95000 })], bidPrice: null, increasePct: null, shares: {} });
+  assert.deepEqual([r.lines[0].amount, r.lines[0].problem], [95000, null]);
+});

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { unitKind, periodIndex, assignPeriodsAndPositions, assignPositions, dedupeClins, clinInQuote } from "./parse.ts";
+import { unitKind, periodIndex, periodMonths, lineKind, verifiedMonths, assignPeriodsAndPositions, assignPositions, dedupeClins, clinInQuote } from "./parse.ts";
 
 test("units: months, years, anything else", () => {
   for (const u of ["MO", "Mo", "MOS", "Months", "month", "12 MO"]) assert.equal(unitKind(u), "month", u);
@@ -72,4 +72,36 @@ test("positions follow the stored periods (an admin-set period is kept)", () => 
   const base = { description: "Janitorial", quantity: 12, unit: "MO", unit_kind: "month" as const, quote: null, page: null, source_file: null, quote_status: "admin" as const, revised_by: null, unit_price_override: null, position: 0, sort: 0 };
   const out = assignPositions([{ ...base, clin: "00002", period_index: 1 }, { ...base, clin: "00001", period_index: 0 }]);
   assert.deepEqual(out.map((l) => [l.clin, l.period_index, l.position, l.sort]), [["00001", 0, 1, 0], ["00002", 1, 1, 1]]);
+});
+
+test("'OP1' / 'ServicesOP3' wording is an option year (Montrose); 'DEVELOP 2' isn't", () => {
+  const all = ["00010", "00020", "00040"];
+  assert.equal(periodIndex("00010", "BASE SWD Janitorial Services BASE", all), 0);
+  assert.equal(periodIndex("00020", "SWD Janitorial Services OP1", all), 1);
+  assert.equal(periodIndex("00040", "SWD Janitorial ServicesOP3", all), 3);
+  assert.equal(periodIndex("00020", "DEVELOP 2 plans", all), null);
+});
+
+test("months in a period of performance, end date inclusive", () => {
+  assert.equal(periodMonths("10/01/2026", "09/30/2027"), 12);
+  assert.equal(periodMonths("01/01/2027", "09/30/2027"), 9);
+  assert.equal(periodMonths("15 Oct 2026", "30 April 2027"), 6.5);
+  assert.equal(periodMonths("10/01/2027", "9/30/2028"), 12);
+  assert.equal(periodMonths("soon", "09/30/2027"), null);
+  assert.equal(periodMonths("09/30/2027", "10/01/2026"), null);
+});
+
+test("a whole-period line (no quantity, no unit) with known months is a lump sum", () => {
+  assert.equal(lineKind(null, null, 12), "lump");
+  assert.equal(lineKind(null, null, null), "other");
+  assert.equal(lineKind("MO", 12, 12), "month");
+  assert.equal(lineKind("JB", 1, 12), "other");
+});
+
+test("period months only from dates that really appear in the document", () => {
+  const text = "Period of Performance: 01/01/2027 to\n   09/30/2027\n 00001 Base Year MVY";
+  assert.equal(verifiedMonths("01/01/2027", "09/30/2027", text), 9);
+  assert.equal(verifiedMonths("01/01/2027", "12/31/2027", text), null, "an end date not in the text is not used");
+  assert.equal(verifiedMonths(null, "09/30/2027", text), null);
+  assert.equal(verifiedMonths("01/01/2027", "09/30/2027", null), null);
 });

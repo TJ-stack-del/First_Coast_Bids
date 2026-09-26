@@ -1,4 +1,5 @@
 import type { ClinCandidate, ClinLine, UnitKind } from "./types.ts";
+import { normalizeForMatch } from "../checklist/verify-quote.ts";
 
 // Plain code around the AI's reading of a CLIN table (docs/superpowers/specs/
 // 2026-09-25-clin-pricing-design.md): what unit a line is priced in, which
@@ -15,6 +16,47 @@ export function unitKind(unit: string | null, _description?: string): UnitKind {
   return "other";
 }
 
+// A whole-period line (no quantity and no unit, as Montrose, Crow Agency and
+// Martha's Vineyard print them) is a lump sum once its months are known.
+export function lineKind(unit: string | null, quantity: number | null, months: number | null): UnitKind {
+  if (unit === null && quantity === null) return months !== null ? "lump" : "other";
+  return unitKind(unit);
+}
+
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+function parseDate(s: string): Date | null {
+  const t = s.trim();
+  let m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return new Date(Date.UTC(Number(m[3]), Number(m[1]) - 1, Number(m[2])));
+  m = t.match(/^(\d{1,2})\s+([A-Za-z]{3,9})\.?,?\s+(\d{4})$/);
+  if (m && MONTHS.includes(m[2].slice(0, 3).toLowerCase())) return new Date(Date.UTC(Number(m[3]), MONTHS.indexOf(m[2].slice(0, 3).toLowerCase()), Number(m[1])));
+  m = t.match(/^([A-Za-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{4})$/);
+  if (m && MONTHS.includes(m[1].slice(0, 3).toLowerCase())) return new Date(Date.UTC(Number(m[3]), MONTHS.indexOf(m[1].slice(0, 3).toLowerCase()), Number(m[2])));
+  return null;
+}
+
+// Months in a period of performance, end date inclusive, to one decimal
+// (10/01/2026-09/30/2027 = 12; 01/01/2027-09/30/2027 = 9).
+export function periodMonths(start: string, end: string): number | null {
+  const a = parseDate(start);
+  const b = parseDate(end);
+  if (!a || !b || b <= a) return null;
+  const next = new Date(b.getTime() + 86_400_000);
+  const days = new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth() + 1, 0)).getUTCDate();
+  const months = (next.getUTCFullYear() - a.getUTCFullYear()) * 12 + (next.getUTCMonth() - a.getUTCMonth()) + (next.getUTCDate() - a.getUTCDate()) / days;
+  return Math.round(months * 10) / 10;
+}
+
+// Months from the AI's period dates -- only when both dates really appear in
+// the document (the same rule as quotes: nothing unverified is priced).
+export function verifiedMonths(start: string | null, end: string | null, fileText: string | null): number | null {
+  if (!start || !end || !fileText) return null;
+  const text = normalizeForMatch(fileText);
+  if (!text.includes(normalizeForMatch(start)) || !text.includes(normalizeForMatch(end))) return null;
+  return periodMonths(start, end);
+}
+
 const WORD_NUM: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9 };
 
 // 0 = base, N = option year N, null = unknown (highlighted for the admin).
@@ -23,6 +65,9 @@ const WORD_NUM: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, fi
 export function periodIndex(clin: string, description: string, allClins: string[]): number | null {
   const opt = description.match(/\boption\s+(?:year|period)\s+(\d+|one|two|three|four|five|six|seven|eight|nine)\b/i);
   if (opt) return /^\d+$/.test(opt[1]) ? Number(opt[1]) : WORD_NUM[opt[1].toLowerCase()];
+  // "OP1", "ServicesOP3" (Montrose); case-sensitive so "DEVELOP 2" isn't one.
+  const op = description.match(/(?:^|[^A-Za-z]|[a-z])OP\s?([1-9])\b/);
+  if (op) return Number(op[1]);
   if (/\bbase\b/i.test(description)) return 0;
   // Numbering: 0001/1001/2001 or 00001/10001/20001 -- only when the table
   // really uses a leading period digit (some CLIN starts with 1-9); a plain

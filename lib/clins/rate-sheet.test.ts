@@ -31,3 +31,9 @@ test("blanks become bracketed placeholders, so the client's download is blocked"
   assert.match(text, /Total \(base \+ all option years\): \[total — 1 line not priced yet\]/);
   assert.equal(hasUnresolvedPlaceholders(text), true);
 });
+
+test("a lump-sum line shows 1 | Lump sum", () => {
+  const lines = [L("00001", 0, "Base Year MVY janitorial services", { quantity: null, unit: null, unit_kind: "lump", period_months: 9 })];
+  const text = rateSheetText({ agency: "FAA", solicitationNumber: null, lines, priced: priceLines({ lines, bidPrice: 120000, increasePct: 0, shares: {} }) });
+  assert.match(text, /00001 \| Base Year MVY janitorial services \| 1 \| Lump sum \| \$90,000\.00 \| \$90,000\.00/);
+});

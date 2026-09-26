@@ -18,7 +18,8 @@ export function rateSheetText(i: {
     const p = i.priced.lines[k];
     const unitPrice = p.unitPrice === null ? `[unit price — CLIN ${l.clin}]` : money(p.unitPrice);
     const amount = p.amount === null ? `[amount — CLIN ${l.clin}]` : money(p.amount);
-    return `${l.clin} | ${l.description} | ${qty(l.quantity)} | ${l.unit ?? "[unit]"} | ${unitPrice} | ${amount}`;
+    const lump = l.unit_kind === "lump";
+    return `${l.clin} | ${l.description} | ${lump ? "1" : qty(l.quantity)} | ${lump ? "Lump sum" : (l.unit ?? "[unit]")} | ${unitPrice} | ${amount}`;
   });
   const m = i.priced.missing;
   const total = i.priced.total === null ? `[total — ${m} line${m === 1 ? "" : "s"} not priced yet]` : money(i.priced.total);
