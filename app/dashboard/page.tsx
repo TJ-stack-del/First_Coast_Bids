@@ -326,7 +326,7 @@ export default async function DashboardPage() {
           ) : (
             <span>
               No credentials on file yet.{" "}
-              <Link href="/dashboard/profile" className={s.inlineLink}>
+              <Link href="/dashboard/compliance" className={s.inlineLink}>
                 Add one
               </Link>
             </span>

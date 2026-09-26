@@ -11,6 +11,7 @@ import { ComplianceReadinessGauge } from "@/components/ui/ComplianceReadinessGau
 import { ExpiringSoonBanner } from "@/components/ui/ExpiringSoonBanner";
 import { ExportVaultButton } from "@/components/ui/ExportVaultButton";
 import { certificationLabel, policyLabel, bondingLabel } from "@/lib/compliance/labels";
+import s from "@/components/marketing/press.module.css";
 
 // Split out of app/dashboard/profile/page.tsx per explicit user direction:
 // the target mockup (a Stitch-designed "Compliance Vault" screen) has this
@@ -116,71 +117,53 @@ export default async function ComplianceVaultPage() {
 
   return (
     <>
-      <div className="mt-6 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-headline-lg text-primary mb-1">Compliance Vault</h1>
-          <p className="text-body-md text-on-surface-variant">{client.company_name}</p>
+      <header className="mt-4 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className={s.pageHead}>
+          <h1 className="text-headline-lg">Compliance vault</h1>
+          <p className={s.lede}>{client.company_name}</p>
         </div>
         {hasExportableDocuments && <ExportVaultButton />}
-      </div>
+      </header>
 
-      <div className="mt-4">
-        <ComplianceReadinessGauge percent={readiness.percent} verifiedCount={readiness.verifiedCount} total={readiness.total} />
-      </div>
+      <ComplianceReadinessGauge percent={readiness.percent} verifiedCount={readiness.verifiedCount} total={readiness.total} />
 
-      {expiringSoon.length > 0 && (
-        <div className="mt-4">
-          <ExpiringSoonBanner records={expiringSoon} />
-        </div>
-      )}
+      {expiringSoon.length > 0 && <ExpiringSoonBanner records={expiringSoon} />}
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
-        <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-[20px]">verified</span>
-          Certifications & Licenses
-        </h2>
-        <p className="text-body-md text-on-surface-variant mb-4">
+      <section className="border-t-2 border-on-surface pt-6 flex flex-col gap-4">
+        <h2 className="text-headline-md">Certifications and licenses</h2>
+        <p className="text-body-md text-on-surface-variant max-w-[44em]">
           Add each trade license, small-business/socioeconomic certification, or field certification you hold,
           with its document. Our team reviews the document before it&apos;s used in anything we prepare for you.
         </p>
         <CertificationsSection clientId={client.id} initialCertifications={certifications} />
-      </div>
+      </section>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
-        <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-[20px]">shield</span>
-          Insurance & Bonding
-        </h2>
-        <p className="text-body-md text-on-surface-variant mb-4">
+      <section className="border-t-2 border-on-surface pt-6 flex flex-col gap-4">
+        <h2 className="text-headline-md">Insurance and bonding</h2>
+        <p className="text-body-md text-on-surface-variant max-w-[44em]">
           Add each insurance policy and, if you carry one, your surety bonding capacity, with its document. Our
           team reviews the document before it&apos;s used in anything we prepare for you.
         </p>
         <InsuranceBondingSection clientId={client.id} initialPolicies={insurancePolicies} initialBonding={bondingRecords} />
-      </div>
+      </section>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
-        <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-[20px]">folder_copy</span>
-          Document Library
-        </h2>
-        <p className="text-body-md text-on-surface-variant mb-4">
+      <section className="border-t-2 border-on-surface pt-6 flex flex-col gap-4">
+        <h2 className="text-headline-md">Document library</h2>
+        <p className="text-body-md text-on-surface-variant max-w-[44em]">
           Keep your standard paperwork here (W-9, non-collusion affidavit, capability statement, any custom
           RFP riders) so it&apos;s ready to reuse instead of hunting it down for every bid.
         </p>
         <DocumentLibrarySection clientId={client.id} initialDocuments={documents} />
-      </div>
+      </section>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mt-4">
-        <h2 className="text-title-lg text-primary mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-[20px]">work_history</span>
-          Past Performance
-        </h2>
-        <p className="text-body-md text-on-surface-variant mb-4">
+      <section className="border-t-2 border-on-surface pt-6 flex flex-col gap-4">
+        <h2 className="text-headline-md">Past performance</h2>
+        <p className="text-body-md text-on-surface-variant max-w-[44em]">
           Add a few past projects: client/agency name, scope, contract value, and outcome. We use these as real
           references in your capability statement instead of leaving that section blank.
         </p>
         <PastPerformanceSection clientId={client.id} initialEntries={pastPerformance ?? []} />
-      </div>
+      </section>
     </>
   );
 }

@@ -235,7 +235,7 @@ function InsurancePoliciesCard({ clientId, initialPolicies }: { clientId: string
                   type="button"
                   onClick={() => handleRemove(p.id)}
                   disabled={removingId === p.id}
-                  className="text-error text-label-md hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error rounded-sm disabled:opacity-40 flex items-center gap-2"
+                  className="min-h-[44px] sm:min-h-0 px-1 text-on-surface-variant hover:text-error text-label-md hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm disabled:opacity-40 flex items-center gap-2"
                 >
                   {removingId === p.id && <Spinner />}
                   Remove
@@ -406,7 +406,7 @@ function BondingCapacityCard({ clientId, initialBonding }: { clientId: string; i
                   type="button"
                   onClick={() => handleRemove(b.id)}
                   disabled={removingId === b.id}
-                  className="text-error text-label-md hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error rounded-sm disabled:opacity-40 flex items-center gap-2"
+                  className="min-h-[44px] sm:min-h-0 px-1 text-on-surface-variant hover:text-error text-label-md hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm disabled:opacity-40 flex items-center gap-2"
                 >
                   {removingId === b.id && <Spinner />}
                   Remove
