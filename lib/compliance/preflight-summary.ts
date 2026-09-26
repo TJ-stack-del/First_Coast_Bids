@@ -4,7 +4,7 @@
 // requiring parts. This computes a small set of mechanical checks —
 // never an LLM judgment call, same reasoning as every other compliance
 // detector in this codebase — so attention goes straight to what's
-// actually ambiguous. See Admin-Review-Rubric.md's own checklist: the
+// actually ambiguous. See the admin how-to's review checklists (components/ui/AdminHowToContent.tsx): the
 // bracketed-placeholder check here is a direct, mechanical version of
 // that rubric's first line item.
 

@@ -42,6 +42,7 @@ const NAV_LINKS: Record<Role, { href: string; label: string; mobileLabel?: strin
     { href: "/admin/matches", label: "Matches", icon: "insights" },
     { href: "/admin/messages", label: "Messages", icon: "mail" },
     { href: "/admin/settings", label: "Settings", icon: "settings" },
+    { href: "/admin/how-to", label: "How to", icon: "help" },
   ],
   client: [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
