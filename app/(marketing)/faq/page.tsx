@@ -18,7 +18,7 @@ const CATEGORIES = [
       },
       {
         q: "Do you guarantee I'll win the bid?",
-        a: "No one can guarantee an award. What we guarantee is a complete, compliant submission prepared by people who've done this before.",
+        a: "No one can guarantee an award. What we promise is a careful, complete package, checked line by line against the RFP's own requirements, with anything we couldn't confirm marked for you to fill in.",
       },
       {
         q: "Is my data secure?",

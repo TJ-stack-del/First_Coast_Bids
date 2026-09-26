@@ -171,7 +171,7 @@ const PRICING_PREVIEW = [
     tagline: "Ongoing coverage for teams bidding regularly.",
     priceLine: "Starting at $649/mo",
     terms: "Up to 2 full bids a month",
-    features: ["We watch for new bids every month", "One person who knows your file"],
+    features: ["We send you bids that fit your trade", "One person who knows your file"],
     // Kept in sync with pricing/page.tsx's own retainer CTA -- see that
     // file's comment for why this is /intake now, not a mailto: dead end,
     // and for why the ?package= param matters.
@@ -190,7 +190,7 @@ const FAQ_PREVIEW = [
   },
   {
     q: "Do you guarantee I'll win the bid?",
-    a: "No one can guarantee an award. What we guarantee is a complete, compliant submission prepared by people who've done this before.",
+    a: "No one can guarantee an award. What we promise is a careful, complete package, checked line by line against the RFP's own requirements, with anything we couldn't confirm marked for you to fill in.",
   },
   {
     q: "Why do I submit the bid myself instead of First Coast Bids submitting it?",
@@ -316,7 +316,7 @@ function Home() {
                   <td className={s.who}>{step.who}</td>
                   <td>
                     {step.body}
-                    {step.who === "Our team" && <span className={`${s.sub} ${s.promise}`}>Most bids ready in 48 hours</span>}
+                    {step.who === "Our team" && <span className={`${s.sub} ${s.promise}`}>We aim to have your bid ready within 48 hours</span>}
                   </td>
                 </tr>
               ))}

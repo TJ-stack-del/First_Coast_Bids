@@ -80,7 +80,7 @@ const PACKAGES = [
     name: "Retainer",
     tagline: "Ongoing coverage for teams bidding regularly.",
     priceLine: RETAINER_STARTING_PRICE,
-    features: ["We watch for new bids every month", "Up to 2 full bids a month", "One person who knows your file"],
+    features: ["We send you bids that fit your trade", "Up to 2 full bids a month", "One person who knows your file"],
     // Used to be a mailto: dead end -- a retainer prospect who clicked it
     // never became a clients/submissions row at all, and was invisible to
     // the admin inbox and daily digest alike (no account exists to show
