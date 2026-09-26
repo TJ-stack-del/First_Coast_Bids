@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ToastProvider } from "@/components/Toast";
 import { AppShell } from "@/components/ui/AppShell";
+import { pressThemeClass } from "@/app/press-theme";
 
 // Mounts AppShell once for the whole /dashboard section instead of each
 // page doing it individually -- see AppShell.tsx's own comment for why
@@ -23,11 +24,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .maybeSingle();
   if (!client) redirect("/");
 
+  // The client area uses the same look as the public site and the sign-up
+  // path (DESIGN.md, "Marketing theme"), so signing up doesn't land a
+  // client in what feels like a different product.
   return (
-    <ToastProvider>
-      <AppShell role="client" viewerName={client.company_name}>
-        {children}
-      </AppShell>
-    </ToastProvider>
+    <div className={pressThemeClass}>
+      <ToastProvider>
+        <AppShell role="client" viewerName={client.company_name}>
+          {children}
+        </AppShell>
+      </ToastProvider>
+    </div>
   );
 }

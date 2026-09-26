@@ -45,7 +45,7 @@ const NAV_LINKS: Record<Role, { href: string; label: string; mobileLabel?: strin
     { href: "/admin/how-to", label: "How to", icon: "help" },
   ],
   client: [
-    { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
+    { href: "/dashboard", label: "Your bids", icon: "dashboard" },
     // "New Bid" (-> /intake) was dropped per explicit user direction: the
     // Dashboard itself already has two entry points into /intake (a
     // "Start a new bid" CTA card, and a "Start your first bid" button in
@@ -55,8 +55,8 @@ const NAV_LINKS: Record<Role, { href: string; label: string; mobileLabel?: strin
     // register mismatch (its icon, add_circle, was the only "verb" icon
     // among three "noun" icons). Two independent reviews confirmed
     // removing it outright, not replacing it with a lighter treatment.
-    { href: "/dashboard/compliance", label: "Compliance Vault", mobileLabel: "Compliance", icon: "shield" },
-    { href: "/dashboard/profile", label: "Profile", icon: "badge" },
+    { href: "/dashboard/profile", label: "Company profile", mobileLabel: "Profile", icon: "badge" },
+    { href: "/dashboard/compliance", label: "Compliance vault", mobileLabel: "Compliance", icon: "shield" },
   ],
 };
 
@@ -119,6 +119,74 @@ export function AppShell({
   useEffect(() => {
     broadcastSignedIn();
   }, []);
+
+  // The client area (inside .theme-press, see app/dashboard/layout.tsx)
+  // gets the public site's slim top bar instead of the admin's sidebar:
+  // three text links on desktop, a bottom tab bar on phones. Admin below
+  // is unchanged.
+  if (role === "client") {
+    return (
+      <div className="min-h-screen flex flex-col bg-surface">
+        <header className="fixed top-0 w-full z-40 bg-surface/95 backdrop-blur border-b border-outline-variant">
+          <div className="max-w-container mx-auto flex items-center justify-between gap-6 px-margin-mobile md:px-margin-desktop py-2">
+            <Link
+              href={HOME_PATH.client}
+              className="shrink-0 flex items-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <Logo priority />
+            </Link>
+            <nav aria-label="Main" className="hidden md:flex items-center gap-4 flex-1">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={activeHref === link.href ? "page" : undefined}
+                  className={`text-label-md py-3 px-2 underline-offset-8 decoration-2 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
+                    activeHref === link.href
+                      ? "text-primary underline font-bold"
+                      : "text-on-surface-variant hover:text-on-surface hover:underline"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="flex items-center gap-3">
+              <p className="hidden lg:block text-label-md text-on-surface-variant whitespace-nowrap">
+                {formatViewerName(viewerName)}
+              </p>
+              <SignOutButton />
+            </div>
+          </div>
+        </header>
+
+        <main className="animate-fade-in flex-grow pt-[80px] pb-[88px] md:pb-10 px-margin-mobile md:px-margin-desktop w-full">
+          <div className="max-w-container mx-auto w-full flex flex-col gap-10">{children}</div>
+        </main>
+
+        <nav
+          aria-label="Main"
+          className="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-stretch bg-surface border-t border-outline-variant"
+        >
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={activeHref === link.href ? "page" : undefined}
+              className={`flex-1 min-h-[56px] flex flex-col items-center justify-center border-t-2 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
+                activeHref === link.href ? "text-primary font-bold border-primary" : "text-on-surface-variant border-transparent"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                {link.icon}
+              </span>
+              <span className="text-label-sm">{link.mobileLabel ?? link.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-surface">

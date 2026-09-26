@@ -4,8 +4,9 @@ import { Newsreader, Archivo } from "next/font/google";
 // string: the .theme-press token remap from app/globals.css plus the two
 // self-hosted fonts it uses. Applied by the marketing layout and by the
 // sign-up path a visitor goes through next (intake, log in, password
-// reset), so the site doesn't change look at the moment someone signs up.
-// The dashboard and admin still use the app's own system.
+// reset), so the site doesn't change look at the moment someone signs up,
+// and by the client area (app/dashboard/layout.tsx). The admin still uses
+// the app's own system.
 const newsreader = Newsreader({
   subsets: ["latin"],
   style: ["normal", "italic"],
