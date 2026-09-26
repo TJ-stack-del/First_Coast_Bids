@@ -66,18 +66,21 @@ export function WaitingOnClient({ drafts }: { drafts: WaitingDraft[] }) {
       <ul className="divide-y divide-outline-variant">
         {drafts.map((d) => (
           <li key={d.id} className="px-gutter py-3 flex flex-wrap items-center gap-x-6 gap-y-2">
-            <div className="min-w-0 flex-1">
+            {/* basis-64: the name block claims a real width before the date and
+                buttons do, so on a phone they wrap under it instead of
+                squeezing the name to a couple of letters per line. */}
+            <div className="min-w-0 grow basis-64">
               <p className="text-body-md font-bold text-on-surface break-words">{d.company_name}</p>
               <p className="text-body-sm text-on-surface-variant break-words">
                 {d.agency}
                 {d.solicitation_number ? ` · ${d.solicitation_number}` : ""}
               </p>
             </div>
-            <div className="text-body-sm text-on-surface-variant font-code shrink-0">
+            <div className="text-body-sm text-on-surface-variant font-code">
               {d.due_date ? `Due ${new Date(d.due_date).toLocaleDateString()}` : "No deadline"} · Assigned{" "}
               {new Date(d.assigned_at).toLocaleDateString()}
             </div>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex flex-wrap items-center gap-3">
               {d.email_sent_at ? (
                 <span className="text-body-sm text-secondary font-bold">
                   Emailed {new Date(d.email_sent_at).toLocaleDateString()}
