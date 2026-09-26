@@ -16,6 +16,7 @@ import { SubmissionMessages } from "@/components/ui/SubmissionMessages";
 import { SubmissionDocuments } from "@/components/ui/SubmissionDocuments";
 import { ChecklistSuggestionsPanel } from "./ChecklistSuggestionsPanel";
 import { WageWorksheet } from "./WageWorksheet";
+import { ClinPricingPanel } from "./ClinPricingPanel";
 import { isFederalAgency } from "@/lib/federal-agency";
 import { filesFingerprint } from "@/lib/checklist/scan-state";
 import { pickWdSuggestion } from "@/lib/wage/prefill";
@@ -145,6 +146,11 @@ export default async function AdminSubmissionDetailPage({
     if (signed) rfpDocumentUrls[doc.file_name] = signed;
   }
 
+  // A CLIN price table puts the Rate sheet in the full package.
+  const { count: clinCount } = await supabase
+    .from("clin_lines")
+    .select("id", { count: "exact", head: true })
+    .eq("submission_id", id);
   const { data: suggestions } = await supabase
     .from("checklist_suggestions")
     .select("id, kind, federal, label, detail, quote, page, source_file, quote_status, found_by, suggested_owner, status, dedupe_key, created_at")
@@ -442,6 +448,14 @@ export default async function AdminSubmissionDetailPage({
               })()}
             />
           )}
+          {(isFederalAgency(submission.agency) || (suggestions ?? []).some((s: any) => s.federal)) && (
+            <ClinPricingPanel
+              submissionId={submission.id}
+              rfpDocumentUrls={rfpDocumentUrls}
+              currentFingerprint={(rfpDocs ?? []).length > 0 ? filesFingerprint(rfpDocs ?? []) : null}
+              serverScanKey={`${(submission as any).clin_scan?.status ?? ""}|${(submission as any).clin_scan?.started_at ?? ""}|${(submission as any).clin_scan?.finished_at ?? ""}`}
+            />
+          )}
           <AdminSubmissionActions
             submissionId={submission.id}
             actorId={member.id}
@@ -464,6 +478,10 @@ export default async function AdminSubmissionDetailPage({
           />
 
           <DeliverablesPanel
+            // Remount when a deliverable changes elsewhere (the CLIN panel's
+            // "Update the Rate sheet"), so the panel never shows, or saves
+            // over, an old copy (final review I-7).
+            key={(deliverables ?? []).map((d: any) => `${d.id}:${d.file_url ?? ""}:${(d.content ?? "").length}:${contentKey(d.content)}`).join("|")}
             submissionId={submission.id}
             orgId={member.org_id}
             actorId={member.id}
@@ -473,6 +491,7 @@ export default async function AdminSubmissionDetailPage({
             leanPackageThreshold={org?.lean_package_threshold ?? 35000}
             rfpRequirements={submission.rfp_requirements ?? []}
             rfpDocumentUrls={rfpDocumentUrls}
+            hasClins={(clinCount ?? 0) > 0}
           />
         </div>
 
@@ -613,4 +632,11 @@ export default async function AdminSubmissionDetailPage({
       </section>
     </>
   );
+}
+
+// A short fingerprint of a deliverable's text, for the panel's remount key.
+function contentKey(text: string | null): string {
+  let h = 5381;
+  for (let i = 0; i < (text ?? "").length; i++) h = ((h << 5) + h + (text as string).charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
 }

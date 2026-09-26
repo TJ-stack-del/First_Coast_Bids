@@ -123,6 +123,8 @@ export function WageWorksheet({ submissionId, wdRef }: { submissionId: string; w
           body: JSON.stringify(payload),
           keepalive: true,
         });
+        // The CLIN panel prices from the bid price: tell it to refresh.
+        if (res.ok) window.dispatchEvent(new Event("pricing-changed"));
         return res.ok;
       },
     })

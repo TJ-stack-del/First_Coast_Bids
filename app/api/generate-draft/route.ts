@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { loadClinContext, rateSheetFor } from "@/lib/clins/server";
 import { createClient } from "@/lib/supabase/server";
 import { isFederalAgency } from "@/lib/federal-agency";
 import { detectAgencyTypes } from "@/lib/agency-type";
@@ -271,6 +272,14 @@ export async function POST(request: Request) {
     .limit(3);
 
   const submissionInfo = submission as unknown as SubmissionInfo;
+
+  // A federal bid with a CLIN price table: the Rate sheet is that table,
+  // priced (docs/superpowers/specs/2026-09-25-clin-pricing-design.md) --
+  // never the empty template, which would overwrite the priced table.
+  if (deliverableType === "rate_sheet") {
+    const clins = await loadClinContext(supabase, submissionId);
+    if (clins && clins.lines.length > 0) return NextResponse.json({ content: rateSheetFor(clins) });
+  }
 
   // Only the compliance matrix uses this today -- skip the extraction
   // entirely (and its real latency/cost) for every other deliverable type.

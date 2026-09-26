@@ -25,6 +25,7 @@ export function ClientNumbers({
     overheadPct: initial.overheadPct?.toString() ?? "",
     profitPct: initial.profitPct?.toString() ?? "",
     productionRate: initial.productionRate?.toString() ?? "",
+    yearlyIncreasePct: initial.yearlyIncreasePct?.toString() ?? "",
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +50,8 @@ export function ClientNumbers({
     setBusy(false);
     if (!res.ok) return setError(body?.error ?? `Not saved (HTTP ${res.status}).`);
     setSaved(true);
+    // The CLIN panel prices option years from the yearly increase.
+    window.dispatchEvent(new Event("pricing-changed"));
     onSaved(body.applied === true);
   }
 
@@ -84,6 +87,7 @@ export function ClientNumbers({
         <label className="flex flex-col gap-1">Overhead %<input className={box(text.overheadPct)} inputMode="decimal" value={text.overheadPct} onChange={(e) => edit("overheadPct", e.target.value)} /></label>
         <label className="flex flex-col gap-1">Profit %<input className={box(text.profitPct)} inputMode="decimal" value={text.profitPct} onChange={(e) => edit("profitPct", e.target.value)} /></label>
         <label className="flex flex-col gap-1">Sq ft per hour<input className={box(text.productionRate)} inputMode="decimal" value={text.productionRate} onChange={(e) => edit("productionRate", e.target.value)} /></label>
+        <label className="flex flex-col gap-1">Yearly increase %<input className={box(text.yearlyIncreasePct)} inputMode="decimal" value={text.yearlyIncreasePct} onChange={(e) => edit("yearlyIncreasePct", e.target.value)} /></label>
         <button type="button" onClick={save} disabled={busy || unreadable} className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-label-md font-bold flex items-center gap-2 disabled:opacity-40">
           {busy && <Spinner />} Save for {clientName}
         </button>

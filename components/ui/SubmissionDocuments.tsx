@@ -109,6 +109,15 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
       })
         .catch(() => {})
         .finally(() => router.refresh());
+      // Federal bids: read the price table (CLINs) in parallel; the route
+      // decides whether the bid is federal.
+      fetch("/api/clin-scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId }),
+      })
+        .catch(() => {})
+        .finally(() => router.refresh());
     }
 
     const signedUrl = await signRfpDocumentUrl(supabase, path);

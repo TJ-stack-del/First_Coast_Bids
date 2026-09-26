@@ -10,7 +10,8 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { signRfpDocumentUrl, uploadRfpDocument } from "@/lib/storage";
 import { useToast } from "@/components/Toast";
 import {
-  FULL_DELIVERABLE_TYPES as FULL_TYPE_VALUES,
+  getRequiredDeliverableTypes,
+  isLeanPackage,
   LEAN_DELIVERABLE_TYPES as LEAN_TYPE_VALUES,
   isLeanEligible,
 } from "@/lib/deliverables/package-routing";
@@ -44,7 +45,6 @@ const DELIVERABLE_LABELS: Record<string, string> = {
 // lib/deliverables/package-routing.ts -- see that file's header comment for
 // why the actual mode switch stays a manual admin action rather than
 // something estimated_value flips on its own.
-const FULL_DELIVERABLE_TYPES = FULL_TYPE_VALUES.map((value) => ({ value, label: DELIVERABLE_LABELS[value] }));
 const LEAN_DELIVERABLE_TYPES = LEAN_TYPE_VALUES.map((value) => ({ value, label: DELIVERABLE_LABELS[value] }));
 
 function deliverableLabel(type: string) {
@@ -111,6 +111,7 @@ export function DeliverablesPanel({
   leanPackageThreshold,
   rfpRequirements,
   rfpDocumentUrls,
+  hasClins,
 }: {
   submissionId: string;
   orgId: string;
@@ -125,17 +126,24 @@ export function DeliverablesPanel({
   // the right document (a submission can have more than one) instead of
   // just naming a page number and leaving the admin to find the file.
   rfpDocumentUrls: Record<string, string>;
+  // The bid has a CLIN price table: its full package includes the Rate sheet.
+  hasClins: boolean;
 }) {
   const [byType, setByType] = useState<Record<string, Deliverable | undefined>>(() => {
     const map: Record<string, Deliverable | undefined> = {};
     for (const d of initialDeliverables) map[d.deliverable_type] = d;
     return map;
   });
-  // Sticky across reloads: if a lean-type deliverable already exists, stay
-  // in lean mode rather than reverting to the full set and hiding it.
+  // Sticky across reloads: if a lean-only deliverable already exists, stay
+  // in lean mode rather than reverting to the full set and hiding it. A
+  // federal bid's Rate sheet doesn't count (isLeanPackage).
   const [leanMode, setLeanMode] = useState(() =>
-    initialDeliverables.some((d) => LEAN_DELIVERABLE_TYPES.some((t) => t.value === d.deliverable_type))
+    isLeanPackage(initialDeliverables.map((d) => d.deliverable_type), hasClins)
   );
+  const FULL_DELIVERABLE_TYPES = getRequiredDeliverableTypes("full", hasClins).map((value) => ({
+    value,
+    label: DELIVERABLE_LABELS[value as keyof typeof DELIVERABLE_LABELS],
+  }));
   const DELIVERABLE_TYPES = leanMode ? LEAN_DELIVERABLE_TYPES : FULL_DELIVERABLE_TYPES;
   const showLeanSuggestion = !leanMode && isLeanEligible(estimatedValue, leanPackageThreshold);
   const [drafts, setDrafts] = useState<Record<string, string>>(() => {
@@ -169,7 +177,7 @@ export function DeliverablesPanel({
   // call is just "hey, go check" — a best-effort ping, not something whose
   // success this component depends on.
   async function maybeAutoAdvance(updatedByType: Record<string, Deliverable | undefined>) {
-    const required = ["capability_statement", "compliance_matrix", "technical_narrative"];
+    const required = getRequiredDeliverableTypes("full", hasClins);
     const complete = required.every((t) => {
       const d = updatedByType[t];
       return !!d && (!!d.file_url || !!d.content?.trim());

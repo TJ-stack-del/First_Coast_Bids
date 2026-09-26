@@ -123,7 +123,7 @@ export function allowForce(requested: boolean, isAdmin: boolean): boolean {
 // PostgREST filter for claiming a reading atomically: the update only lands
 // if no reading is running, or the running one is dead (see isScanStale).
 // Several simultaneous requests therefore start one reading, not several.
-export function claimFilter(now: Date): string {
+export function claimFilter(now: Date, column = "checklist_scan"): string {
   const staleBefore = new Date(now.getTime() - STALE_AFTER_MS).toISOString();
-  return `checklist_scan.is.null,checklist_scan->>status.neq.running,checklist_scan->>started_at.lt."${staleBefore}"`;
+  return `${column}.is.null,${column}->>status.neq.running,${column}->>started_at.lt."${staleBefore}"`;
 }

@@ -118,3 +118,9 @@ test("a reading is claimed only if none is running (or the running one is dead)"
     'checklist_scan.is.null,checklist_scan->>status.neq.running,checklist_scan->>started_at.lt."2026-09-25T11:58:30.000Z"'
   );
 });
+
+test("the claim filter works for another scan column", () => {
+  const f = claimFilter(new Date("2026-09-26T12:00:00.000Z"), "clin_scan");
+  assert.ok(f.startsWith("clin_scan.is.null,clin_scan->>status.neq.running,clin_scan->>started_at.lt."));
+  assert.ok(claimFilter(new Date("2026-09-26T12:00:00.000Z")).startsWith("checklist_scan.is.null"));
+});
