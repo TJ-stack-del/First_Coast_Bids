@@ -16,6 +16,7 @@ import { SubmissionMessages } from "@/components/ui/SubmissionMessages";
 import { SubmissionDocuments } from "@/components/ui/SubmissionDocuments";
 import { ChecklistSuggestionsPanel } from "./ChecklistSuggestionsPanel";
 import { WageWorksheet } from "./WageWorksheet";
+import { ClinPricingPanel } from "./ClinPricingPanel";
 import { isFederalAgency } from "@/lib/federal-agency";
 import { filesFingerprint } from "@/lib/checklist/scan-state";
 import { pickWdSuggestion } from "@/lib/wage/prefill";
@@ -441,6 +442,9 @@ export default async function AdminSubmissionDetailPage({
                 return wd ? `${wd.number}|${wd.revision ?? ""}` : null;
               })()}
             />
+          )}
+          {(isFederalAgency(submission.agency) || (suggestions ?? []).some((s: any) => s.federal)) && (
+            <ClinPricingPanel submissionId={submission.id} rfpDocumentUrls={rfpDocumentUrls} />
           )}
           <AdminSubmissionActions
             submissionId={submission.id}
