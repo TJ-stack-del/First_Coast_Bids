@@ -24,3 +24,14 @@ test("every step the check can suggest exists", () => {
     }
   }
 });
+
+test("each article is 400 to 900 words, with no em dashes", () => {
+  for (const a of ARTICLES) {
+    const text = a.body
+      .map((b) => ("text" in b ? b.text : "") + ("title" in b ? " " + b.title : "") + ("items" in b ? " " + JSON.stringify(b.items) : ""))
+      .join(" ");
+    const words = text.split(/\s+/).filter(Boolean).length;
+    assert.ok(words >= 400 && words <= 900, `${a.slug}: ${words} words`);
+    assert.ok(!/—/.test(text + a.title + a.summary + a.description), `${a.slug} has an em dash`);
+  }
+});
