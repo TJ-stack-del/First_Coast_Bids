@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { priceLines } from "./price.ts";
+import { priceLines, shareBoxLines } from "./price.ts";
 
 const L = (clin: string, period_index: number | null, position = 1, extra = {}) => ({
   clin, description: "", quantity: 12, unit: "MO", unit_kind: "month" as const, period_index, position,
@@ -24,7 +24,7 @@ test("two buildings: shares 40/60 carry to the option years; a bad split leaves 
   const ok = priceLines({ lines, bidPrice: 120000, increasePct: 0, shares: { "1": 40, "2": 60 } });
   assert.deepEqual(ok.lines.map((l) => l.amount), [48000, 72000, 48000, 72000]);
   const bad = priceLines({ lines, bidPrice: 120000, increasePct: 0, shares: { "1": 40, "2": 50 } });
-  assert.equal(bad.sharesProblem, "The split adds up to 90%, not 100%.");
+  assert.equal(bad.sharesProblem, "The split for Base adds up to 90%, not 100%.");
   assert.deepEqual(bad.lines.map((l) => [l.amount, l.problem]), [[null, "no_share"], [null, "no_share"], [null, "no_share"], [null, "no_share"]]);
   assert.equal(bad.total, null);
   assert.equal(bad.missing, 4);
@@ -57,4 +57,25 @@ test("lump sums: a period's share of the year by its months (MVY's 9-month base)
 test("a typed price on a lump-sum line is one lump", () => {
   const r = priceLines({ lines: [L("00001", 0, 1, { quantity: null, unit: null, unit_kind: "lump", period_months: 12, unit_price_override: 95000 })], bidPrice: null, increasePct: null, shares: {} });
   assert.deepEqual([r.lines[0].amount, r.lines[0].problem], [95000, null]);
+});
+
+test("a building added in Option 1: the base is whole, the option year is split (final review I-5)", () => {
+  const lines = [L("0001", 0, 1), L("1001", 1, 1), L("1002", 1, 2)];
+  const r = priceLines({ lines, bidPrice: 120000, increasePct: 0, shares: { "1": 40, "2": 60 } });
+  assert.deepEqual(r.lines.map((l) => l.amount), [120000, 48000, 72000]);
+  assert.equal(r.sharesProblem, null);
+});
+
+test("each split year must add up to 100% on its own -- no silent under-pricing (final review I-5)", () => {
+  const lines = [L("0001", 0, 1), L("0002", 0, 2), L("1001", 1, 1), L("1002", 1, 2), L("1003", 1, 3)];
+  const r = priceLines({ lines, bidPrice: 100000, increasePct: 0, shares: { "1": 30, "2": 30, "3": 40 } });
+  assert.equal(r.sharesProblem, "The split for Base adds up to 60%, not 100%.");
+  assert.deepEqual(r.lines.map((l) => l.problem), ["no_share", "no_share", null, null, null]);
+});
+
+test("where each building's split box goes: its first line in a split year", () => {
+  const lines = [L("0001", 0, 1), L("1001", 1, 1), L("1002", 1, 2)];
+  assert.deepEqual([...shareBoxLines(lines)], ["1001", "1002"]);
+  const tahoe = [L("0001", 0, 1), L("0002", 0, 2), L("1001", 1, 1), L("1002", 1, 2)];
+  assert.deepEqual([...shareBoxLines(tahoe)], ["0001", "0002"]);
 });

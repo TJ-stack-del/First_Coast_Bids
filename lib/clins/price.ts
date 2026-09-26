@@ -22,17 +22,27 @@ export function priceLines(i: { lines: ClinLine[]; bidPrice: number | null; incr
   missing: number;
   sharesProblem: string | null;
 } {
-  // A period with several lines (one per building) is split by position.
-  const perPeriod = new Map<number, number>();
-  for (const l of i.lines) if (l.period_index !== null) perPeriod.set(l.period_index, (perPeriod.get(l.period_index) ?? 0) + 1);
-  const shared = (l: ClinLine) => l.period_index !== null && (perPeriod.get(l.period_index) ?? 0) > 1;
-  const positions = [...new Set(i.lines.filter(shared).map((l) => l.position))];
+  // A period with several lines (one per building) is split by position,
+  // and each split period must add up to 100% on its own (final review I-5:
+  // a building added in an option year, or a base with fewer buildings).
+  const perPeriod = new Map<number, number[]>();
+  for (const l of i.lines) if (l.period_index !== null) perPeriod.set(l.period_index, [...(perPeriod.get(l.period_index) ?? []), l.position]);
+  const shared = (l: ClinLine) => l.period_index !== null && (perPeriod.get(l.period_index) ?? []).length > 1;
+  const badPeriods = new Set<number>();
   let sharesProblem: string | null = null;
-  if (positions.length > 1) {
+  for (const [period, positions] of [...perPeriod.entries()].sort((a, b) => a[0] - b[0])) {
+    if (positions.length < 2) continue;
     const vals = positions.map((p) => i.shares[String(p)]);
-    const sum = vals.reduce((a, v) => a + (typeof v === "number" ? v : 0), 0);
-    if (vals.some((v) => typeof v !== "number")) sharesProblem = "Enter the split for each line.";
-    else if (Math.abs(sum - 100) > 0.01) sharesProblem = `The split adds up to ${round2(sum)}%, not 100%.`;
+    if (vals.some((v) => typeof v !== "number")) {
+      badPeriods.add(period);
+      sharesProblem ??= "Enter the split for each line.";
+      continue;
+    }
+    const sum = vals.reduce((a, v) => a + (v as number), 0);
+    if (Math.abs(sum - 100) > 0.01) {
+      badPeriods.add(period);
+      sharesProblem ??= `The split for ${period === 0 ? "Base" : `Option ${period}`} adds up to ${round2(sum)}%, not 100%.`;
+    }
   }
 
   const lines: PricedLine[] = i.lines.map((l) => {
@@ -48,7 +58,7 @@ export function priceLines(i: { lines: ClinLine[]; bidPrice: number | null; incr
     if (!lump && l.quantity === null) return blank("no_quantity");
     if (i.bidPrice === null) return blank("no_bid");
     if (l.period_index > 0 && i.increasePct === null) return blank("no_increase");
-    if (shared(l) && sharesProblem) return blank("no_share");
+    if (shared(l) && badPeriods.has(l.period_index)) return blank("no_share");
     const share = shared(l) ? i.shares[String(l.position)] / 100 : 1;
     const yearPrice = i.bidPrice * Math.pow(1 + (i.increasePct ?? 0) / 100, l.period_index);
     // A lump sum is its period's share of the year, by months (a 9-month
@@ -62,4 +72,18 @@ export function priceLines(i: { lines: ClinLine[]; bidPrice: number | null; incr
   const missing = lines.filter((l) => l.amount === null).length;
   const total = missing ? null : round2(lines.reduce((a, l) => a + (l.amount as number), 0));
   return { lines, total, missing, sharesProblem };
+}
+
+// Where each building's split box goes: its first line (earliest period) in a
+// period that has more than one line. Returns those lines' CLINs.
+export function shareBoxLines(lines: ClinLine[]): Set<string> {
+  const counts = new Map<number, number>();
+  for (const l of lines) if (l.period_index !== null) counts.set(l.period_index, (counts.get(l.period_index) ?? 0) + 1);
+  const first = new Map<number, ClinLine>();
+  for (const l of lines) {
+    if (l.period_index === null || (counts.get(l.period_index) ?? 0) < 2) continue;
+    const seen = first.get(l.position);
+    if (!seen || (l.period_index as number) < (seen.period_index as number)) first.set(l.position, l);
+  }
+  return new Set([...first.values()].map((l) => l.clin));
 }

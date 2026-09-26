@@ -25,7 +25,12 @@ async function begin(request: Request, submissionId: unknown) {
 }
 
 function view(ctx: ClinContext) {
+  // The saved Rate sheet no longer matches the table (a later bid price,
+  // increase, split or edit): say so (final review I-7).
+  const stale = ctx.rateSheet !== null && ctx.lines.length > 0 && ctx.rateSheet !== rateSheetFor(ctx);
   return {
+    rateSheetStale: stale,
+    rateSheetSaved: ctx.rateSheet !== null,
     lines: ctx.lines,
     priced: priceContext(ctx),
     shares: ctx.shares,
@@ -71,7 +76,9 @@ export async function PATCH(request: Request) {
   if (edit.clin && edit.clin !== line.clin && b.ctx.lines.some((l) => l.clin === edit.clin)) {
     return NextResponse.json({ error: `CLIN ${edit.clin} is already on this bid.` }, { status: 409 });
   }
-  const { error } = await b.supabase.from("clin_lines").update(edit).eq("id", line.id!);
+  // Remember which fields the admin corrected: a re-read keeps them (I-2).
+  const edited = [...new Set([...(line.edited ?? []), ...Object.keys(edit).filter((k) => k !== "unit_price_override")])];
+  const { error } = await b.supabase.from("clin_lines").update({ ...edit, edited }).eq("id", line.id!);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if ("period_index" in edit || "clin" in edit) await renumber(b.supabase, b.submissionId);
   return reply(b.supabase, b.submissionId);
@@ -83,7 +90,11 @@ export async function DELETE(request: Request) {
   if ("error" in b) return b.error;
   const line = b.ctx.lines.find((l) => l.id === body?.id);
   if (!line) return NextResponse.json({ error: "Line not found." }, { status: 404 });
-  const { error } = await b.supabase.from("clin_lines").delete().eq("id", line.id!);
+  // A line the AI read is hidden, not deleted, so a re-read doesn't bring it
+  // back (I-2); a line added by hand is simply deleted.
+  const { error } = line.read_clin
+    ? await b.supabase.from("clin_lines").update({ dismissed: true }).eq("id", line.id!)
+    : await b.supabase.from("clin_lines").delete().eq("id", line.id!);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   await renumber(b.supabase, b.submissionId);
   return reply(b.supabase, b.submissionId);

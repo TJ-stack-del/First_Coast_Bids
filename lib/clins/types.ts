@@ -36,4 +36,10 @@ export type ClinLine = {
   revised_by: string | null;
   unit_price_override: number | null;
   sort: number;
+  // The CLIN number as the AI read it (null for lines the admin added), the
+  // fields the admin has corrected, and whether the admin removed the line --
+  // all kept across re-reads (final review I-2).
+  read_clin?: string | null;
+  edited?: string[];
+  dismissed?: boolean;
 };

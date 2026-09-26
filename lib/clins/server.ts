@@ -15,9 +15,17 @@ export async function loadClinContext(supabase: Supabase, submissionId: string) 
   if (!submission) return null;
   const { data: rows } = await supabase.from("clin_lines").select("*").eq("submission_id", submissionId).order("sort");
   const { data: ws } = await supabase.from("wage_worksheets").select("bid_price").eq("submission_id", submissionId).maybeSingle();
+  const { data: sheet } = await supabase
+    .from("deliverables")
+    .select("content")
+    .eq("submission_id", submissionId)
+    .eq("deliverable_type", "rate_sheet")
+    .maybeSingle();
   const client = submission.clients as unknown as { org_id: string; company_name: string | null; pricing: unknown } | null;
   const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
-  const lines = ((rows ?? []) as ClinLine[]).map((l) => ({
+  // Lines the admin removed stay in the table (so a re-read keeps them
+  // removed) but are left out of everything else.
+  const lines = ((rows ?? []) as ClinLine[]).filter((l) => !l.dismissed).map((l) => ({
     ...l,
     quantity: num(l.quantity),
     unit_price_override: num(l.unit_price_override),
@@ -31,6 +39,7 @@ export async function loadClinContext(supabase: Supabase, submissionId: string) 
     bidPrice: num(ws?.bid_price ?? null),
     increasePct: normalizeClientPricing(client?.pricing).yearlyIncreasePct,
     clientName: client?.company_name?.trim() || "the client",
+    rateSheet: (sheet?.content as string | null | undefined) ?? null,
   };
 }
 

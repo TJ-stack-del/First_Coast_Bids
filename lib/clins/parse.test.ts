@@ -105,3 +105,19 @@ test("period months only from dates that really appear in the document", () => {
   assert.equal(verifiedMonths(null, "09/30/2027", text), null);
   assert.equal(verifiedMonths("01/01/2027", "09/30/2027", null), null);
 });
+
+test("'Air Force Base' in a description isn't the base period (final review I-1)", () => {
+  const four = ["0001", "1001", "2001"];
+  assert.deepEqual(four.map((c) => periodIndex(c, "Custodial Services, MacDill Air Force Base", four)), [0, 1, 2]);
+  const seq = ["00001", "00002"];
+  assert.equal(periodIndex("00002", "Janitorial, Eglin Air Force Base", seq), null, "no period wording: unknown, not base");
+  assert.equal(periodIndex("00001", "Base Year janitorial, Naval Station Mayport", seq), 0);
+  assert.equal(periodIndex("00010", "BASE SWD Janitorial Services BASE", ["00010", "00020"]), 0, "Montrose still reads as base");
+});
+
+test("a whole-contract date range isn't a lump-sum period (final review I-6)", () => {
+  assert.equal(lineKind(null, null, 60), "other", "10/01/2026-09/30/2031 is the whole contract, not one period");
+  assert.equal(lineKind(null, null, 12.5), "lump");
+  assert.equal(lineKind(null, null, 13), "other");
+  assert.equal(lineKind(null, null, 0.5), "lump");
+});

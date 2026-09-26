@@ -19,7 +19,9 @@ export function unitKind(unit: string | null, _description?: string): UnitKind {
 // A whole-period line (no quantity and no unit, as Montrose, Crow Agency and
 // Martha's Vineyard print them) is a lump sum once its months are known.
 export function lineKind(unit: string | null, quantity: number | null, months: number | null): UnitKind {
-  if (unit === null && quantity === null) return months !== null ? "lump" : "other";
+  // Over a year is the whole contract's range (Section F), not one period's
+  // (final review I-6): left for the admin, never priced at 5x the year.
+  if (unit === null && quantity === null) return months !== null && months <= 12.5 ? "lump" : "other";
   return unitKind(unit);
 }
 
@@ -68,15 +70,19 @@ export function periodIndex(clin: string, description: string, allClins: string[
   // "OP1", "ServicesOP3" (Montrose); case-sensitive so "DEVELOP 2" isn't one.
   const op = description.match(/(?:^|[^A-Za-z]|[a-z])OP\s?([1-9])\b/);
   if (op) return Number(op[1]);
-  if (/\bbase\b/i.test(description)) return 0;
   // Numbering: 0001/1001/2001 or 00001/10001/20001 -- only when the table
   // really uses a leading period digit (some CLIN starts with 1-9); a plain
-  // 00001-00005 sequence says nothing about periods.
+  // 00001-00005 sequence says nothing about periods. Checked before the word
+  // "base", which is also a place ("MacDill Air Force Base", final review I-1).
   const numeric = allClins.map((c) => c.match(/^(\d)\d{3,4}[A-Z]{0,2}$/));
   if (numeric.every(Boolean) && numeric.some((m) => m![1] !== "0")) {
     const m = clin.match(/^(\d)\d{3,4}[A-Z]{0,2}$/);
     return m ? Number(m[1]) : null;
   }
+  if (/\bbase\s+(year|period)\b/i.test(description)) return 0;
+  // A bare "BASE" (Montrose) -- but not a military base's name.
+  const bare = description.replace(/\b(air\s+force|space\s+force|naval|navy|army|air|marine\s+corps|military|joint|coast\s+guard|reserve|guard)\s+base\b/gi, "");
+  if (/\bbase\b/i.test(bare)) return 0;
   return null;
 }
 

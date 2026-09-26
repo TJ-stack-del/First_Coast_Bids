@@ -478,6 +478,10 @@ export default async function AdminSubmissionDetailPage({
           />
 
           <DeliverablesPanel
+            // Remount when a deliverable changes elsewhere (the CLIN panel's
+            // "Update the Rate sheet"), so the panel never shows, or saves
+            // over, an old copy (final review I-7).
+            key={(deliverables ?? []).map((d: any) => `${d.id}:${d.file_url ?? ""}:${(d.content ?? "").length}:${contentKey(d.content)}`).join("|")}
             submissionId={submission.id}
             orgId={member.org_id}
             actorId={member.id}
@@ -628,4 +632,11 @@ export default async function AdminSubmissionDetailPage({
       </section>
     </>
   );
+}
+
+// A short fingerprint of a deliverable's text, for the panel's remount key.
+function contentKey(text: string | null): string {
+  let h = 5381;
+  for (let i = 0; i < (text ?? "").length; i++) h = ((h << 5) + h + (text as string).charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
 }

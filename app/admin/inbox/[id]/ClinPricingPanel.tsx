@@ -6,14 +6,27 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import type { ClinLine } from "@/lib/clins/types";
 import type { PricedLine } from "@/lib/clins/price";
-import { needsRescan, type ScanState } from "@/lib/checklist/scan-state";
+import { isScanStale, needsRescan, type ScanState } from "@/lib/checklist/scan-state";
+import { shareBoxLines } from "@/lib/clins/price";
+import { useRouter } from "next/navigation";
 
 // The solicitation's own price table (CLINs), read with verified quotes and
 // priced from the wage worksheet's bid price, the client's yearly increase
 // and the split (docs/superpowers/specs/2026-09-25-clin-pricing-design.md).
 // Attention-first: only lines that need the admin are highlighted.
 
-type Scan = { status: "running" | "done" | "failed"; started_at?: string; files_fingerprint?: string; finished_at?: string; error?: string | null; excel_attachments?: string[]; found?: number } | null;
+type Scan = {
+  status: "running" | "done" | "failed";
+  started_at?: string;
+  files_fingerprint?: string;
+  finished_at?: string;
+  error?: string | null;
+  excel_attachments?: string[];
+  found?: number;
+  ai_failed?: { file: string; message: string }[];
+  unreadable?: { file: string; problem: string }[];
+  partial_files?: { file: string; read: number; total: number }[];
+} | null;
 type View = {
   lines: ClinLine[];
   priced: { lines: PricedLine[]; total: number | null; missing: number; sharesProblem: string | null };
@@ -22,6 +35,8 @@ type View = {
   bidPrice: number | null;
   increasePct: number | null;
   clientName: string;
+  rateSheetStale: boolean;
+  rateSheetSaved: boolean;
 };
 
 const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -60,6 +75,7 @@ export function ClinPricingPanel({
   serverScanKey: string;
 }) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [view, setView] = useState<View | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState(false);
@@ -90,7 +106,9 @@ export function ClinPricingPanel({
 
   // Poll while the price table is being read.
   useEffect(() => {
-    if (view?.scan?.status !== "running") return;
+    // A reading Vercel stopped at 60 s stays "running": stop polling and
+    // offer Read again (final review I-4).
+    if (view?.scan?.status !== "running" || isScanStale(view.scan as ScanState, new Date())) return;
     const t = setTimeout(refresh, 3000);
     return () => clearTimeout(t);
   }, [view]);
@@ -119,7 +137,20 @@ export function ClinPricingPanel({
     const out = await send("POST", { action: "rate_sheet", confirm: confirmed });
     setBusy(false);
     if (out?.needsConfirm) return setConfirm(true);
-    if (out?.written) showToast("Rate sheet updated. Review it under Deliverables.", "success");
+    if (out?.written) {
+      showToast("Rate sheet updated. Review it under Deliverables.", "success");
+      // Show the new Rate sheet in Deliverables, and move the bid on if the
+      // package is now complete (final review I-7).
+      router.refresh();
+      void fetch("/api/advance-if-deliverables-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId }),
+      })
+        .catch(() => {})
+        .finally(() => router.refresh());
+      await refresh();
+    }
   }
 
   const box = "mt-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-6";
@@ -131,7 +162,9 @@ export function ClinPricingPanel({
     );
 
   const { lines, priced, scan } = view;
-  const running = scan?.status === "running";
+  const timedOut = scan?.status === "running" && isScanStale(scan as ScanState, new Date());
+  const running = scan?.status === "running" && !timedOut;
+  const boxes = shareBoxLines(lines);
   const counts = new Map<number, number>();
   for (const l of lines) if (l.period_index !== null) counts.set(l.period_index, (counts.get(l.period_index) ?? 0) + 1);
   const splitHere = (l: ClinLine) => l.period_index !== null && (counts.get(l.period_index) ?? 0) > 1;
@@ -163,6 +196,17 @@ export function ClinPricingPanel({
         </p>
       )}
       {scan?.status === "failed" && <p role="alert" className="mt-2 text-error">{scan.error}</p>}
+      {timedOut && <p role="alert" className="mt-2 text-error">The reading timed out. Use Read again.</p>}
+      {!running && [
+        ...(scan?.unreadable ?? []).map((u) => `${u.file} ${u.problem}, so its CLINs weren't read.`),
+        ...(scan?.ai_failed ?? []).map((f) => `Part of ${f.file} couldn't be read (${f.message}).`),
+        ...(scan?.partial_files ?? []).map((p) => `Only pages 1–${p.read} of ${p.total} of ${p.file} were read.`),
+      ].map((m) => (
+        <p key={m} role="alert" className="mt-1 text-body-sm text-error">{m} Lines found earlier were kept; check the table against the document.</p>
+      ))}
+      {view.rateSheetStale && (
+        <p role="alert" className="mt-2 text-body-md font-bold text-error">The Rate sheet is out of date. Use Update the Rate sheet.</p>
+      )}
       {scan?.status === "done" && !lines.length && <p className="mt-2 text-body-md text-on-surface-variant">No price table found in the uploaded files.</p>}
       {!!scan?.excel_attachments?.length && (
         <p className="mt-2 text-body-sm text-on-surface-variant">
@@ -201,6 +245,9 @@ export function ClinPricingPanel({
                       </span>
                       {l.revised_by && <> · Revised by {l.revised_by}</>}
                       {lump && l.period_months && <> · Whole period, {l.period_months} months</>}
+                      {!lump && l.unit === null && l.quantity === null && (l.period_months ?? 0) > 12.5 && (
+                        <span className="text-error font-bold"> · The dates read span {l.period_months} months (the whole contract?). Check the period and type a price.</span>
+                      )}
                     </span>
                   </td>
                   <td className="py-2">
@@ -220,7 +267,7 @@ export function ClinPricingPanel({
                     </select>
                   </td>
                   <td className="py-2">
-                    {splitHere(l) && l.period_index === 0 ? (
+                    {boxes.has(l.clin) ? (
                       <Cell
                         className={`w-12 text-right ${p.problem === "no_share" ? flag : ""}`}
                         value={view.shares[String(l.position)]?.toString() ?? ""}

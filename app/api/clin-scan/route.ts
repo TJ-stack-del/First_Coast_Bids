@@ -8,7 +8,7 @@ import { allowForce, claimFilter, filesFingerprint, isScanStale } from "@/lib/ch
 import type { FilePages } from "@/lib/checklist/detectors";
 import { isFederalAgency } from "@/lib/federal-agency";
 import { runClinPass } from "@/lib/clins/ai-pass";
-import { assignPeriodsAndPositions, clinInQuote, dedupeClins, lineKind, verifiedMonths } from "@/lib/clins/parse";
+import { assignPeriodsAndPositions, assignPositions, clinInQuote, dedupeClins, lineKind, verifiedMonths } from "@/lib/clins/parse";
 import { mergeRescan } from "@/lib/clins/rescan";
 import type { ClinLine } from "@/lib/clins/types";
 
@@ -23,6 +23,10 @@ type ClinScan = {
   error?: string | null;
   excel_attachments?: string[];
   found?: number;
+  // What wasn't fully read, shown in the panel (final review I-3).
+  ai_failed?: { file: string; message: string }[];
+  unreadable?: { file: string; problem: string }[];
+  partial_files?: { file: string; read: number; total: number }[];
 };
 
 // Reads a federal bid's price table (CLINs) from its solicitation files
@@ -97,13 +101,20 @@ export async function POST(request: Request) {
 
   try {
     const files: FilePages[] = [];
+    const unreadable: { file: string; problem: string }[] = [];
     for (const doc of docs) {
+      if (/\.xlsx?$/i.test(doc.file_name)) continue; // listed as an Excel notice instead
       const { data: blob } = await service.storage.from("rfp-documents").download(doc.file_url);
-      if (!blob) continue;
+      if (!blob) {
+        unreadable.push({ file: doc.file_name, problem: "couldn't be downloaded" });
+        continue;
+      }
       const text = await extractFileText(doc.file_name, Buffer.from(await blob.arrayBuffer()));
+      if (!text.pages) unreadable.push({ file: doc.file_name, problem: text.problem === "no_text" ? "is a scanned document with no text" : "couldn't be read" });
       files.push({ fileName: doc.file_name, pages: text.pages });
     }
-    const { chunks } = chunkPages(files);
+    const { chunks, pagesRead } = chunkPages(files);
+    const partialFiles = pagesRead.filter((p) => p.read < p.total);
     const ai = await runClinPass({ chunks, agency: submission.agency });
 
     const textByFile = new Map(files.map((f) => [f.fileName, f.pages ? f.pages.join("\n") : null]));
@@ -134,9 +145,13 @@ export async function POST(request: Request) {
     const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
     const existing = ((existingRows ?? []) as ClinLine[]).map((l) => ({ ...l, quantity: num(l.quantity), unit_price_override: num(l.unit_price_override) }));
     const allFailed = ai.failed.length > 0 && ai.failed.length === chunks.length;
+    // Anything not fully read: nothing is deleted on the strength of it.
+    const partial = ai.failed.length > 0 || unreadable.length > 0 || partialFiles.length > 0;
     // A reading that failed entirely changes nothing that was there.
     if (!allFailed) {
-      const merged = mergeRescan(existing, fresh).map((l, i) => {
+      // Positions (the split's keys) count only lines still in the table.
+      const all = mergeRescan(existing, fresh, { partial });
+      const merged = [...assignPositions(all.filter((l) => !l.dismissed)), ...all.filter((l) => l.dismissed)].map((l, i) => {
         const { id: _id, ...rest } = l as ClinLine & { created_at?: string; submission_id?: string; org_id?: string };
         delete (rest as Record<string, unknown>).created_at;
         return { ...rest, sort: i, submission_id: submissionId, org_id: orgId };
@@ -158,6 +173,9 @@ export async function POST(request: Request) {
       finished_at: new Date().toISOString(),
       error: allFailed ? `The AI reading failed: ${ai.failed[0].file} ${ai.failed[0].message}` : null,
       found: fresh.length,
+      ai_failed: ai.failed,
+      unreadable,
+      partial_files: partialFiles,
     };
     await service.from("submissions").update({ clin_scan: finished }).eq("id", submissionId);
     return NextResponse.json({ status: finished.status, found: fresh.length });
