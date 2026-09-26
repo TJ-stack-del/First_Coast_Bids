@@ -9,6 +9,8 @@ export type ClientPricing = {
   overheadPct: number | null;
   profitPct: number | null;
   productionRate: number | null;
+  // The yearly increase on option-year CLINs (0 = flat pricing).
+  yearlyIncreasePct: number | null;
 };
 
 // "12%", "$1,500", " 3500 " -> numbers; blank, negative or unreadable -> null.
@@ -29,11 +31,12 @@ export function normalizeClientPricing(raw: unknown): ClientPricing {
     overheadPct: readAmount(o.overheadPct),
     profitPct: readAmount(o.profitPct),
     productionRate: rate !== null && rate > 0 ? rate : null,
+    yearlyIncreasePct: readAmount(o.yearlyIncreasePct),
   };
 }
 
 export function hasAnyPricing(p: ClientPricing): boolean {
-  return p.suppliesValue !== null || p.overheadPct !== null || p.profitPct !== null || p.productionRate !== null;
+  return p.suppliesValue !== null || p.overheadPct !== null || p.profitPct !== null || p.productionRate !== null || p.yearlyIncreasePct !== null;
 }
 
 // The price numbers still to get from the client (production rate is named
