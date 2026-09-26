@@ -25,8 +25,19 @@ export const LEAN_DELIVERABLE_TYPES = [
 
 export type PackageMode = "full" | "lean";
 
-export function getRequiredDeliverableTypes(mode: PackageMode): readonly string[] {
-  return mode === "lean" ? LEAN_DELIVERABLE_TYPES : FULL_DELIVERABLE_TYPES;
+// A federal bid with a CLIN price table also needs its Rate sheet (the
+// priced table, docs/superpowers/specs/2026-09-25-clin-pricing-design.md).
+export function getRequiredDeliverableTypes(mode: PackageMode, hasClins = false): readonly string[] {
+  if (mode === "lean") return LEAN_DELIVERABLE_TYPES;
+  return hasClins ? [...FULL_DELIVERABLE_TYPES, "rate_sheet"] : FULL_DELIVERABLE_TYPES;
+}
+
+// Lean is sticky once a lean-only deliverable exists. A Rate sheet alone
+// means lean only when the bid has no CLIN table (a federal full package
+// has one too).
+export function isLeanPackage(existingTypes: string[], hasClins: boolean): boolean {
+  if (existingTypes.some((t) => t === "executive_cover" || t === "certificate_of_insurance")) return true;
+  return !hasClins && existingTypes.includes("rate_sheet");
 }
 
 export function isLeanEligible(estimatedValue: number | null, leanPackageThreshold: number): boolean {
