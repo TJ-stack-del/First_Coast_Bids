@@ -35,3 +35,27 @@ test("each article is 400 to 900 words, with no em dashes", () => {
     assert.ok(!/—/.test(text + a.title + a.summary + a.description), `${a.slug} has an em dash`);
   }
 });
+
+const textOf = (slug: string) => {
+  const a = getArticle(slug)!;
+  return a.body.map((b) => ("text" in b ? b.text : "") + ("title" in b ? " " + b.title : "") + ("items" in b ? " " + JSON.stringify(b.items) : "")).join(" ");
+};
+
+test("no unsourced 'most' claims anywhere in the guide (final review 4)", () => {
+  for (const a of ARTICLES) assert.ok(!/\bmost\b/i.test(textOf(a.slug)), `${a.slug} says "most"`);
+});
+
+test("workers' comp: owners who are officers or LLC members count, and exemptions exist (final review 2)", () => {
+  const t = textOf("getting-registered");
+  assert.match(t, /LLC members count/);
+  assert.match(t, /exemption/i);
+  assert.match(t, /HVAC, electrical and plumbing/);
+});
+
+test("licensing names plumbing and fertilizer/pesticide application (final review 3)", () => {
+  for (const slug of ["is-government-work-for-me", "getting-registered"]) {
+    const t = textOf(slug);
+    assert.match(t, /plumbing/i, slug);
+    assert.match(t, /fertilizer or pesticide/i, slug);
+  }
+});

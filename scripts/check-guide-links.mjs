@@ -1,25 +1,31 @@
-// Checks every source link in the "New to bidding?" guide still answers.
-// Run: node --experimental-strip-types scripts/check-guide-links.mjs
-// Some government sites block scripts (403 or a CAPTCHA): open those in a
-// browser and check them by hand rather than dropping the source.
+// Checks every source link in the "New to bidding?" guide still answers,
+// and still lands on the same page. Run before merging guide changes:
+//   npm run check:links
+// Also runs weekly in CI (.github/workflows/guide-links.yml). Known
+// script-blocking sites are reported but don't fail the run; see
+// lib/guide/link-check.ts.
 import { ARTICLES } from "../lib/guide/articles.ts";
+import { classifyLink } from "../lib/guide/link-check.ts";
 
 const urls = [...new Set(ARTICLES.flatMap((a) => a.sources.map((s) => s.url)))];
-let bad = 0;
+const counts = { ok: 0, blocked: 0, moved: 0, bad: 0 };
 for (const url of urls) {
+  let status = null;
+  let finalUrl = null;
   try {
     const res = await fetch(url, {
       redirect: "follow",
       signal: AbortSignal.timeout(20_000),
       headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36" },
     });
-    const ok = res.status < 400;
-    if (!ok) bad++;
-    console.log(`${ok ? "OK " : "BAD"} ${res.status} ${url}`);
-  } catch (err) {
-    bad++;
-    console.log(`BAD ${err instanceof Error ? err.name : "error"} ${url}`);
+    status = res.status;
+    finalUrl = res.url;
+  } catch {
+    // a timeout or network error counts as bad
   }
+  const result = classifyLink({ url, status, finalUrl });
+  counts[result]++;
+  console.log(`${result.toUpperCase().padEnd(7)} ${status ?? "error"} ${url}${result === "moved" ? ` -> ${finalUrl}` : ""}`);
 }
-console.log(`${urls.length - bad}/${urls.length} links answered`);
-process.exit(bad ? 1 : 0);
+console.log(`${counts.ok} ok, ${counts.blocked} blocked by the site (checked by hand), ${counts.moved} moved, ${counts.bad} bad, of ${urls.length}`);
+process.exit(counts.moved || counts.bad ? 1 : 0);

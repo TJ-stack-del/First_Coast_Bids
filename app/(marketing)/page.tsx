@@ -6,7 +6,7 @@ import { KNOWN_TRADES, assertNoMissingTradeCards } from "@/lib/compliance/known-
 import { SampleSpecimen } from "@/components/marketing/SampleSpecimen";
 import { PricingSpec } from "@/components/marketing/PricingSpec";
 import s from "@/components/marketing/press.module.css";
-import { pilotPriceLine } from "@/lib/pilot-offer";
+import { pilotFaqPhrase, pilotPriceLine } from "@/lib/pilot-offer";
 
 export const metadata: Metadata = {
   description: "We help you win local government contracts. Send us the bid papers. Our team handles the paperwork so you can send in a strong bid.",
@@ -198,7 +198,7 @@ const FAQ_PREVIEW = [
   },
   {
     q: "How does pricing work?",
-    a: "One-off starts at $399, Retainer starts at $649/mo, and Pilot is free for our first 10 clients. See the Pricing page for the full breakdown. We confirm the exact number with you directly before any work starts. No card is required to get started, and every deliverable is free to preview before anything's due.",
+    a: `One-off starts at $399, Retainer starts at $649/mo, and ${pilotFaqPhrase()}. See the Pricing page for the full breakdown. We confirm the exact number with you directly before any work starts. No card is required to get started, and every deliverable is free to preview before anything's due.`,
   },
   {
     q: "What do I need to get started?",

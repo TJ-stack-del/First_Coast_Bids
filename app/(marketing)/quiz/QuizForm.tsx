@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import s from "@/components/marketing/press.module.css";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -26,6 +26,12 @@ export function QuizForm() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const prefersReducedMotion = useReducedMotion();
+  // After the last answer the Yes/No buttons disappear: move focus to the
+  // result so keyboard and screen-reader users land on it (final review 13).
+  const resultRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (step >= QUESTIONS.length) resultRef.current?.focus();
+  }, [step]);
   const reduceMotion = mounted && prefersReducedMotion;
 
   function answer(value: boolean) {
@@ -38,7 +44,7 @@ export function QuizForm() {
     const steps = nextSteps(answers as Answers);
     return (
       <div className={`${s.formSheet} grid gap-6`}>
-        <h2 className={s.rowTitle}>Here&apos;s where to start.</h2>
+        <h2 ref={resultRef} tabIndex={-1} className={`${s.rowTitle} outline-none`}>Here&apos;s where to start.</h2>
         <ol className="grid gap-5 list-decimal pl-6">
           {steps.map((st) => {
             if (st.target === "pilot")
@@ -72,7 +78,7 @@ export function QuizForm() {
 
   return (
     <div className={`${s.formSheet} grid gap-8`}>
-      <div className={s.progress} role="progressbar" aria-valuemin={1} aria-valuemax={QUESTIONS.length} aria-valuenow={step + 1}>
+      <div className={s.progress} role="progressbar" aria-label="Progress" aria-valuetext={`Question ${step + 1} of ${QUESTIONS.length}`} aria-valuemin={1} aria-valuemax={QUESTIONS.length} aria-valuenow={step + 1}>
         <div className={s.progressFill} style={{ transform: `scaleX(${(step + 1) / QUESTIONS.length})` }} />
       </div>
 
@@ -93,7 +99,7 @@ export function QuizForm() {
           <span className={`${s.meta} mb-2`}>
             Question <span className={s.mono}>{step + 1}</span> of <span className={s.mono}>{QUESTIONS.length}</span>
           </span>
-          <h2 className={s.rowTitle}>{QUESTIONS[step].text}</h2>
+          <h2 className={s.rowTitle} aria-live="polite">{QUESTIONS[step].text}</h2>
         </motion.div>
       </AnimatePresence>
 

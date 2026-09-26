@@ -8,3 +8,8 @@ export function pilotPriceLine(open = PILOT_FREE_COHORT_OPEN): string {
   return open ? `Free for the first ${PILOT_COHORT_SIZE} clients` : "Pricing confirmed with you directly";
 }
 export const PILOT_CTA = { label: "Start a pilot bid", href: "/intake?package=pilot" } as const;
+
+// The FAQs' Pilot sentence (homepage and /faq), from the same toggle.
+export function pilotFaqPhrase(open = PILOT_FREE_COHORT_OPEN): string {
+  return open ? `Pilot is free for our first ${PILOT_COHORT_SIZE} clients` : "Pilot pricing is confirmed with you directly";
+}
