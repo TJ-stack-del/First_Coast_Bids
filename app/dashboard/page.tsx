@@ -2,7 +2,11 @@ import Link from "next/link";
 import type { WageCheck } from "@/lib/wage/wage-check";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { BidListFilter, type BidListItem } from "@/components/ui/BidListFilter";
+import { BidLedger, type BidRow } from "./BidLedger";
+import { clientTasks, standingLabel } from "@/lib/dashboard/client-tasks";
+import { wageCheckLines } from "@/lib/wage/wage-check";
+import { displayAgency } from "@/lib/agency-display";
+import s from "@/components/marketing/press.module.css";
 import { CompleteBidFile } from "./CompleteBidFile";
 import { SubmissionCard } from "./SubmissionCard";
 import { signRfpDocumentUrls } from "@/lib/storage";
@@ -24,22 +28,16 @@ export const dynamic = "force-dynamic";
 // pilot timeline, and deliverables once the submission reaches
 // deliverables_ready or later.
 //
-// Layout matches the Stitch "Real Schema" contractor workspace reference:
-// a real stat row and an always-visible "start a new bid" prompt sit above
-// the feed; company profile and the certifications vault sit in a
-// persistent sidebar (shown once, not per-submission). Every bid (draft,
-// active, or closed) gets its own full card in one All/Needs Action/
-// Completed-filterable feed (BidListFilter) instead of being split into
-// separate sections -- each card collapses by default unless it has a
-// pending checklist item or ready deliverables (see SubmissionCard.tsx),
-// so a client with several bids isn't scrolling through full detail on
-// every one just to see what's new.
+// Layout (docs/superpowers/specs/2026-09-26-client-area-redesign-design.md):
+// "Needs you" first, then every bid as a one-line row that opens to its
+// details (BidLedger.tsx), then a one-line summary of the client's file
+// (profile completeness, credentials) and the bid process reminders.
 
-// Same values CertificationsSection.tsx's own CERT_TYPES uses -- cert_type
-// IS the display label already, except "Other" which stores its real name
-// in other_label instead (see that component's own certLabel()).
-function certLabel(cert: { cert_type: string; other_label: string | null }): string {
-  return cert.cert_type === "Other" ? cert.other_label || "Other" : cert.cert_type;
+// Due dates are plain calendar dates ("2026-10-01"), stored without a time
+// zone -- formatted in UTC so the day never shifts.
+function formatDue(due: string | null): string | null {
+  if (!due) return null;
+  return new Date(due).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
 
 // Exported for SubmissionCard.tsx, which renders these but doesn't fetch
@@ -145,16 +143,13 @@ export default async function DashboardPage() {
 
   if (!submissions || submissions.length === 0) {
     return (
-      <>
-        <h1 className="text-headline-lg text-primary mt-6 mb-1">Welcome, {client.company_name}.</h1>
-        <p className="text-body-md text-on-surface-variant mb-4">You haven&apos;t started a bid yet.</p>
-        <Link
-          href="/intake"
-          className="inline-block py-3 px-4 bg-primary-container text-on-primary-container rounded text-label-md font-semibold hover:opacity-90 hover:-translate-y-0.5 transition active:scale-[0.97] w-fit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
+      <header className={`${s.pageHead} mt-4`}>
+        <h1 className="text-headline-lg">Your bids</h1>
+        <p className={s.lede}>Welcome, {client.company_name}. You haven&apos;t started a bid yet.</p>
+        <Link href="/intake" className={`${s.btn} ${s.btnPrimary} w-fit mt-2`}>
           Start your first bid
         </Link>
-      </>
+      </header>
     );
   }
 
@@ -207,298 +202,155 @@ export default async function DashboardPage() {
       : { data: [] as { id: string; package_type: string; price_note: string | null }[] };
   const packagesById = new Map((packagesRaw ?? []).map((p) => [p.id, p]));
 
-  // Real, computed aggregates -- both about this client's own bids, not an
-  // internal admin/ops metric (the Stitch reference's "Staff Estimator
-  // Assigned" and "System Status: Live Dispatch" stats belong to the admin
-  // console it was rendered with, not a client's own page, so those are
-  // skipped entirely rather than adapted).
-  const awaitingPreviewCount = activeSubmissions.filter((s) => s.stage === "deliverables_ready").length;
+  const tradeKnownFor = (scope: string | null) =>
+    isKnownTrade({ naicsCodes: client.naics_codes ?? [], scopeText: scope ?? "" });
+  const pendingCountFor = (id: string) =>
+    (checklistBySubmission.get(id) ?? []).filter((c) => c.status !== "done" && c.status !== "waived").length;
+  const isPlaceholder = (sub: { agency: string }) => sub.agency === RETAINER_PLACEHOLDER_AGENCY;
 
-  // Unified All / Needs Action / Completed filter bar (BidListFilter):
-  // drafts always need action (they're incomplete); an active bid needs
-  // action once deliverables are ready or in client review, or it has a
-  // pending checklist item; closed bids are the only "Completed" ones. An
-  // active bid that's simply waiting on the First Coast Bids team (submitted/in
-  // review, nothing pending) is neither -- it only shows under "All",
-  // which is correct: not done, but nothing to act on yet either.
-  const bidListItems: BidListItem[] = [
-    // A Retainer placeholder (IntakeWizard.tsx's handleRetainerProfileNext)
-    // is a real `submissions` row with no actual bid behind it -- rendering
-    // it through the normal draft card would show "No solicitation #" next
-    // to a "complete your bid file" prompt for an RFP that was never meant
-    // to exist. A persona-test + onboarding-skill review both flagged the
-    // alternative (nothing on the dashboard reflecting a Retainer signup at
-    // all) as a real trust gap, so this needed *some* distinct card, not
-    // just suppression -- reuses the same completeness score already
-    // computed above rather than introducing a second one.
-    ...draftSubmissions.map((sub) =>
-      sub.agency === RETAINER_PLACEHOLDER_AGENCY
-        ? {
-            id: sub.id,
-            needsAction: true,
-            completed: false,
-            node: (
-              <div className="bg-surface-container-low rounded-xl shadow-md p-space-base flex flex-col gap-space-base">
-                <div>
-                  <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Retainer</p>
-                  <h3 className="text-title-lg font-headline text-on-surface font-bold">
-                    Watching for a good fit
-                  </h3>
-                </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span
-                    className={`inline-flex px-3 py-1 rounded-full text-label-md font-bold ${
-                      completeness.percent === 100
-                        ? "bg-secondary-container text-on-secondary-container"
-                        : "bg-tertiary-container text-on-tertiary-container"
-                    }`}
-                  >
-                    Profile {completeness.percent}% complete
-                  </span>
-                  {completeness.percent < 100 && (
-                    <Link
-                      href="/dashboard/profile"
-                      className="text-label-md text-primary font-bold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm"
-                    >
-                      Complete your profile →
-                    </Link>
-                  )}
-                </div>
-                <p className="text-body-md text-on-surface-variant">
-                  We&apos;re watching for opportunities that fit and will reach out when we find one.
-                </p>
-              </div>
-            ),
-          }
-        : {
-            id: sub.id,
-            needsAction: true,
-            completed: false,
-            node: (
-              <div className="bg-surface-container-low rounded-xl shadow-md p-space-base flex flex-col gap-space-base">
-                <div>
-                  <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">
-                    {sub.solicitation_number ?? "No solicitation #"}
-                  </p>
-                  <h3 className="text-title-lg font-headline text-on-surface font-bold">{sub.agency}</h3>
-                </div>
-                <CompleteBidFile submissionId={sub.id} clientId={client.id} />
-                {sub.scope && <p className="text-body-md text-on-surface-variant">{sub.scope}</p>}
-              </div>
-            ),
-          }
-    ),
-    ...activeSubmissions.map((sub) => {
-      const checklist = checklistBySubmission.get(sub.id) ?? [];
-      const pendingCount = checklist.filter((c) => c.status !== "done" && c.status !== "waived").length;
-      const needsAction = sub.stage === "deliverables_ready" || sub.stage === "client_review" || pendingCount > 0;
-      return {
-        id: sub.id,
-        needsAction,
-        completed: false,
-        node: (
-          <SubmissionCard
-            submission={sub as Submission}
-            checklist={checklist}
-            deliverables={deliverablesBySubmission.get(sub.id) ?? []}
-            tradeKnown={isKnownTrade({ naicsCodes: client.naics_codes ?? [], scopeText: sub.scope ?? "" })}
-            pkg={sub.package_id ? packagesById.get(sub.package_id) ?? null : null}
-            companyName={client.company_name}
-            orgId={client.org_id}
-            clientId={client.id}
-            senderName={client.contact_name ?? client.company_name}
-            senderEmail={user.email ?? ""}
-          />
-        ),
-      };
-    }),
-    ...closedSubmissions.map((sub) => ({
+  // "Needs you" (lib/dashboard/client-tasks.ts): one task per waiting bid,
+  // from signals the app already has -- a draft without its bid file, open
+  // checklist items, a package ready to review.
+  const tasks = clientTasks(
+    submissions.map((sub) => ({
       id: sub.id,
-      needsAction: false,
-      completed: true,
-      node: (
+      draft: sub.draft,
+      stage: sub.stage,
+      isRetainerPlaceholder: isPlaceholder(sub),
+      pendingCount: pendingCountFor(sub.id),
+    })),
+    completeness.percent
+  );
+  const taskBidIds = new Set(tasks.map((t) => t.bidId));
+
+  // Drafts first (they're waiting on the client), then bids in progress,
+  // then closed ones -- each group newest-updated first, as queried.
+  const rows: BidRow[] = [...draftSubmissions, ...activeSubmissions, ...closedSubmissions].map((sub) => {
+    const placeholder = isPlaceholder(sub);
+    const flags: string[] = [];
+    if (sub.wage_check && wageCheckLines(sub.wage_check).warning) flags.push("Below the wage-law floor");
+    if (sub.mandatory_site_visit_concern) flags.push("Mandatory site visit");
+
+    let detail: React.ReactNode;
+    if (placeholder) {
+      // A Retainer placeholder (IntakeWizard.tsx's handleRetainerProfileNext)
+      // is a real `submissions` row with no actual bid behind it -- it gets
+      // its own row so a Retainer signup shows on the dashboard at all,
+      // without a "complete your bid file" prompt for an RFP that was never
+      // meant to exist.
+      detail = (
+        <div className="flex flex-col gap-3">
+          <p className="text-body-md text-on-surface-variant">
+            We&apos;re watching for opportunities that fit and will reach out when we find one.
+          </p>
+          <p className="text-body-md text-on-surface">
+            Your company profile is <span className="font-code">{completeness.percent}%</span> complete.{" "}
+            {completeness.percent < 100 && (
+              <Link href="/dashboard/profile" className={s.inlineLink}>
+                Complete your profile
+              </Link>
+            )}
+          </p>
+        </div>
+      );
+    } else if (sub.draft) {
+      detail = (
+        <div className="flex flex-col gap-space-base">
+          <CompleteBidFile submissionId={sub.id} clientId={client.id} />
+          {sub.scope && <p className="text-body-md text-on-surface-variant">{sub.scope}</p>}
+        </div>
+      );
+    } else {
+      detail = (
         <SubmissionCard
           submission={sub as Submission}
           checklist={checklistBySubmission.get(sub.id) ?? []}
           deliverables={deliverablesBySubmission.get(sub.id) ?? []}
-          tradeKnown={isKnownTrade({ naicsCodes: client.naics_codes ?? [], scopeText: sub.scope ?? "" })}
+          tradeKnown={tradeKnownFor(sub.scope)}
           pkg={sub.package_id ? packagesById.get(sub.package_id) ?? null : null}
-          companyName={client.company_name}
           orgId={client.org_id}
           clientId={client.id}
           senderName={client.contact_name ?? client.company_name}
           senderEmail={user.email ?? ""}
         />
-      ),
-    })),
-  ];
+      );
+    }
+
+    return {
+      id: sub.id,
+      title: placeholder ? "Retainer" : displayAgency(sub.agency),
+      solicitation: placeholder ? null : sub.solicitation_number,
+      due: placeholder ? null : formatDue(sub.due_date),
+      standing: standingLabel({ draft: sub.draft, stage: sub.stage, isRetainerPlaceholder: placeholder }),
+      needsAction: taskBidIds.has(sub.id),
+      completed: !sub.draft && sub.stage === "closed",
+      isTest: sub.is_test,
+      flags,
+      detail,
+    };
+  });
+
+  const verifiedCount = (certifications ?? []).filter((c) => c.verified).length;
+  const certCount = certifications?.length ?? 0;
 
   return (
     <>
-      <div className="mt-6 mb-2">
-        <h1 className="text-headline-lg text-primary mb-1">Welcome back, {client.company_name}.</h1>
-        <p className="text-body-md text-on-surface-variant">Your active bids, in one place.</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-surface-container-low rounded-xl shadow-sm p-space-base flex items-center gap-space-md">
-          <span className="material-symbols-outlined text-primary text-[24px]">assignment</span>
-          <div>
-            <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Active submissions</p>
-            <p className="text-headline-sm text-on-surface font-bold font-code">
-              {activeSubmissions.length + draftSubmissions.length}
-            </p>
-          </div>
+      <header className="mt-4 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className={s.pageHead}>
+          <h1 className="text-headline-lg">Your bids</h1>
+          <p className={s.lede}>Here&apos;s what needs you, and where everything else stands.</p>
         </div>
-        <div className="bg-surface-container-low rounded-xl shadow-sm p-space-base flex items-center gap-space-md">
-          <span className="material-symbols-outlined text-secondary text-[24px]">visibility</span>
-          <div>
-            <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Awaiting your preview</p>
-            <p className="text-headline-sm text-on-surface font-bold font-code">{awaitingPreviewCount}</p>
-          </div>
-        </div>
-      </div>
+        <Link href="/intake" className={`${s.btn} ${s.btnPrimary} self-start md:self-auto shrink-0`}>
+          Start a new bid
+        </Link>
+      </header>
 
-      <Link
-        href="/intake"
-        className="bg-primary-container/10 hover:bg-primary-container/20 border border-primary-container/30 rounded-xl p-space-base flex items-center gap-space-md transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      >
-        <span className="material-symbols-outlined text-primary text-[28px] shrink-0">add_circle</span>
-        <div className="flex-1 min-w-0">
-          <p className="text-body-lg text-on-surface font-bold">Start a new bid</p>
-          <p className="text-body-sm text-on-surface-variant">Send us the RFP. We&apos;ll take it from there.</p>
-        </div>
-        <span className="material-symbols-outlined text-primary shrink-0">arrow_forward</span>
-      </Link>
+      <BidLedger rows={rows} tasks={tasks} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[20px]">work</span>
-            <h2 className="text-label-md text-on-surface font-bold uppercase tracking-wider">
-              Active workstream · {activeSubmissions.length + draftSubmissions.length} in progress
-            </h2>
-          </div>
-
-          <BidListFilter items={bidListItems} emptyMessage="Nothing in this view yet." />
-        </div>
-
-        {/* Sidebar — shown once, not per submission */}
-        <div className="flex flex-col gap-6">
-          <div className="bg-surface-container-low rounded-xl shadow-sm p-space-base">
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <h3 className="text-[16px] font-headline font-bold text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">domain</span>
-                Company profile
-              </h3>
-              {/* Replaces the earlier fit_alignment "fit" badge entirely
-                  (see BUILD-ORDER-BIDPULSE.md item #10) -- that concept
-                  measured profile completeness while reading as a
-                  competitive judgment ("Weak fit"). A percentage has
-                  nothing alarming to soften: it's concrete and fixable,
-                  and stays informational (never red) at every level. */}
-              <span
-                className={`shrink-0 inline-flex px-2 py-0.5 rounded text-label-sm font-bold uppercase tracking-wider ${
-                  completeness.percent === 100
-                    ? "bg-secondary-container text-on-secondary-container"
-                    : "bg-tertiary-container text-on-tertiary-container"
-                }`}
-              >
-                {completeness.percent}% complete
-              </span>
-            </div>
-            <div className="flex flex-col gap-space-sm text-body-md">
-              <p className="text-on-surface font-semibold">{client.company_name}</p>
-              {samStatusMessage && <p className="text-body-sm text-error mt-1">{samStatusMessage}</p>}
-              {client.business_address && <p className="text-on-surface-variant">{client.business_address}</p>}
-              {client.years_in_business != null && (
-                <p className="text-on-surface-variant">{client.years_in_business} years in business</p>
-              )}
-              {client.license_number && <p className="text-on-surface-variant">License #{client.license_number}</p>}
-              {(client.insurance_provider || client.general_liability_coverage || client.workers_comp_coverage) && (
-                <div className="pt-space-xs border-t border-outline-variant mt-space-xs">
-                  <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
-                    Insurance &amp; bonding
-                  </p>
-                  {client.insurance_provider && (
-                    <p className="text-on-surface-variant">Carrier: {client.insurance_provider}</p>
-                  )}
-                  {client.general_liability_coverage && (
-                    <p className="text-on-surface-variant">General liability: {client.general_liability_coverage}</p>
-                  )}
-                  {client.workers_comp_coverage && (
-                    <p className="text-on-surface-variant">Workers&apos; comp: {client.workers_comp_coverage}</p>
-                  )}
-                </div>
-              )}
-              <Link
-                href="/dashboard/profile"
-                className="text-primary text-label-sm font-bold hover:underline mt-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm"
-              >
-                Edit your profile →
+      <section aria-labelledby="your-file" className="flex flex-col gap-3 border-t-2 border-on-surface pt-6">
+        <h2 id="your-file" className="text-headline-md">
+          Your file
+        </h2>
+        <p className="text-body-md text-on-surface flex flex-wrap gap-x-3 gap-y-1">
+          <Link href="/dashboard/profile" className={s.inlineLink}>
+            Company profile <span className="font-code">{completeness.percent}%</span> complete
+          </Link>
+          <span aria-hidden="true" className="text-on-surface-variant">
+            ·
+          </span>
+          {certCount > 0 ? (
+            <Link href="/dashboard/compliance" className={s.inlineLink}>
+              Credentials <span className="font-code">{verifiedCount}</span> of{" "}
+              <span className="font-code">{certCount}</span> verified
+            </Link>
+          ) : (
+            <span>
+              No credentials on file yet.{" "}
+              <Link href="/dashboard/profile" className={s.inlineLink}>
+                Add one
               </Link>
-            </div>
-          </div>
+            </span>
+          )}
+        </p>
+        {samStatusMessage && <p className="text-body-md text-error">{samStatusMessage}</p>}
+      </section>
 
-          <div className="bg-surface-container-low rounded-xl shadow-sm overflow-hidden">
-            <div className="px-space-base py-space-sm bg-surface-container-high flex items-center justify-between">
-              <h3 className="text-[16px] font-headline font-bold text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">verified</span>
-                Credentials
-              </h3>
-              {certifications && certifications.length > 0 && (
-                <span className="text-label-sm text-on-surface-variant font-code">
-                  {certifications.filter((c) => c.verified).length} of {certifications.length} verified
-                </span>
-              )}
-            </div>
-            {certifications && certifications.length > 0 ? (
-              <div className="flex flex-col divide-y divide-outline-variant">
-                {certifications.map((cert) => (
-                  <div key={cert.id} className="px-space-base py-space-sm flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-body-md text-on-surface font-semibold truncate">{certLabel(cert)}</p>
-                      {cert.certification_number && (
-                        <p className="text-label-sm text-on-surface-variant">Cert #{cert.certification_number}</p>
-                      )}
-                    </div>
-                    <span
-                      className={`shrink-0 inline-flex px-2 py-0.5 rounded text-label-sm font-bold uppercase tracking-wider ${
-                        cert.verified
-                          ? "bg-secondary-container text-on-secondary-container"
-                          : "bg-tertiary-container text-on-tertiary-container"
-                      }`}
-                    >
-                      {cert.verified ? "Verified" : "Pending"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-body-md text-on-surface-variant px-space-base py-4">
-                No certifications on file yet.{" "}
-                <Link
-                  href="/dashboard/profile"
-                  className="text-primary font-bold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm"
-                >
-                  Add one
-                </Link>
-              </p>
-            )}
-          </div>
-
-          <div className="bg-surface-container-low rounded-xl shadow-sm p-space-base">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="material-symbols-outlined text-primary text-[18px]">balance</span>
-              <h3 className="text-label-sm text-on-surface font-bold uppercase tracking-wider">
-                Bid process reminders
-              </h3>
-            </div>
-            <BidProcessNotices />
-          </div>
+      {/* Reference reading, not something that needs the client today --
+          closed by default so the page stays about their bids. */}
+      <details className="group border-t-2 border-on-surface pt-4">
+        <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer min-h-[48px] flex items-center justify-between gap-4 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+          <h2 className="text-headline-md">Bid process reminders</h2>
+          <span
+            className="material-symbols-outlined text-on-surface-variant transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+            aria-hidden="true"
+          >
+            expand_more
+          </span>
+        </summary>
+        <div className="pt-3">
+          <BidProcessNotices />
         </div>
-      </div>
+      </details>
     </>
   );
 }
-
