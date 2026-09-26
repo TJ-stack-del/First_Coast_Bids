@@ -146,6 +146,11 @@ export default async function AdminSubmissionDetailPage({
     if (signed) rfpDocumentUrls[doc.file_name] = signed;
   }
 
+  // A CLIN price table puts the Rate sheet in the full package.
+  const { count: clinCount } = await supabase
+    .from("clin_lines")
+    .select("id", { count: "exact", head: true })
+    .eq("submission_id", id);
   const { data: suggestions } = await supabase
     .from("checklist_suggestions")
     .select("id, kind, federal, label, detail, quote, page, source_file, quote_status, found_by, suggested_owner, status, dedupe_key, created_at")
@@ -477,6 +482,7 @@ export default async function AdminSubmissionDetailPage({
             leanPackageThreshold={org?.lean_package_threshold ?? 35000}
             rfpRequirements={submission.rfp_requirements ?? []}
             rfpDocumentUrls={rfpDocumentUrls}
+            hasClins={(clinCount ?? 0) > 0}
           />
         </div>
 

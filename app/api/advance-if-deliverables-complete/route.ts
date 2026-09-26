@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { hasUnresolvedPlaceholders } from "@/lib/pdf/placeholder-check";
 import { transitionSubmissionStage } from "@/lib/submissions/transition-stage";
+import { getRequiredDeliverableTypes } from "@/lib/deliverables/package-routing";
 
 // Called by DeliverablesPanel right after every deliverable save (text or
 // file) — checks a fact the system can verify directly (all three full
@@ -10,7 +11,6 @@ import { transitionSubmissionStage } from "@/lib/submissions/transition-stage";
 // against the DB itself rather than trusting whatever the client component
 // believes just got saved. The transition helper atomically updates the
 // stage, writes its audit record, and enqueues the client notification.
-const REQUIRED_TYPES = ["capability_statement", "compliance_matrix", "technical_narrative"];
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -52,6 +52,13 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json({ advanced: false, reason: "wrong_stage" });
   }
+
+  // A federal bid with a CLIN price table isn't complete without its Rate sheet.
+  const { count: clinCount } = await supabase
+    .from("clin_lines")
+    .select("id", { count: "exact", head: true })
+    .eq("submission_id", submissionId);
+  const REQUIRED_TYPES = getRequiredDeliverableTypes("full", (clinCount ?? 0) > 0);
 
   const { data: deliverables } = await supabase
     .from("deliverables")
