@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { uploadAndInsertRecord, deleteRecordAndFile } from "@/lib/storage";
 import { VerifiedBadge, DocLink } from "@/components/ui/DocumentBadges";
 import { AddTriggerButton } from "@/components/ui/AddTriggerButton";
+import s from "@/components/marketing/press.module.css";
 
 type InsurancePolicy = {
   id: string;
@@ -235,7 +236,7 @@ function InsurancePoliciesCard({ clientId, initialPolicies }: { clientId: string
                   type="button"
                   onClick={() => handleRemove(p.id)}
                   disabled={removingId === p.id}
-                  className="min-h-[44px] sm:min-h-0 px-1 text-on-surface-variant hover:text-error text-label-md hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm disabled:opacity-40 flex items-center gap-2"
+                  className={`${s.btn} ${s.btnQuiet} ${s.btnSmall}`}
                 >
                   {removingId === p.id && <Spinner />}
                   Remove
@@ -406,7 +407,7 @@ function BondingCapacityCard({ clientId, initialBonding }: { clientId: string; i
                   type="button"
                   onClick={() => handleRemove(b.id)}
                   disabled={removingId === b.id}
-                  className="min-h-[44px] sm:min-h-0 px-1 text-on-surface-variant hover:text-error text-label-md hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm disabled:opacity-40 flex items-center gap-2"
+                  className={`${s.btn} ${s.btnQuiet} ${s.btnSmall}`}
                 >
                   {removingId === b.id && <Spinner />}
                   Remove

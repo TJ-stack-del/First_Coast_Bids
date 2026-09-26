@@ -128,7 +128,7 @@ export function AppShell({
     return (
       <div className="min-h-screen flex flex-col bg-surface">
         <header className="fixed top-0 w-full z-40 bg-surface/95 backdrop-blur border-b border-outline-variant">
-          <div className="max-w-container mx-auto flex items-center justify-between gap-6 px-margin-mobile md:px-margin-desktop py-2">
+          <div className="max-w-container mx-auto flex items-center justify-between gap-4 md:gap-6 px-margin-mobile md:px-margin-desktop py-2">
             <Link
               href={HOME_PATH.client}
               className="shrink-0 flex items-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -151,8 +151,8 @@ export function AppShell({
                 </Link>
               ))}
             </nav>
-            <div className="flex items-center gap-3">
-              <p className="hidden lg:block text-label-md text-on-surface-variant whitespace-nowrap">
+            <div className="flex items-center gap-2 min-w-0">
+              <p className="text-label-md text-on-surface-variant whitespace-nowrap truncate max-w-[45vw] md:max-w-[12rem] lg:max-w-[18rem]">
                 {formatViewerName(viewerName)}
               </p>
               <SignOutButton />

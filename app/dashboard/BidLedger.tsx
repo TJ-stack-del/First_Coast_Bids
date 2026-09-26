@@ -28,6 +28,14 @@ export type BidRow = {
 
 type Filter = "all" | "needs_action" | "completed";
 
+function TestMark() {
+  return (
+    <span className="ml-2 align-middle px-1.5 py-0.5 border border-outline-variant text-label-sm text-on-surface-variant">
+      Test
+    </span>
+  );
+}
+
 function Meta({ solicitation, due }: { solicitation: string | null; due: string | null }) {
   return (
     <>
@@ -104,7 +112,10 @@ export function BidLedger({ rows, tasks }: { rows: BidRow[]; tasks: ClientTask[]
               return (
                 <article key={task.bidId} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-title-lg text-on-surface">{row?.title}</h3>
+                    <h3 className="text-title-lg text-on-surface">
+                      {row?.title}
+                      {row?.isTest && <TestMark />}
+                    </h3>
                     <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-body-sm text-on-surface-variant">
                       <Meta solicitation={row?.solicitation ?? null} due={row?.due ?? null} />
                     </p>
@@ -167,11 +178,7 @@ export function BidLedger({ rows, tasks }: { rows: BidRow[]; tasks: ClientTask[]
                       <span className="flex-1 min-w-0 flex flex-col gap-1">
                         <span className="text-title-lg text-on-surface group-hover:text-primary">
                           {row.title}
-                          {row.isTest && (
-                            <span className="ml-2 align-middle px-1.5 py-0.5 border border-outline-variant text-label-sm text-on-surface-variant">
-                              Test
-                            </span>
-                          )}
+                          {row.isTest && <TestMark />}
                         </span>
                         <span className="flex flex-wrap gap-x-4 gap-y-1 text-body-sm text-on-surface-variant">
                           <span>{row.standing}</span>

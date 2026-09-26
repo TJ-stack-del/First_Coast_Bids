@@ -129,9 +129,12 @@ export default async function DashboardPage() {
       hint: submissionsError.hint,
     });
     return (
-      <p className="text-body-md text-error mt-6">
-        Something went wrong loading your bids. Please refresh, or contact us if this keeps happening.
-      </p>
+      <header className={`${s.pageHead} mt-4`}>
+        <h1 className="text-headline-lg">Your bids</h1>
+        <p className="text-body-md text-error">
+          Something went wrong loading your bids. Please refresh, or contact us if this keeps happening.
+        </p>
+      </header>
     );
   }
 
@@ -147,16 +150,16 @@ export default async function DashboardPage() {
     );
   }
 
-  const draftSubmissions = submissions.filter((s) => s.draft);
-  const activeSubmissions = submissions.filter((s) => !s.draft && s.stage !== "closed");
-  const closedSubmissions = submissions.filter((s) => !s.draft && s.stage === "closed");
+  const draftSubmissions = submissions.filter((sub) => sub.draft);
+  const activeSubmissions = submissions.filter((sub) => !sub.draft && sub.stage !== "closed");
+  const closedSubmissions = submissions.filter((sub) => !sub.draft && sub.stage === "closed");
 
-  const activeIds = activeSubmissions.map((s) => s.id);
+  const activeIds = activeSubmissions.map((sub) => sub.id);
   // Closed submissions now render as full (collapsed-by-default)
   // SubmissionCards too, under the "Completed" filter -- they need their
   // real deliverables fetched too, not just active ones, so a client can
   // still open a finished bid and see its files.
-  const cardSubmissionIds = [...activeIds, ...closedSubmissions.map((s) => s.id)];
+  const cardSubmissionIds = [...activeIds, ...closedSubmissions.map((sub) => sub.id)];
 
   const { data: checklistRaw } =
     cardSubmissionIds.length > 0
@@ -189,7 +192,7 @@ export default async function DashboardPage() {
     deliverablesBySubmission.set(d.submission_id, list);
   }
 
-  const packageIds = Array.from(new Set(submissions.map((s) => s.package_id).filter((id): id is string => !!id)));
+  const packageIds = Array.from(new Set(submissions.map((sub) => sub.package_id).filter((id): id is string => !!id)));
   const { data: packagesRaw } =
     packageIds.length > 0
       ? await supabase.from("packages").select("id, package_type, price_note").in("id", packageIds)

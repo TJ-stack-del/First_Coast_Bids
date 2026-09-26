@@ -1,5 +1,5 @@
-import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { LedgerSkeleton } from "@/components/ui/PageSkeleton";
 
 export default function ProfileLoading() {
-  return <PageSkeleton />;
+  return <LedgerSkeleton />;
 }

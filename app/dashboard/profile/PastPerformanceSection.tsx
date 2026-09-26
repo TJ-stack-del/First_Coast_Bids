@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/ui/Spinner";
 import { uploadAndInsertRecord, deleteRecordAndFile } from "@/lib/storage";
 import { AddTriggerButton } from "@/components/ui/AddTriggerButton";
+import s from "@/components/marketing/press.module.css";
 
 type VerificationStatus = "self_reported" | "confirmed_federal_award" | "unconfirmed";
 
@@ -319,7 +320,7 @@ export function PastPerformanceSection({
                     type="button"
                     onClick={() => handleCheckFederal(entry.id)}
                     disabled={checkingId === entry.id}
-                    className="min-h-[44px] sm:min-h-0 px-1 text-label-md text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm disabled:opacity-40 flex items-center gap-2"
+                    className={`${s.btn} ${s.btnQuiet} ${s.btnSmall}`}
                   >
                     {checkingId === entry.id && <Spinner />}
                     Check federal records
@@ -329,7 +330,7 @@ export function PastPerformanceSection({
                   type="button"
                   onClick={() => handleRemove(entry.id)}
                   disabled={removingId === entry.id}
-                  className="min-h-[44px] sm:min-h-0 px-1 text-on-surface-variant hover:text-error text-label-md hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-sm disabled:opacity-40 flex items-center gap-2"
+                  className={`${s.btn} ${s.btnQuiet} ${s.btnSmall}`}
                 >
                   {removingId === entry.id && <Spinner />}
                   Remove

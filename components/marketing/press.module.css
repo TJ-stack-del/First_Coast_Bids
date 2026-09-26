@@ -88,6 +88,22 @@
 .btnQuiet:hover {
   border-color: rgb(var(--color-primary));
 }
+/* Small row action (Remove, Check federal records in the compliance vault):
+   compact on desktop, still a 44px tap on phones. */
+.btnSmall {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+@media (max-width: 639px) {
+  .btnSmall {
+    min-height: 44px;
+  }
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* ---- hero (kept centred: an explicit earlier call on the live site) ---- */
 .hero {
@@ -926,6 +942,10 @@
   box-shadow: 0 24px 40px -24px rgb(27 26 23 / 0.22);
   padding: 32px;
   max-width: 36rem;
+}
+/* A full-width sheet for a wide form (the company profile's two columns). */
+.formSheetWide {
+  max-width: none;
 }
 @media (max-width: 480px) {
   .formSheet {

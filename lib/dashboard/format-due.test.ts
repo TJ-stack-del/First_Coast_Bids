@@ -23,3 +23,10 @@ test("no date: nothing to show", () => {
   assert.equal(formatDue(null), null);
   assert.equal(formatDue(""), null);
 });
+
+// SAM.gov matches carry a real time (responseDeadLine). A deadline of 9pm
+// Eastern on Oct 1 is 01:00 UTC Oct 2 -- it must still read Oct 1.
+test("a deadline with a real time reads as its day in Florida", () => {
+  assert.equal(formatDue("2026-10-02T01:00:00+00:00"), "Oct 1, 2026");
+  assert.equal(formatDue("2026-10-01T16:00:00+00:00"), "Oct 1, 2026");
+});

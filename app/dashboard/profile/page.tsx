@@ -51,7 +51,7 @@ export default async function CompanyProfilePage() {
           Fill this in once. We reuse it as real facts in every capability statement and readiness check we
           prepare for you, so you don&apos;t have to re-enter it on every bid.
         </p>
-        <div className="bg-surface-container-lowest border border-outline-variant p-4 md:p-6">
+        <div className={`${s.formSheet} ${s.formSheetWide}`}>
           <CompanyProfileClient
             clientId={client.id}
             offeredNaics={offeredNaics}
