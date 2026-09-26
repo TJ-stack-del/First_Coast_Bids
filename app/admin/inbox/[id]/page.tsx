@@ -291,7 +291,7 @@ export default async function AdminSubmissionDetailPage({
           Surfaces what the software already knows (deliverable content
           present, certification verified status, leftover bracketed
           placeholders) so review attention goes straight to what's
-          actually ambiguous, per Admin-Review-Rubric.md. */}
+          actually ambiguous, per the admin how-to's review checklists. */}
       <div className="mt-4 flex flex-wrap gap-2">
         {preflightChecks.map((check) => (
           <span
