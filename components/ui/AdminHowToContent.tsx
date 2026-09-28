@@ -155,7 +155,7 @@ export function AdminHowToContent({ expandAll = false }: { expandAll?: boolean }
         <p>Open the submission from <B>Inbox</B> and work down the page.</p>
         <Steps>
           <li>
-            <strong>Pre-flight badges</strong> at the top are mechanical checks (deliverable content present, certifications verified,
+            <strong>Pre-flight badges</strong> at the top are mechanical checks (deliverable content present, certification documents reviewed,
             no leftover [bracket placeholders]). Green means clear; amber means look closer before moving on.
           </li>
           <li>
@@ -187,7 +187,15 @@ export function AdminHowToContent({ expandAll = false }: { expandAll?: boolean }
           </li>
           <li>
             <strong>Certifications:</strong> the client uploads the document from their dashboard. Open it, then mark it reviewed. A
-            certification only counts anywhere generated (drafts, the final PDF) once you&apos;ve verified it.
+            certification only counts anywhere generated (drafts, the final PDF) once you&apos;ve reviewed it. Reviewing means checking
+            the document&apos;s name, number and expiry date match what the client entered. It never confirms anything with the
+            issuing agency.
+          </li>
+          <li>
+            <strong>Insurance and bonding:</strong> the same document check. Open the certificate and confirm the carrier, policy number,
+            limits and expiry date match what the client entered and that it hasn&apos;t expired, then mark it reviewed. Only reviewed
+            policies count toward the client&apos;s readiness score and get &quot;expiring soon&quot; warnings. You never confirm a policy
+            with the insurer; if the client wins, the agency asks the insurer for its own certificate.
           </li>
           <li>
             <B>Request info from client</B>: pick an outstanding checklist item to email the client about it (marks it in progress), or
@@ -283,7 +291,7 @@ export function AdminHowToContent({ expandAll = false }: { expandAll?: boolean }
           items={[
             <>No bracketed placeholder (<code>[ADD: ...]</code>, <code>[Client name]</code>, etc.) remains, except deliberately left, clearly-marked gaps the client still needs to supply.</>,
             "Every fact stated (certification number, insurance amount, years in business, NAICS code) traces back to something the client actually entered, not something that reads as plausible.",
-            "No certification is referenced as held or valid unless it shows “Document Reviewed” (verified) on the Company Profile.",
+            "No certification is referenced as held or valid unless it shows “Document Reviewed” on the Company Profile.",
             "Agency name, solicitation number and due date match the bid record exactly.",
             "Plain-language check: would an 8th-grade reader understand every sentence? No unexplained jargon.",
           ]}

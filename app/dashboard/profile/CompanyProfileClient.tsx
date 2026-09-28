@@ -103,7 +103,7 @@ export function CompanyProfileClient({
     }
 
     showToast(
-      `Filled in what we found, and added ${data.certifications.length} certification${data.certifications.length === 1 ? "" : "s"} below for our team to verify.`,
+      `Filled in what we found, and added ${data.certifications.length} certification${data.certifications.length === 1 ? "" : "s"} below for our team to review.`,
       "success"
     );
     router.refresh();

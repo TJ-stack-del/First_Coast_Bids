@@ -36,7 +36,7 @@ export function buildClientInfoRequestDraft(input: {
   }
   if (!input.hasVerifiedCertification) {
     asks.push(
-      "If you hold a certification like WOSB, 8(a), or SDVOSB, upload it under Company Profile so our team can verify it."
+      "If you hold a certification like WOSB, 8(a), or SDVOSB, upload it under Company Profile so our team can review the document."
     );
   }
 

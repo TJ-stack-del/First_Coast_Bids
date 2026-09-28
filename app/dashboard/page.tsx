@@ -318,7 +318,7 @@ export default async function DashboardPage() {
           {certCount > 0 ? (
             <Link href="/dashboard/compliance" className={s.inlineLink}>
               Credentials <span className="font-code">{verifiedCount}</span> of{" "}
-              <span className="font-code">{certCount}</span> verified
+              <span className="font-code">{certCount}</span> reviewed
             </Link>
           ) : (
             <span>

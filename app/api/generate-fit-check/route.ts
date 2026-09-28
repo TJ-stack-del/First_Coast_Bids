@@ -109,8 +109,8 @@ function assessFit(input: {
   }
   notes.push(
     input.verifiedCertLabels.length > 0
-      ? `${companyName} has a verified certification${input.verifiedCertLabels.length === 1 ? "" : "s"} on file (${input.verifiedCertLabels.join(", ")}), which will be put to use where it strengthens this bid.`
-      : `No verified certifications on file yet for ${companyName} — if they hold any (WOSB, 8(a), SDVOSB, etc.), these should be added to their Company Profile so the team can confirm and use them.`
+      ? `${companyName} has a reviewed certification${input.verifiedCertLabels.length === 1 ? "" : "s"} on file (${input.verifiedCertLabels.join(", ")}), which will be put to use where it strengthens this bid.`
+      : `No reviewed certifications on file yet for ${companyName} — if they hold any (WOSB, 8(a), SDVOSB, etc.), these should be added to their Company Profile so the team can review the document and use them.`
   );
 
   notes.push(...agencyTypeFitNotes(input.agencyTypes, companyName));

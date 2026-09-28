@@ -30,7 +30,7 @@ export function ComplianceReadinessGauge({
       <p className="text-body-md text-on-surface-variant mt-3">
         {total === 0
           ? "Add a certification, insurance policy, or bond below to start building your readiness score."
-          : `${verifiedCount} of ${total} record${total === 1 ? "" : "s"} verified by our team.`}
+          : `${verifiedCount} of ${total} record${total === 1 ? "" : "s"} reviewed by our team.`}
       </p>
     </div>
   );

@@ -54,7 +54,7 @@ export function ClientCertifications({
     // backstop; this check just gives a clear message instead of a raw
     // constraint-violation error.
     if (nextVerified && !cert.file_url) {
-      showToast("Can't verify without a certificate document on file.", "error");
+      showToast("Can't mark reviewed without a certificate document on file.", "error");
       return;
     }
 
@@ -89,6 +89,11 @@ export function ClientCertifications({
   }
 
   return (
+    <div className="flex flex-col gap-2">
+    <p className="text-body-sm text-on-surface-variant">
+      Reviewing means opening the certificate and checking that the name, number and expiry date match what the client
+      entered, and that it hasn&apos;t expired. It doesn&apos;t confirm standing with the issuing agency.
+    </p>
     <ul className="flex flex-col gap-2">
       {certifications.map((cert) => (
         <li
@@ -142,5 +147,6 @@ export function ClientCertifications({
         </li>
       ))}
     </ul>
+    </div>
   );
 }

@@ -108,7 +108,7 @@ export function assessSetAsideEligibility(
       verifiedCertTypes.has(restriction.certType) || verifiedOtherLabels.has(restriction.certType.toUpperCase());
     if (!hasMatchingCert) {
       notes.push(
-        `The bid text references a "${restriction.label}" (matched: "${hit}") — check this: there's no verified ${restriction.certType} certification on file for this client. Confirm whether the client actually holds this certification before pursuing the bid.`
+        `The bid text references a "${restriction.label}" (matched: "${hit}") — check this: there's no reviewed ${restriction.certType} certification on file for this client. Confirm whether the client actually holds this certification before pursuing the bid.`
       );
     }
 

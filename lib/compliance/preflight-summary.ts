@@ -66,10 +66,10 @@ export function computePreflightSummary(input: {
       key: "certifications_verified",
       label:
         input.certifications.length === 0
-          ? "No certifications on file"
+          ? "No certifications to review"
           : unverifiedCount === 0
-            ? `${verifiedCount} certification${verifiedCount === 1 ? "" : "s"} verified`
-            : `${verifiedCount} verified, ${unverifiedCount} not yet reviewed`,
+            ? `${verifiedCount} certification${verifiedCount === 1 ? "" : "s"} reviewed`
+            : `${verifiedCount} reviewed, ${unverifiedCount} not yet reviewed`,
       ok: unverifiedCount === 0,
     },
     {

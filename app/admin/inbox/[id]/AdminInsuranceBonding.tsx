@@ -69,7 +69,7 @@ export function AdminInsuranceBonding({
   ) {
     const nextVerified = !row.verified;
     if (nextVerified && !row.file_url) {
-      showToast("Can't verify without a document on file.", "error");
+      showToast("Can't mark reviewed without a document on file.", "error");
       return;
     }
 
@@ -101,6 +101,10 @@ export function AdminInsuranceBonding({
 
   return (
     <div className="flex flex-col gap-6">
+      <p className="text-body-sm text-on-surface-variant">
+        Reviewing means opening the document and checking that the carrier, policy number, limits and expiry date match what the
+        client entered, and that it hasn&apos;t expired. It doesn&apos;t confirm the policy with the insurer.
+      </p>
       <div>
         <h4 className="text-label-md font-bold text-on-surface-variant uppercase tracking-wider mb-2">
           Insurance policies
@@ -138,7 +142,7 @@ export function AdminInsuranceBonding({
                   type="button"
                   onClick={() => toggleVerify("client_insurance_policies", p, setPolicies, "insurance_policy")}
                   disabled={saving === p.id || (!p.verified && !p.file_url)}
-                  title={!p.verified && !p.file_url ? "Can't verify without a document on file" : undefined}
+                  title={!p.verified && !p.file_url ? "Can't mark reviewed without a document on file" : undefined}
                   className={`px-3 py-1.5 rounded text-label-md font-bold transition active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     p.verified
                       ? "border border-outline-variant text-on-surface hover:bg-surface-container-high"
@@ -146,7 +150,7 @@ export function AdminInsuranceBonding({
                   }`}
                 >
                   {saving === p.id && <Spinner />}
-                  {p.verified ? "Verified: mark unverified" : "Not yet verified: mark verified"}
+                  {p.verified ? "Document reviewed: mark unreviewed" : "Not yet reviewed: mark reviewed"}
                 </button>
               </li>
             ))}
@@ -190,7 +194,7 @@ export function AdminInsuranceBonding({
                   type="button"
                   onClick={() => toggleVerify("client_bonding_capacity", b, setBonding, "bonding_capacity")}
                   disabled={saving === b.id || (!b.verified && !b.file_url)}
-                  title={!b.verified && !b.file_url ? "Can't verify without a document on file" : undefined}
+                  title={!b.verified && !b.file_url ? "Can't mark reviewed without a document on file" : undefined}
                   className={`px-3 py-1.5 rounded text-label-md font-bold transition active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     b.verified
                       ? "border border-outline-variant text-on-surface hover:bg-surface-container-high"
@@ -198,7 +202,7 @@ export function AdminInsuranceBonding({
                   }`}
                 >
                   {saving === b.id && <Spinner />}
-                  {b.verified ? "Verified: mark unverified" : "Not yet verified: mark verified"}
+                  {b.verified ? "Document reviewed: mark unreviewed" : "Not yet reviewed: mark reviewed"}
                 </button>
               </li>
             ))}

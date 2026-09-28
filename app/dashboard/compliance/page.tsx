@@ -133,7 +133,8 @@ export default async function ComplianceVaultPage() {
         <h2 className="text-headline-md">Certifications and licenses</h2>
         <p className="text-body-md text-on-surface-variant max-w-[44em]">
           Add each trade license, small-business/socioeconomic certification, or field certification you hold,
-          with its document. Our team reviews the document before it&apos;s used in anything we prepare for you.
+          with its document. Our team checks each document against what you entered before we use it. We check the
+          document itself; we don&apos;t contact the issuing agency.
         </p>
         <CertificationsSection clientId={client.id} initialCertifications={certifications} />
       </section>
@@ -142,7 +143,8 @@ export default async function ComplianceVaultPage() {
         <h2 className="text-headline-md">Insurance and bonding</h2>
         <p className="text-body-md text-on-surface-variant max-w-[44em]">
           Add each insurance policy and, if you carry one, your surety bonding capacity, with its document. Our
-          team reviews the document before it&apos;s used in anything we prepare for you.
+          team checks each document against what you entered before we use it. We check the document, not the insurer: if
+          you win, the agency will ask your insurer for its own certificate.
         </p>
         <InsuranceBondingSection clientId={client.id} initialPolicies={insurancePolicies} initialBonding={bondingRecords} />
       </section>

@@ -131,7 +131,7 @@ export async function GET() {
 
   if (rows.length === 0) {
     return NextResponse.json(
-      { error: "No verified documents yet. Add and verify a certification, insurance policy, or bond first." },
+      { error: "No reviewed documents yet. Add a certification, insurance policy, or bond, and our team will review the document first." },
       { status: 404 }
     );
   }
