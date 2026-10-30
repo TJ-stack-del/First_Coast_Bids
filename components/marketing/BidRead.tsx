@@ -2,7 +2,10 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { readBid, GROUP_ORDER, type BidRead as Result, type ReadGroup } from "@/lib/bid-read/read";
+import { readBidFields } from "@/lib/bid-read/fields";
+import { saveCarriedBid } from "@/lib/bid-read/carry";
 import { SAMPLE_BID_NAME, SAMPLE_BID_PAGES } from "@/lib/bid-read/sample-bid";
 import s from "./press.module.css";
 
@@ -10,7 +13,10 @@ import s from "./press.module.css";
 // asks for, each line with its page and the bid's own words. The file is
 // read in this browser tab and never sent anywhere -- no upload, no
 // account, no AI -- which is the promise the panel makes, so keep it true:
-// nothing here may fetch() the file or its text.
+// nothing here may fetch() the file or its text. "Start a pilot bid with
+// this bid" only hands it to the sign-up form through this browser's own
+// storage (lib/bid-read/carry.ts); it's sent when the visitor finishes
+// signing up, like any upload.
 
 const GROUP_TITLE: Record<ReadGroup, string> = {
   deal_breaker: "Could get the bid thrown out",
@@ -25,7 +31,7 @@ const MAX_PAGES = 400;
 type State =
   | { step: "idle" }
   | { step: "reading"; fileName: string; done: number; total: number | null }
-  | { step: "done"; fileName: string; sample: boolean; result: Result }
+  | { step: "done"; fileName: string; sample: boolean; result: Result; file: File | null; pages: string[] }
   | { step: "problem"; fileName: string; message: string };
 
 async function pdfPages(file: File, onPage: (done: number, total: number) => void): Promise<string[]> {
@@ -85,7 +91,7 @@ export function BidRead() {
         });
         return;
       }
-      show({ step: "done", fileName: file.name, sample: false, result: readBid(pages) });
+      show({ step: "done", fileName: file.name, sample: false, result: readBid(pages), file, pages });
     } catch (e) {
       show({
         step: "problem",
@@ -99,7 +105,7 @@ export function BidRead() {
   }
 
   function trySample() {
-    show({ step: "done", fileName: SAMPLE_BID_NAME, sample: true, result: readBid(SAMPLE_BID_PAGES) });
+    show({ step: "done", fileName: SAMPLE_BID_NAME, sample: true, result: readBid(SAMPLE_BID_PAGES), file: null, pages: SAMPLE_BID_PAGES });
   }
 
   function reset() {
@@ -258,7 +264,7 @@ function ReadResult({
           sign and send.
         </p>
       </div>
-      <ReadActions onReset={onReset} />
+      <ReadActions onReset={onReset} carry={state.file ? { file: state.file, pages: state.pages, result: state.result } : null} />
       <p className={s.readFine}>
         A first read by plain pattern-matching, not our full review. It can miss things written in unusual ways and
         can&apos;t see into scanned pages. Nothing here was sent anywhere.
@@ -267,15 +273,51 @@ function ReadResult({
   );
 }
 
-function ReadActions({ onReset }: { onReset: () => void }) {
+function ReadActions({
+  onReset,
+  carry = null,
+}: {
+  onReset: () => void;
+  carry?: { file: File; pages: string[]; result: Result } | null;
+}) {
+  const router = useRouter();
+  const [carrying, setCarrying] = useState(false);
+
+  // A real file comes along to sign-up; the synthetic sample never does.
+  async function startWithThisBid() {
+    if (!carry) return;
+    setCarrying(true);
+    await saveCarriedBid({
+      file: carry.file,
+      fields: readBidFields(carry.pages),
+      items: carry.result.items.map(({ key, group, label, page }) => ({ key, group, label, page })),
+      pagesRead: carry.result.pagesRead,
+    });
+    router.push("/intake?package=pilot&from=read");
+  }
+
   return (
-    <div className={s.readActions}>
-      <Link href="/intake?package=pilot" className={`${s.btn} ${s.btnPrimary}`}>
-        Start a pilot bid
-      </Link>
-      <button type="button" className={`${s.btn} ${s.btnQuiet}`} onClick={onReset}>
-        Read another bid
-      </button>
-    </div>
+    <>
+      <div className={s.readActions}>
+        {carry ? (
+          <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={startWithThisBid} disabled={carrying}>
+            {carrying ? "Bringing your bid…" : "Start a pilot bid with this bid"}
+          </button>
+        ) : (
+          <Link href="/intake?package=pilot" className={`${s.btn} ${s.btnPrimary}`}>
+            Start a pilot bid
+          </Link>
+        )}
+        <button type="button" className={`${s.btn} ${s.btnQuiet}`} onClick={onReset}>
+          Read another bid
+        </button>
+      </div>
+      {carry && (
+        <p className={s.readCarry}>
+          Your bid comes with you: its details are filled in and the file is attached when you finish signing up. No
+          second upload.
+        </p>
+      )}
+    </>
   );
 }

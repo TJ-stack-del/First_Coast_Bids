@@ -15,6 +15,7 @@ import { isEmail } from "@/lib/phone";
 import { RETAINER_PLACEHOLDER_AGENCY, type FitCheckResult } from "@/lib/submissions";
 import { computeProfileCompleteness } from "@/lib/compliance/profile-completeness";
 import { uploadRfpDocument } from "@/lib/storage";
+import { loadCarriedBid, clearCarriedBid, type CarriedBid } from "@/lib/bid-read/carry";
 
 // NAICS codes, small business status, and set-asides used to be collected
 // here too — moved to Company Profile (app/dashboard/profile) instead, so a
@@ -136,6 +137,39 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
   // gated on step === 1 in the render below regardless of this value.
   const [showBidUpload, setShowBidUpload] = useState(true);
   const [bidUploadDone, setBidUploadDone] = useState(false);
+  // The bid the visitor already read on the homepage (lib/bid-read/carry.ts):
+  // fills "About the bid", skips the upload-to-fill step (we already read
+  // it), and attaches itself on "Your bid file". Null for everyone else.
+  const [carried, setCarried] = useState<CarriedBid | null>(null);
+  const [carriedFilled, setCarriedFilled] = useState(false);
+  const [carriedAttached, setCarriedAttached] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadCarriedBid().then((bid) => {
+      if (cancelled || !bid) return;
+      setCarried(bid);
+      const { agency, solicitationNumber, dueDate } = bid.fields;
+      setForm((f) => ({
+        ...f,
+        agency: f.agency || agency || "",
+        solicitationNumber: f.solicitationNumber || solicitationNumber || "",
+        dueDate: f.dueDate || dueDate || "",
+      }));
+      setCarriedFilled(Boolean(agency || solicitationNumber || dueDate));
+      setShowBidUpload(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function dropCarriedBid() {
+    clearCarriedBid();
+    setCarried(null);
+    setCarriedFilled(false);
+    setShowBidUpload(true);
+  }
   // Retainer's step 1 replacement for "About the bid" -- there's no
   // specific bid to ask about, so this captures the same fields
   // computeProfileCompleteness() already scores (and, via naics_codes, the
@@ -760,6 +794,7 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
 
   const isRetainer = packageParam === "retainer";
   const steps = isRetainer ? RETAINER_STEPS : STEPS;
+  const bringing = carried !== null && !isRetainer;
   const gridColsClass = steps.length === 2 ? "grid-cols-2" : "grid-cols-3";
 
   return (
@@ -773,14 +808,18 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
           </span>
         </div>
         <h1 className="font-headline text-headline-lg-mobile md:text-headline-lg text-on-surface font-bold tracking-tight">
-          Client Intake
+          {bringing ? "Let's get this bid done." : "Client Intake"}
         </h1>
         <p className="text-body-md text-on-surface-variant">
           {isRetainer
             ? "Tell us about your business. We'll watch for the right opportunities."
-            : "Tell us about the bid. We handle the technical paperwork from here."}
+            : bringing
+              ? "We brought the bid you just read. Create your account, check the details, and it goes to our team."
+              : "Tell us about the bid. We handle the technical paperwork from here."}
         </p>
       </div>
+
+      {bringing && carried && <CarriedBidCard bid={carried} attached={carriedAttached} onRemove={step < 2 ? dropCarriedBid : null} />}
 
       {/* Step progress */}
       <div className="bg-surface-container p-space-base rounded-xl flex flex-col gap-space-md shadow-sm">
@@ -927,7 +966,9 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
                 below) -- so this note is purely for Pilot/One-off visitors,
                 who by definition already have a specific bid. */}
             <p className="text-body-sm text-on-surface-variant -mt-1">
-              Just the agency name is required to move on — add the rest now if you have it, or later.
+              {bringing && carriedFilled
+                ? "Filled in from your bid. Check each one: we read them from the cover page, and fixing one takes a second."
+                : "Just the agency name is required to move on — add the rest now if you have it, or later."}
             </p>
             <Input
               label="Who is asking for this? (the agency or department)"
@@ -1078,12 +1119,19 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
             <h2 className="font-headline text-[18px] text-on-surface font-bold">Your bid file</h2>
           </div>
           <p className="text-body-md text-on-surface-variant">
-            Upload the RFP file from the agency, if you have it. You can also
-            add this later.
+            {bringing
+              ? "Your bid file is attached below. Add anything else that came with it (addenda, forms), then send it to us."
+              : "Upload the RFP file from the agency, if you have it. You can also add this later."}
           </p>
           <BidFileStep
             submissionId={submissionId}
             clientId={clientId}
+            initialFile={bringing ? carried?.file ?? null : null}
+            onInitialUploaded={(ok) => {
+              setCarriedAttached(ok);
+              // Handed over: the copy in this browser has done its job.
+              if (ok) clearCarriedBid();
+            }}
             onSubmitted={() => {
               setSubmitted(true);
               setFitCheckLoading(true);
@@ -1172,5 +1220,75 @@ function Input({
         className="w-full border-0 bg-surface-container-low text-on-surface text-body-md px-space-md py-space-sm rounded-lg placeholder:text-outline outline-none focus:bg-surface-container-highest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
       />
     </div>
+  );
+}
+
+// The bid read on the homepage, kept in view through sign-up: what it is and
+// what it asks for, so the form reads as finishing that bid rather than
+// starting from nothing.
+function CarriedBidCard({
+  bid,
+  attached,
+  onRemove,
+}: {
+  bid: CarriedBid;
+  attached: boolean | null;
+  onRemove: (() => void) | null;
+}) {
+  const dealBreakers = bid.items.filter((i) => i.group === "deal_breaker");
+  const rest = bid.items.length - dealBreakers.length;
+  return (
+    <section
+      aria-label="Your bid"
+      className="bg-surface-container-lowest border border-outline-variant border-t-2 border-t-on-surface rounded p-space-base flex flex-col gap-space-sm"
+    >
+      <div className="flex items-start justify-between gap-space-sm">
+        <div className="min-w-0">
+          <span className="text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Your bid</span>
+          <p className="text-body-md text-on-surface font-semibold break-words">{bid.file.name}</p>
+          <p className="text-body-sm text-on-surface-variant font-mono">
+            {bid.pagesRead} page{bid.pagesRead === 1 ? "" : "s"}
+            {bid.fields.solicitationNumber && ` · ${bid.fields.solicitationNumber}`}
+          </p>
+        </div>
+        <span
+          className={`shrink-0 text-label-sm font-semibold px-2 py-0.5 border rounded-sm ${
+            attached ? "text-secondary border-secondary" : attached === false ? "text-error border-error" : "text-primary border-primary"
+          }`}
+        >
+          {attached ? "Attached" : attached === false ? "Not attached" : "Comes with you"}
+        </span>
+      </div>
+      {dealBreakers.length > 0 && (
+        <ul className="flex flex-col gap-1 border-t border-outline-variant pt-space-sm">
+          {dealBreakers.map((item) => (
+            <li key={item.key} className="text-body-sm text-on-surface flex justify-between gap-space-sm">
+              <span>
+                <span className="text-error font-semibold">Can&apos;t miss: </span>
+                {item.label}
+              </span>
+              <span className="font-mono text-on-surface-variant shrink-0">p. {item.page}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-body-sm text-on-surface-variant">
+        {rest > 0 && `Plus ${rest} more item${rest === 1 ? "" : "s"} our team will handle on the paperwork. `}
+        {attached
+          ? "The file is attached to your bid."
+          : attached === false
+            ? "The file didn't attach. Upload it again below, or add it later from your dashboard."
+            : "Nothing has been sent yet: the file goes to our team on the last step."}
+      </p>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="self-start text-body-sm text-on-surface-variant underline underline-offset-2 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Not this bid? Remove it
+        </button>
+      )}
+    </section>
   );
 }

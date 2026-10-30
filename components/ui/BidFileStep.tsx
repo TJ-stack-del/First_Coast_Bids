@@ -17,9 +17,13 @@ export function BidFileStep({
   clientId,
   onSubmitted,
   onFitCheck,
+  initialFile = null,
+  onInitialUploaded,
 }: {
   submissionId: string;
   clientId: string;
+  initialFile?: File | null;
+  onInitialUploaded?: (ok: boolean) => void;
   onSubmitted?: () => void;
   onFitCheck?: (result: FitCheckResult | null) => void;
 }) {
@@ -56,7 +60,7 @@ export function BidFileStep({
 
   return (
     <div className="flex flex-col gap-4">
-      <SubmissionDocuments submissionId={submissionId} />
+      <SubmissionDocuments submissionId={submissionId} initialFile={initialFile} onInitialUploaded={onInitialUploaded} />
 
       {/* Nothing here actually requires a file -- handleFinalSubmit below
           is only ever gated on the two checkboxes (see its disabled prop),

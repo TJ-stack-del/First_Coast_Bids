@@ -1248,3 +1248,8 @@
   font-size: 15px;
   color: rgb(var(--color-on-surface-variant));
 }
+.readCarry {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: rgb(var(--color-on-surface-variant));
+}

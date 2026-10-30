@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signRfpDocumentUrl, signRfpDocumentUrls } from "@/lib/storage";
@@ -40,7 +40,18 @@ function sanitizeForStorageKey(fileName: string): string {
 // Replaces the old BidDocuments.tsx — same idea, but works against
 // submissions/submission_documents instead of the old bids/bid_documents
 // tables, which no longer exist after the schema reset.
-export function SubmissionDocuments({ submissionId }: { submissionId: string }) {
+// initialFile: a bid file already in hand (the one the visitor read on the
+// homepage, see lib/bid-read/carry.ts), uploaded once on arrival exactly as
+// if they'd picked it here; onInitialUploaded reports whether it landed.
+export function SubmissionDocuments({
+  submissionId,
+  initialFile = null,
+  onInitialUploaded,
+}: {
+  submissionId: string;
+  initialFile?: File | null;
+  onInitialUploaded?: (ok: boolean) => void;
+}) {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [docType, setDocType] = useState("rfp_file");
   const [uploading, setUploading] = useState(false);
@@ -57,9 +68,23 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
       .then(async ({ data }) => setDocs(await signRfpDocumentUrls(supabase, data ?? [])));
   }, [submissionId]);
 
+  // Once per mount, even under React's double-run of effects in dev.
+  const initialSent = useRef(false);
+  useEffect(() => {
+    if (!initialFile || initialSent.current) return;
+    initialSent.current = true;
+    uploadFile(initialFile, "rfp_file").then((ok) => onInitialUploaded?.(ok));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFile]);
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    await uploadFile(file, docType);
+    e.target.value = "";
+  }
+
+  async function uploadFile(file: File, docType: string): Promise<boolean> {
     setUploading(true);
     setError(null);
 
@@ -72,7 +97,7 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
     if (uploadError) {
       setError(uploadError.message);
       setUploading(false);
-      return;
+      return false;
     }
 
     // The bucket is private — the DB stores the bare path, and every read
@@ -92,7 +117,7 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
     if (insertError || !newDoc) {
       setError(insertError?.message ?? "Upload saved, but couldn't record it.");
       setUploading(false);
-      return;
+      return false;
     }
 
     // Read the new solicitation for checklist suggestions. Not awaited: the
@@ -123,7 +148,7 @@ export function SubmissionDocuments({ submissionId }: { submissionId: string }) 
     const signedUrl = await signRfpDocumentUrl(supabase, path);
     setDocs((d) => [{ ...newDoc, file_url: signedUrl }, ...d]);
     setUploading(false);
-    e.target.value = "";
+    return true;
   }
 
   async function handleDelete(id: string) {
