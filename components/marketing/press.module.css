@@ -1120,7 +1120,8 @@
   display: block;
   height: 100%;
   background: rgb(var(--color-primary));
-  transition: width 120ms linear;
+  transform-origin: left;
+  transition: transform 120ms linear;
 }
 .readSheet {
   position: relative;
@@ -1153,7 +1154,7 @@
   font-size: 15px;
   color: rgb(var(--color-on-error-container));
   background: rgb(var(--color-error-container) / 0.55);
-  border-left: 3px solid rgb(var(--color-error));
+  border: 1px solid rgb(var(--color-error) / 0.35);
 }
 .readGroup {
   margin-top: 24px;

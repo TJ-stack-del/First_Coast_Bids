@@ -130,7 +130,7 @@ export function BidRead() {
             <div className={s.reading} role="status" aria-live="polite">
               <p className={s.serif}>Reading {state.fileName}</p>
               <div className={s.meter} aria-hidden="true">
-                <span style={{ width: state.total ? `${(state.done / state.total) * 100}%` : "8%" }} />
+                <span style={{ transform: `scaleX(${state.total ? state.done / state.total : 0.08})` }} />
               </div>
               <p className={`${s.mono} ${s.muted}`}>
                 {state.total ? `Page ${state.done} of ${state.total}` : "Opening the file"}
