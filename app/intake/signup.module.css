@@ -1,0 +1,18 @@
+/* The sign-up path's type (app/intake/layout.tsx): Public Sans for text and
+   UI, Source Serif for the page and card headings -- the homepage's pair. */
+.signup {
+  font-family: var(--font-public-sans), system-ui, sans-serif;
+  background: #f7f3ea;
+}
+.signup h1,
+.signup h2 {
+  font-family: var(--font-source-serif), Georgia, serif;
+  letter-spacing: -0.02em;
+}
+.signup button,
+.signup input,
+.signup textarea,
+.signup select,
+.signup label {
+  font-family: inherit;
+}

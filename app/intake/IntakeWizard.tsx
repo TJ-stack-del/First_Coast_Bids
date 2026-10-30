@@ -835,60 +835,60 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
             {isRetainer ? "Retainer request" : "New Bid"}
           </span>
         </div>
-        <h1 className="font-headline text-headline-lg-mobile md:text-headline-lg text-on-surface font-bold tracking-tight">
-          {bringing ? "Let's get this bid done." : "Client Intake"}
+        <h1 className="text-[34px] md:text-[44px] leading-[1.05] text-on-surface font-semibold tracking-tight">
+          {bringing
+            ? "Let's get this bid done."
+            : isRetainer
+              ? "Tell us about your business."
+              : packageParam === "one_off"
+                ? "Start your bid."
+                : "Start your pilot bid."}
         </h1>
         <p className="text-body-md text-on-surface-variant">
           {isRetainer
             ? "Tell us about your business. We'll watch for the right opportunities."
             : bringing
               ? "We brought the bid you just read. Create your account, check the details, and it goes to our team."
-              : "Tell us about the bid. We handle the technical paperwork from here."}
+              : "Three short steps: you, the bid, and the bid file. About five minutes, and nothing is due today."}
         </p>
       </div>
 
       {bringing && carried && <CarriedBidCard bid={carried} attached={carriedAttached} onRemove={step < 2 ? dropCarriedBid : null} />}
 
-      {/* Step progress */}
-      <div className="bg-surface-container p-space-base rounded-xl flex flex-col gap-space-md shadow-sm">
-        <span className="text-label-md font-bold text-primary">
-          Step {step + 1} of {steps.length}: {steps[step]}
-        </span>
-        <div className={`grid ${gridColsClass} gap-space-xs w-full`}>
-          {/* Each segment fills left-to-right as its step is reached (a
-              scaleX on the fill, not a color swap), so moving forward reads
-              as progress being made rather than a box changing color. */}
-          {steps.map((label, i) => (
-            <div key={label} className="h-2 rounded-full overflow-hidden bg-surface-container-highest">
-              <div
-                className={`h-full bg-primary origin-left transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
-                  i <= step ? "scale-x-100" : "scale-x-0"
-                }`}
-              />
-            </div>
-          ))}
-        </div>
-        <div className={`grid ${gridColsClass} text-center`}>
-          {steps.map((label, i) => (
+      {/* Step progress: numbered steps, done ones ticked */}
+      <ol className={`grid ${gridColsClass} gap-2`} aria-label={`Step ${step + 1} of ${steps.length}: ${steps[step]}`}>
+        {steps.map((label, i) => (
+          <li
+            key={label}
+            aria-current={i === step ? "step" : undefined}
+            className={`flex items-center gap-2 border-t-[3px] pt-3 text-[14px] transition-colors motion-reduce:transition-none ${
+              i < step
+                ? "border-secondary text-on-surface-variant"
+                : i === step
+                  ? "border-primary text-on-surface font-semibold"
+                  : "border-outline-variant text-on-surface-variant"
+            }`}
+          >
             <span
-              key={label}
-              className={`text-label-sm ${
-                i === step ? "text-primary font-bold" : "text-on-surface-variant font-medium"
+              className={`inline-flex w-6 h-6 shrink-0 rounded-full items-center justify-center text-[12px] font-bold ${
+                i < step ? "bg-secondary text-white" : i === step ? "bg-primary text-white" : "bg-surface-container-highest text-on-surface-variant"
               }`}
+              aria-hidden="true"
             >
-              {i + 1}. {label}
+              {i < step ? "✓" : i + 1}
             </span>
-          ))}
-        </div>
-      </div>
+            {label}
+          </li>
+        ))}
+      </ol>
 
       {error && <p className="text-body-md text-error">{error}</p>}
 
       {step === 0 && showProfileUpload && (
-        <section className="animate-step-in bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+        <section className="animate-step-in bg-white border border-outline-variant/70 p-6 md:p-8 rounded-2xl space-y-5 shadow-[0_24px_48px_-32px_rgba(14,22,34,0.35)]">
           <div className="flex items-center gap-space-xs">
             <span className="material-symbols-outlined text-primary text-[20px]">bolt</span>
-            <h2 className="font-headline text-[18px] text-on-surface font-bold">Want to save some typing?</h2>
+            <h2 className="text-[24px] leading-tight text-on-surface font-semibold">Want to save some typing?</h2>
           </div>
           <p className="text-body-md text-on-surface-variant">
             Upload a company document (capability statement, license packet, insurance certificates) and
@@ -901,7 +901,7 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
           <button
             type="button"
             onClick={() => setStep(1)}
-            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full min-h-[56px] bg-[#0E1622] hover:bg-primary text-white text-[17px] font-semibold rounded-full shadow-[0_14px_30px_-14px_rgba(14,22,34,0.6)] flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {profileUploadDone ? "Continue" : "Skip for now"}
             <span className="material-symbols-outlined font-bold">arrow_forward</span>
@@ -911,10 +911,10 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
 
       {step === 0 && !showProfileUpload && (
         <form onSubmit={handleAboutYouNext} className="animate-step-in flex flex-col gap-space-lg">
-          <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+          <section className="bg-white border border-outline-variant/70 p-6 md:p-8 rounded-2xl space-y-5 shadow-[0_24px_48px_-32px_rgba(14,22,34,0.35)]">
             <div className="flex items-center gap-space-xs">
               <span className="material-symbols-outlined text-primary text-[20px]">badge</span>
-              <h2 className="font-headline text-[18px] text-on-surface font-bold">Tell us about your business</h2>
+              <h2 className="text-[24px] leading-tight text-on-surface font-semibold">Tell us about your business</h2>
             </div>
             <Input label="Company name" value={form.companyName} onChange={(v) => update("companyName", v)} required />
             <Input label="Your name" value={form.contactName} onChange={(v) => update("contactName", v)} required />
@@ -937,7 +937,7 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
           <button
             type="submit"
             disabled={saving}
-            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full min-h-[56px] bg-[#0E1622] hover:bg-primary text-white text-[17px] font-semibold rounded-full shadow-[0_14px_30px_-14px_rgba(14,22,34,0.6)] flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {saving && <Spinner />}
             {saving ? "Saving…" : "Next"}
@@ -947,10 +947,10 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
       )}
 
       {step === 1 && !isRetainer && showBidUpload && (
-        <section className="animate-step-in bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+        <section className="animate-step-in bg-white border border-outline-variant/70 p-6 md:p-8 rounded-2xl space-y-5 shadow-[0_24px_48px_-32px_rgba(14,22,34,0.35)]">
           <div className="flex items-center gap-space-xs">
             <span className="material-symbols-outlined text-primary text-[20px]">bolt</span>
-            <h2 className="font-headline text-[18px] text-on-surface font-bold">Want to save some typing?</h2>
+            <h2 className="text-[24px] leading-tight text-on-surface font-semibold">Want to save some typing?</h2>
           </div>
           <RfpDocumentUpload onExtracted={handleBidExtracted} />
           {bidUploadDone && (
@@ -963,7 +963,7 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
             onClick={() => setShowBidUpload(false)}
             className={
               bidUploadDone
-                ? "w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                ? "w-full min-h-[56px] bg-[#0E1622] hover:bg-primary text-white text-[17px] font-semibold rounded-full shadow-[0_14px_30px_-14px_rgba(14,22,34,0.6)] flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 : "w-full py-2 text-body-md text-on-surface-variant hover:text-primary underline underline-offset-2 flex items-center justify-center gap-1 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             }
           >
@@ -981,10 +981,10 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
 
       {step === 1 && !isRetainer && !showBidUpload && (
         <form onSubmit={handleAboutBidNext} className="animate-step-in flex flex-col gap-space-lg">
-          <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+          <section className="bg-white border border-outline-variant/70 p-6 md:p-8 rounded-2xl space-y-5 shadow-[0_24px_48px_-32px_rgba(14,22,34,0.35)]">
             <div className="flex items-center gap-space-xs">
               <span className="material-symbols-outlined text-primary text-[20px]">account_balance</span>
-              <h2 className="font-headline text-[18px] text-on-surface font-bold">Tell us about the job</h2>
+              <h2 className="text-[24px] leading-tight text-on-surface font-semibold">Tell us about the job</h2>
             </div>
             {/* Only `agency` is actually `required` below -- everything else
                 on this step is optional at both the form and DB level (see
@@ -1035,7 +1035,7 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
           <button
             type="submit"
             disabled={saving}
-            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full min-h-[56px] bg-[#0E1622] hover:bg-primary text-white text-[17px] font-semibold rounded-full shadow-[0_14px_30px_-14px_rgba(14,22,34,0.6)] flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {saving && <Spinner />}
             {saving ? "Saving…" : "Next"}
@@ -1053,10 +1053,10 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
           is never reached on this path. */}
       {step === 1 && isRetainer && (
         <form onSubmit={handleRetainerProfileNext} className="animate-step-in flex flex-col gap-space-lg">
-          <section className="bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+          <section className="bg-white border border-outline-variant/70 p-6 md:p-8 rounded-2xl space-y-5 shadow-[0_24px_48px_-32px_rgba(14,22,34,0.35)]">
             <div className="flex items-center gap-space-xs">
               <span className="material-symbols-outlined text-primary text-[20px]">business_center</span>
-              <h2 className="font-headline text-[18px] text-on-surface font-bold">Tell us about your business</h2>
+              <h2 className="text-[24px] leading-tight text-on-surface font-semibold">Tell us about your business</h2>
             </div>
             <p className="text-body-sm text-on-surface-variant -mt-1">
               There's no specific bid yet — we'll watch for opportunities that fit. Nothing below is
@@ -1131,7 +1131,7 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
           <button
             type="submit"
             disabled={saving}
-            className="w-full min-h-[52px] bg-primary-container hover:bg-primary text-on-primary-container font-headline text-[16px] font-bold uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="w-full min-h-[56px] bg-[#0E1622] hover:bg-primary text-white text-[17px] font-semibold rounded-full shadow-[0_14px_30px_-14px_rgba(14,22,34,0.6)] flex items-center justify-center gap-space-sm active:scale-[0.99] transition-[background-color,opacity,transform] disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {saving && <Spinner />}
             {saving ? "Saving…" : "Next"}
@@ -1141,10 +1141,10 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
       )}
 
       {step === 2 && submissionId && clientId && (
-        <section className="animate-step-in bg-surface-container p-space-base rounded-xl space-y-space-base shadow-sm">
+        <section className="animate-step-in bg-white border border-outline-variant/70 p-6 md:p-8 rounded-2xl space-y-5 shadow-[0_24px_48px_-32px_rgba(14,22,34,0.35)]">
           <div className="flex items-center gap-space-xs">
             <span className="material-symbols-outlined text-primary text-[20px]">folder_zip</span>
-            <h2 className="font-headline text-[18px] text-on-surface font-bold">Your bid file</h2>
+            <h2 className="text-[24px] leading-tight text-on-surface font-semibold">Your bid file</h2>
           </div>
           <p className="text-body-md text-on-surface-variant">
             {bringing
@@ -1237,17 +1237,35 @@ function Input({
   // answer to exactly this -- stable, SSR-safe, hydration-safe -- with no
   // shared mutable state to desync in the first place.
   const id = useId();
+  // Show/hide on the password: on a phone, retyping a hidden password is
+  // where sign-ups stall.
+  const [shown, setShown] = useState(false);
   return (
-    <div className="flex flex-col gap-space-2xs">
-      <label htmlFor={id} className="text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">{label}</label>
-      <input
-        id={id}
-        type={type}
-        required={required}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full border-0 bg-surface-container-low text-on-surface text-body-md px-space-md py-space-sm rounded-lg placeholder:text-outline outline-none focus:bg-surface-container-highest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
-      />
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="text-[15px] text-on-surface font-semibold">{label}</label>
+      <div className="relative">
+        <input
+          id={id}
+          type={type === "password" && shown ? "text" : type}
+          required={required}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={type === "password" ? "new-password" : undefined}
+          className={`w-full border border-outline-variant bg-white text-on-surface text-[17px] px-4 py-3.5 rounded-xl placeholder:text-outline outline-none transition-colors focus:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary ${
+            type === "password" ? "pr-20" : ""
+          }`}
+        />
+        {type === "password" && (
+          <button
+            type="button"
+            onClick={() => setShown((v) => !v)}
+            aria-pressed={shown}
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-[14px] font-semibold text-primary hover:bg-surface-container-low focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            {shown ? "Hide" : "Show"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
