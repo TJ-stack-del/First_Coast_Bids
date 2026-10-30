@@ -7,6 +7,7 @@ import { clientTasks, standingLabel } from "@/lib/dashboard/client-tasks";
 import { wageCheckLines } from "@/lib/wage/wage-check";
 import { displayAgency } from "@/lib/agency-display";
 import { formatDue } from "@/lib/dashboard/format-due";
+import { progressStep, daysUntil } from "@/lib/dashboard/bid-progress";
 import s from "@/components/marketing/press.module.css";
 import { CompleteBidFile } from "./CompleteBidFile";
 import { SubmissionCard } from "./SubmissionCard";
@@ -222,6 +223,8 @@ export default async function DashboardPage() {
 
   // Drafts first (they're waiting on the client), then bids in progress,
   // then closed ones -- each group newest-updated first, as queried.
+  // Read once so every row's countdown agrees.
+  const now = new Date();
   const rows: BidRow[] = [...draftSubmissions, ...activeSubmissions, ...closedSubmissions].map((sub) => {
     const placeholder = isPlaceholder(sub);
     const flags: string[] = [];
@@ -279,6 +282,8 @@ export default async function DashboardPage() {
       solicitation: placeholder ? null : sub.solicitation_number,
       due: placeholder ? null : formatDue(sub.due_date),
       standing: standingLabel({ draft: sub.draft, stage: sub.stage, isRetainerPlaceholder: placeholder }),
+      step: placeholder ? null : progressStep({ draft: sub.draft, stage: sub.stage }),
+      days: placeholder ? null : daysUntil(sub.due_date, now),
       needsAction: taskBidIds.has(sub.id),
       completed: !sub.draft && sub.stage === "closed",
       isTest: sub.is_test,

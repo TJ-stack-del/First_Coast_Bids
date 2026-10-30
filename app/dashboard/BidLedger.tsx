@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { ClientTask } from "@/lib/dashboard/client-tasks";
+import { STEPS, comingUp, countdownLabel, urgency } from "@/lib/dashboard/bid-progress";
 import s from "@/components/marketing/press.module.css";
 
 // The client dashboard's two lists (docs/superpowers/specs/
@@ -17,6 +18,10 @@ export type BidRow = {
   solicitation: string | null;
   due: string | null;
   standing: string;
+  // Step on the bid's journey (lib/dashboard/bid-progress.ts) and days to its
+  // due date; null for the Retainer placeholder or a bid with no due date.
+  step: number | null;
+  days: number | null;
   needsAction: boolean;
   completed: boolean;
   isTest: boolean;
@@ -46,6 +51,49 @@ function Meta({ solicitation, due }: { solicitation: string | null; due: string 
         </span>
       )}
     </>
+  );
+}
+
+const URGENCY_CLASS = {
+  past: "text-on-surface-variant border-outline-variant",
+  soon: "text-error border-error bg-error-container/40",
+  week: "text-[#7a5a1e] border-[#C19349] bg-[#C19349]/15",
+  ok: "text-on-surface-variant border-outline-variant",
+} as const;
+
+// How many days are left, colour-coded: red inside 3 days, gold inside a week.
+function Countdown({ days }: { days: number | null }) {
+  const u = urgency(days);
+  const label = countdownLabel(days);
+  if (!u || !label) return null;
+  return (
+    <span className={`inline-flex items-center whitespace-nowrap px-2.5 py-1 rounded-full border text-[13px] font-semibold ${URGENCY_CLASS[u]}`}>
+      {label}
+    </span>
+  );
+}
+
+// The bid's five steps (Bid file, With us, Ready to preview, Your review,
+// Done) as a track: done steps filled, the current one named.
+function Track({ step }: { step: number }) {
+  return (
+    <span className="flex flex-col gap-1.5 max-w-[520px]" aria-label={`Step ${step + 1} of ${STEPS.length}: ${STEPS[step]}`}>
+      <span className="grid grid-cols-5 gap-1" aria-hidden="true">
+        {STEPS.map((label, i) => (
+          <span
+            key={label}
+            className={`h-1.5 rounded-full ${i < step ? "bg-secondary" : i === step ? "bg-primary" : "bg-surface-container-highest"}`}
+          />
+        ))}
+      </span>
+      <span className="grid grid-cols-5 gap-1 text-[11.5px] leading-tight" aria-hidden="true">
+        {STEPS.map((label, i) => (
+          <span key={label} className={i === step ? "text-on-surface font-semibold" : "text-on-surface-variant"}>
+            {label}
+          </span>
+        ))}
+      </span>
+    </span>
   );
 }
 
@@ -95,8 +143,44 @@ export function BidLedger({ rows, tasks }: { rows: BidRow[]; tasks: ClientTask[]
     { key: "completed", label: "Done" },
   ];
 
+  const upcoming = comingUp(rows);
+
   return (
     <>
+      {upcoming.length > 0 && (
+        <section aria-labelledby="coming-up" className="flex flex-col gap-3">
+          <h2 id="coming-up" className="text-headline-md">
+            Coming up
+          </h2>
+          <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {upcoming.map((row) => (
+              <li key={row.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilter("all");
+                    show(row.id);
+                    requestAnimationFrame(() =>
+                      document.getElementById(`bid-${row.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    );
+                  }}
+                  className="w-full h-full text-left flex flex-col gap-2 p-4 rounded-2xl bg-white border border-outline-variant hover:border-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  <span className="self-start">
+                    <Countdown days={row.days} />
+                  </span>
+                  <span className="text-[17px] leading-snug text-on-surface font-semibold">{row.title}</span>
+                  <span className="text-body-sm text-on-surface-variant">
+                    {row.due ? `Due ${row.due} · ` : ""}
+                    {row.needsAction ? "Needs you" : row.step !== null ? STEPS[row.step] : row.standing}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <section aria-labelledby="needs-you" className="flex flex-col gap-4">
         <h2 id="needs-you" className="text-headline-md">
           Needs you
@@ -180,10 +264,16 @@ export function BidLedger({ rows, tasks }: { rows: BidRow[]; tasks: ClientTask[]
                           {row.title}
                           {row.isTest && <TestMark />}
                         </span>
-                        <span className="flex flex-wrap gap-x-4 gap-y-1 text-body-sm text-on-surface-variant">
+                        <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-on-surface-variant">
                           <span>{row.standing}</span>
                           <Meta solicitation={row.solicitation} due={row.due} />
+                          {!row.completed && <Countdown days={row.days} />}
                         </span>
+                        {row.step !== null && (
+                          <span className="mt-2">
+                            <Track step={row.step} />
+                          </span>
+                        )}
                         {row.flags.length > 0 && (
                           <span className="flex flex-wrap gap-2 mt-1">
                             {row.flags.map((f) => (
