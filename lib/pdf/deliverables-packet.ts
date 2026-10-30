@@ -45,7 +45,7 @@ const LEAN_ORDER = ["rate_sheet", "executive_cover", "certificate_of_insurance"]
 // for section bars, table headers and headings; gold is for thin rules and
 // bullets (fills only -- true gold fails contrast as text, so the one gold
 // text label uses the darker brand brass, the site's gold-text color).
-const COLOR = {
+export const COLOR = {
   navy: [12, 45, 82] as [number, number, number], // #0C2D52
   navySoft: [46, 59, 78] as [number, number, number],
   gold: [193, 147, 73] as [number, number, number], // #C19349
@@ -58,7 +58,7 @@ const COLOR = {
 // Thin gold top rule + "First Coast Bids — Page N" footer, stamped on every
 // page including the cover. Keeps every page identifiably branded even
 // if a page gets printed or forwarded on its own.
-function stampChrome(doc: jsPDF) {
+export function stampChrome(doc: jsPDF) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 

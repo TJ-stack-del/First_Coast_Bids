@@ -92,3 +92,8 @@ test("quoteAt keeps the sentence and trims a run-on page around the match", () =
   const q = quoteAt(runOn, runOn.indexOf("MATCH"), 5);
   assert.ok(q.length <= 242 && q.includes("MATCH") && q.startsWith("…") && q.endsWith("…"));
 });
+
+test("a list bullet isn't part of the quote", () => {
+  const [gl] = readBid(["• Current Commercial General Liability: $2,000,000 per occurrence"]).items;
+  assert.equal(gl.quote, "Current Commercial General Liability: $2,000,000 per occurrence");
+});

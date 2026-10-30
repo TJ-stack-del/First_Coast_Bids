@@ -114,7 +114,9 @@ export function quoteAt(text: string, index: number, length = 0): string {
       tail = "…";
     }
   }
-  return (lead + text.slice(start, end).replace(/\s+/g, " ").trim() + tail).trim();
+  // A list bullet at the start is layout, not the bid's words.
+  const body = text.slice(start, end).replace(/\s+/g, " ").trim().replace(/^[•▪●◦·]\s*/, "");
+  return (lead + body + tail).trim();
 }
 
 export function readBid(pages: string[]): BidRead {
@@ -134,7 +136,7 @@ export function readBid(pages: string[]): BidRead {
     for (const c of detectItems([{ fileName: "bid", pages: sentences(text) }])) {
       const group = KIND_GROUP[c.kind];
       if (!group || !c.key) continue;
-      const quote = c.quote.replace(/\s+/g, " ");
+      const quote = c.quote.replace(/\s+/g, " ").replace(/^[•▪●◦·]\s*/, "");
       add({ key: c.key, group, label: c.label, why: null, page, quote: quote.length > MAX_QUOTE ? `${quote.slice(0, MAX_QUOTE)}…` : quote });
     }
 

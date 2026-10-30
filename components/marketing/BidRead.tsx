@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { readBid, GROUP_ORDER, type BidRead as Result, type ReadGroup } from "@/lib/bid-read/read";
 import { readBidFields } from "@/lib/bid-read/fields";
 import { saveCarriedBid } from "@/lib/bid-read/carry";
+import { ownerFor, summarise } from "@/lib/bid-read/owners";
 import { SAMPLE_BID_NAME, SAMPLE_BID_PAGES } from "@/lib/bid-read/sample-bid";
 import s from "./press.module.css";
 
@@ -203,6 +204,29 @@ function ReadResult({
 }) {
   const { items, pagesRead } = state.result;
   const dealBreakers = items.filter((i) => i.group === "deal_breaker").length;
+  const ours = items.filter((i) => ownerFor(i).who === "we").length;
+  const yours = items.length - ours;
+  const [making, setMaking] = useState(false);
+
+  // jsPDF only loads when asked for; the file is built here and saved
+  // straight to the visitor's downloads, never sent anywhere.
+  async function downloadMatrix() {
+    setMaking(true);
+    try {
+      const { generateReadMatrix } = await import("@/lib/pdf/bid-read-matrix");
+      const doc = generateReadMatrix({
+        fileName: state.fileName,
+        pagesRead,
+        fields: readBidFields(state.pages),
+        items,
+        sample: state.sample,
+      });
+      const base = state.fileName.replace(/\.[^.]+$/, "").replace(/[^A-Za-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "bid";
+      doc.save(`Compliance-matrix-draft-${base}.pdf`);
+    } finally {
+      setMaking(false);
+    }
+  }
 
   return (
     <div ref={focusRef} tabIndex={-1} className={s.readSheet} aria-labelledby="bid-read-title">
@@ -231,6 +255,22 @@ function ReadResult({
               looks at your price.
             </p>
           )}
+          <div className={s.readSplit} aria-label="Who handles what if you send us this bid">
+            <div>
+              <span className={`${s.mono} ${s.whoWe}`}>We</span>
+              <p>
+                <strong className={s.mono}>{ours}</strong>
+                {ours > 0 ? `${capitalise(summarise(items, "we"))}.` : "Nothing found here, but we still write the whole package."}
+              </p>
+            </div>
+            <div>
+              <span className={`${s.mono} ${s.whoYou}`}>You</span>
+              <p>
+                <strong className={s.mono}>{yours}</strong>
+                {yours > 0 ? `${capitalise(summarise(items, "you"))}. Only you can.` : "Just sign what we fill in."}
+              </p>
+            </div>
+          </div>
           {GROUP_ORDER.map((group) => {
             const rows = items.filter((i) => i.group === group);
             if (rows.length === 0) return null;
@@ -238,16 +278,25 @@ function ReadResult({
               <section key={group} className={s.readGroup} aria-label={GROUP_TITLE[group]}>
                 <h3 className={`${s.mono} ${group === "deal_breaker" ? s.hold : s.muted}`}>{GROUP_TITLE[group]}</h3>
                 <ol>
-                  {rows.map((item) => (
+                  {rows.map((item) => {
+                    const owner = ownerFor(item);
+                    return (
                     <li key={item.key} className={s.row}>
                       <span className={s.req}>{item.label}</span>
                       <span className={`${s.mono} ${s.readPage}`}>p. {item.page}</span>
                       {item.why && <span className={s.readWhy}>{item.why}</span>}
+                      <span className={s.readTask}>
+                        <span className={`${s.mono} ${owner.who === "we" ? s.whoWe : s.whoYou}`}>
+                          {owner.who === "we" ? "We" : "You"}
+                        </span>
+                        {owner.task}
+                      </span>
                       <span className={s.src}>
                         <q>{item.quote}</q>
                       </span>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ol>
               </section>
             );
@@ -257,7 +306,15 @@ function ReadResult({
 
       <div className={s.readNext}>
         <p className={s.serif}>
-          That&apos;s the checklist. <em>We do the paperwork for every line on it.</em>
+          {ours > 0 ? (
+            <>
+              That&apos;s the checklist. <em>{ours === items.length ? "We take all of it" : `We take ${ours} of ${items.length}`} off your plate.</em>
+            </>
+          ) : (
+            <>
+              That&apos;s the checklist. <em>We do the paperwork for every line on it.</em>
+            </>
+          )}
         </p>
         <p className={s.muted}>
           Your capability statement, compliance matrix and technical narrative, checked against this bid. You review,
@@ -265,6 +322,10 @@ function ReadResult({
         </p>
       </div>
       <ReadActions onReset={onReset} carry={state.file ? { file: state.file, pages: state.pages, result: state.result } : null} />
+      <button type="button" className={s.readDownload} onClick={downloadMatrix} disabled={making}>
+        <span className={s.readDownloadIcon} aria-hidden="true" />
+        {making ? "Making your PDF…" : "Download this as a draft compliance matrix (PDF)"}
+      </button>
       <p className={s.readFine}>
         A first read by plain pattern-matching, not our full review. It can miss things written in unusual ways and
         can&apos;t see into scanned pages. Nothing here was sent anywhere.
@@ -320,4 +381,8 @@ function ReadActions({
       )}
     </>
   );
+}
+
+function capitalise(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
