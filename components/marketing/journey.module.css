@@ -96,7 +96,7 @@
   box-shadow: 0 10px 24px -10px rgb(0 0 0 / 0.6);
   opacity: 0;
   transform: scale(0.8);
-  transition: opacity 300ms ease, transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: opacity 300ms ease, transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
   white-space: nowrap;
 }
 .on .pops li {
@@ -289,7 +289,7 @@
   background: rgb(var(--green));
   margin-bottom: 8px;
   transform: scale(0.6);
-  transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms;
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
 }
 .on .sent {
   transform: none;
@@ -350,7 +350,7 @@
   rotate: -8deg;
   opacity: 0;
   transform: scale(1.6);
-  transition: opacity 250ms ease 450ms, transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1) 450ms;
+  transition: opacity 250ms ease 450ms, transform 400ms cubic-bezier(0.22, 1, 0.36, 1) 450ms;
 }
 .on .stamp {
   opacity: 1;
