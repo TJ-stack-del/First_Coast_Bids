@@ -448,3 +448,52 @@
     transform: scaleX(1);
   }
 }
+
+/* Round 8: on a light section, tabs above the stage as pills (craft.do) */
+.journey {
+  gap: 20px;
+}
+.steps {
+  order: -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.steps button {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgb(14 22 34 / 0.14);
+  background: #fff;
+  font-size: 14px;
+  color: rgb(14 22 34 / 0.7);
+}
+.steps button[aria-current="step"] {
+  background: rgb(14 22 34);
+  border-color: rgb(14 22 34);
+  color: #fff;
+}
+.steps .bar {
+  display: none;
+}
+.stage {
+  background-color: rgb(var(--navy));
+  border-color: rgb(var(--navy));
+  box-shadow: 0 40px 70px -40px rgb(14 22 34 / 0.6);
+}
+.note {
+  text-align: center;
+  color: rgb(var(--muted));
+}
+@media (max-width: 559px) {
+  .steps button,
+  .steps button[aria-current="step"] {
+    font-size: 13px;
+    gap: 0;
+    padding: 8px 12px;
+  }
+}

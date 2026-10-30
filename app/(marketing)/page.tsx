@@ -9,6 +9,7 @@ import st from "@/components/marketing/story.module.css";
 import { sourceSerif, publicSans } from "@/components/marketing/story-fonts";
 import { ProductScreen } from "@/components/marketing/ProductScreen";
 import { BidJourney } from "@/components/marketing/BidJourney";
+import { PaperworkHero } from "@/components/marketing/PaperworkHero";
 import { pilotFaqPhrase, pilotPriceLine } from "@/lib/pilot-offer";
 
 export const metadata: Metadata = {
@@ -183,86 +184,54 @@ const FAQ_PREVIEW = [
   },
 ];
 
-// A bid's loose ends, handled in the order a bid brings them. Each `was` is a
-// worry the opening's moving picture (BidJourney) shows on the RFP.
-const HANDLED = [
+// The process in three steps, after habito.studio's "Choose a plan, send in
+// your request, and your design journey starts tomorrow": a service read as
+// a product. The 48 hours is the site's stated aim, said as an aim.
+const STEPS = [
   {
-    when: "The day it arrives",
-    was: "Page 47 of 112…",
-    title: "Every page, read for you",
-    body: "Send the bid file, addenda and all. We read every page, so you don't lose an evening to page 47.",
+    n: "01",
+    title: "Send the RFP",
+    body: "Upload it with a few details about your company, or drop it into the free read below first. Addenda and all.",
   },
   {
-    when: "The same day",
-    was: "Site visit, Nov 4, 9:00 a.m.",
-    title: "The dates you can't miss, pulled out",
-    body: "Site visits, the questions deadline and the due date, each with the page it came from. No surprises the week of.",
+    n: "02",
+    title: "We prepare the package",
+    body: "Every page read. Capability statement, compliance matrix and technical narrative written. Forms filled in for you to sign.",
   },
   {
-    when: "Day 1",
-    was: "Sworn statement unsigned",
-    title: "Forms filled in, ready to sign",
-    body: "The agency's forms and sworn statements, filled in from your company file. You read them and sign.",
-  },
-  {
-    when: "Day 1",
-    was: "Addendum 2 not acknowledged",
-    title: "Every addendum acknowledged",
-    body: "Each addendum checked for what it changes, and acknowledged the way the bid asks.",
-  },
-  {
-    when: "Day 1",
-    was: "Bid bond 5%: need a surety",
-    title: "What only you can do, on day one",
-    body: "Bonds, insurance certificates, licenses, a site visit: listed for you up front, not the night before it's due.",
-  },
-  {
-    when: "Day 2",
-    was: "Capability statement?",
-    title: "Your package, ready to preview",
-    body: "Capability statement, compliance matrix and technical narrative, checked against the agency's rules. Preview real pages before anything's due.",
-  },
-  {
-    when: "Before the deadline",
-    was: "Due Nov 18, 2:00 p.m.",
-    title: "You hit submit",
-    body: "You send it in through your own agency portal account. We never ask for your login and never submit for you.",
+    n: "03",
+    title: "You review, sign and submit",
+    body: "Preview real pages free, then send it in through your own agency portal. We never ask for your login.",
   },
 ];
 
-// 2026-10-30 (round 7): the homepage as one story, after counterlineops.com's
-// flow -- the story in one moving picture (RFP in, "in the running" out), the product
-// (your whole bid on one screen), the payoff (the same loose ends handled in
-// order), then every price, the questions and one next step. Replaces the
-// round 5/6 section-by-section layout. No reviews, ratings or counts
-// (PRODUCT.md); every sample is labelled as one.
+// 2026-10-30 (round 8): product first, light and warm, from the galleries
+// the owner picked (godly, supahero, landdding): the paperwork itself laid
+// around the headline (superpower.com), the bid's journey as a tabbed
+// showcase (craft.do), the product screen on a colour block with notes
+// pointing at it (passionfroot.me), the process as three plain steps
+// (habito.studio). Then every price, the questions and one next step. No
+// reviews, ratings or counts (PRODUCT.md); every sample is labelled as one.
 function Home() {
   return (
     <div className={`${st.page} ${sourceSerif.variable} ${publicSans.variable}`}>
-      {/* ---------- 1. The story in one picture: RFP in, in the running out ---------- */}
-      <section className={`${st.hero} ${st.bleed}`}>
-        <div className={`${st.inner} ${st.heroGrid}`}>
-          <div className={st.heroText}>
-            <p className={st.heroKicker}>For small trade businesses · Northeast Florida</p>
-            <h1 className={`${st.serif} ${st.heroTitle}`}>Government bids, without the paperwork pile.</h1>
-            <p className={st.heroLede}>
-              Send us the RFP. We read every page, write the package, and tell you the few things only you can do.
-              You sign it, send it in, and your bid gets scored on your price and your work.
-            </p>
-            <div className={st.ctas}>
-              <a href="#read" className={`${st.btn} ${st.btnLight}`}>
-                Read my bid free
-              </a>
-              <Link href="/intake?package=pilot" className={`${st.btn} ${st.btnGhost}`}>
-                Start a pilot bid
-              </Link>
-            </div>
+      {/* ---------- 1. The paperwork itself ---------- */}
+      <div className={st.bleed}>
+        <PaperworkHero />
+      </div>
+
+      {/* ---------- 2. RFP in, "in the running" out ---------- */}
+      <section className={`${st.journeySec} ${st.bleed}`}>
+        <div className={st.inner}>
+          <div className={st.journeyHead}>
+            <p className={st.eyebrow}>How a bid goes</p>
+            <h2 className={`${st.serif} ${st.h2}`}>From a 112-page RFP to in the running.</h2>
           </div>
           <BidJourney />
         </div>
       </section>
 
-      {/* ---------- 2. The product ---------- */}
+      {/* ---------- 3. The product ---------- */}
       <section className={`${st.screenSec} ${st.bleed}`}>
         <div className={st.inner}>
           <div className={st.screenHead}>
@@ -275,53 +244,47 @@ function Home() {
               package is. Every line points to its page in the bid.
             </p>
           </div>
-          <ProductScreen />
+          <div className={st.noted}>
+            <ProductScreen />
+            <span className={`${st.callout} ${st.c1}`}>Every line points to its page in the bid</span>
+            <span className={`${st.callout} ${st.c2}`}>Days left, always in view</span>
+            <span className={`${st.callout} ${st.c3}`}>What only you can do, at the top</span>
+          </div>
           <p className={st.screenNote}>A sample with made-up details. Yours shows your real bid.</p>
         </div>
       </section>
 
-      {/* ---------- 3. The payoff: the same loose ends, handled ---------- */}
+      {/* ---------- 4. The process, and the free read ---------- */}
       <section id="how" className={`${st.handled} ${st.bleed}`}>
-        <div className={`${st.inner} ${st.handledGrid}`}>
-          <div className={st.sticky}>
+        <div className={st.inner}>
+          <div className={st.howHead}>
             <p className={st.eyebrow}>How it works</p>
-            <h2 className={`${st.serif} ${st.h2}`}>Every loose end, handled.</h2>
-            <p className={st.lede} style={{ marginTop: 20 }}>
-              The worries a bid brings, in the order it brings them. We aim to have your package
-              ready within 48 hours of getting the file.
-            </p>
-            <div className={st.ctas} style={{ marginTop: 28 }}>
-              <Link href="/intake?package=pilot" className={`${st.btn} ${st.btnNavy}`}>
-                Start a pilot bid
-              </Link>
-            </div>
+            <h2 className={`${st.serif} ${st.h2}`}>Send it today. Preview it in about 48 hours.</h2>
           </div>
-          <div>
-            <ol className={st.timeline}>
-              {HANDLED.map((step) => (
-                <li key={step.title}>
-                  <span className={st.when}>{step.when}</span>
-                  <div>
-                    <span className={st.was}>{step.was}</span>
-                  </div>
-                  <h3>{step.title}</h3>
-                  <p>{step.body}</p>
-                </li>
-              ))}
-            </ol>
-            <div id="read" className={st.tryIt} style={{ scrollMarginTop: 88 }}>
-              <p className={st.eyebrow}>Try it on your own bid</p>
-              <div className={`${st.tool} ${st.tool}`}>
-                <BidRead
-                  look={{ drop: st.toolDrop, title: st.toolTitle, cap: st.toolCap, primary: st.toolPrimary, quiet: st.toolQuiet }}
-                />
-              </div>
+          <ol className={st.howSteps}>
+            {STEPS.map((step) => (
+              <li key={step.n}>
+                <span>{step.n}</span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </li>
+            ))}
+          </ol>
+          <div id="read" className={st.tryIt} style={{ scrollMarginTop: 88 }}>
+            <div className={st.tryHead}>
+              <p className={st.eyebrow}>Try it now, free</p>
+              <h3 className={st.serif}>See what your bid asks for before you send it.</h3>
+            </div>
+            <div className={`${st.tool} ${st.tool}`}>
+              <BidRead
+                look={{ drop: st.toolDrop, title: st.toolTitle, cap: st.toolCap, primary: st.toolPrimary, quiet: st.toolQuiet }}
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ---------- 4. Every price ---------- */}
+      {/* ---------- 5. Every price ---------- */}
       <section id="pricing" className={`${st.prices} ${st.bleed}`}>
         <div className={st.inner}>
           <p className={st.eyebrow}>Prices</p>
@@ -357,7 +320,7 @@ function Home() {
         </div>
       </section>
 
-      {/* ---------- 5. Questions ---------- */}
+      {/* ---------- 6. Questions ---------- */}
       <section id="faq" className={`${st.qs} ${st.bleed}`}>
         {/* FAQPage structured data for search and answer engines: the exact
             questions and answers rendered below, nothing added. */}
@@ -394,7 +357,7 @@ function Home() {
         </div>
       </section>
 
-      {/* ---------- 6. One next step ---------- */}
+      {/* ---------- 7. One next step ---------- */}
       <section className={`${st.close} ${st.bleed}`} aria-labelledby="final-cta">
         <div className={`${st.inner} ${st.closeGrid}`}>
           <div>
