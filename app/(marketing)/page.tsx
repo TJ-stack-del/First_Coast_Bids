@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { KNOWN_TRADES, assertNoMissingTradeCards } from "@/lib/compliance/known-trades";
 import { SampleSpecimen } from "@/components/marketing/SampleSpecimen";
+import { BidRead } from "@/components/marketing/BidRead";
 import { PricingSpec } from "@/components/marketing/PricingSpec";
 import s from "@/components/marketing/press.module.css";
 import { pilotFaqPhrase, pilotPriceLine } from "@/lib/pilot-offer";
@@ -224,29 +225,23 @@ function Home() {
           You run the crew. <em>We handle the paperwork.</em>
         </h1>
         <p className={s.heroLede}>
-          Upload the RFP. We turn complex solicitations into a ready-to-submit capability statement, compliance
-          matrix, and technical narrative, so you can review, sign, and send.
+          See what a bid asks for in seconds. Then our team writes the paperwork, so all you do is review, sign,
+          and send.
         </p>
-        <div className={s.ctas}>
-          {/* Pilot is the page's one main action (2026-09-23 decision, while
-              the free founding cohort is open); every other button on the
-              page and in the header points to the same place. */}
-          <Link href="/intake?package=pilot" className={`${s.btn} ${s.btnPrimary}`}>
+        {/* 2026-10-30: the hero's main action is now reading a bid, not a
+            button. A visitor sees what the product does with their own bid
+            before signing up; every result ends on "Start a pilot bid". */}
+        <BidRead />
+        <p className={s.heroAlt}>
+          Ready to hand it over?{" "}
+          <Link href="/intake?package=pilot" className={s.inlineLink}>
             Start a pilot bid
           </Link>
-          <a href="#how" className={`${s.btn} ${s.btnQuiet}`}>
-            See how it works
-          </a>
-        </div>
-        <p>
-          <Link href="/guide" className={s.inlineLink}>New to government bids? Start here</Link>
+          <span aria-hidden="true"> · </span>
+          <Link href="/guide" className={s.inlineLink}>
+            New to government bids? Start here
+          </Link>
         </p>
-        {/* The one proof signal above the fold (landing-page skill): a claim
-            the sample sheet below backs up, not an invented stat. */}
-        <a href="#sample" className={s.proofline}>
-          Every requirement cites its page in the RFP. Anything we don&apos;t know stays a visible blank.{" "}
-          <span>See a sample sheet</span>
-        </a>
         <ul className={s.trades} aria-label="Trades we work with">
           {TRADES.map((trade) => (
             <li key={trade.id}>{trade.title}</li>

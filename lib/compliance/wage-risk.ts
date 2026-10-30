@@ -17,7 +17,7 @@ const WAGE_TRIGGER_PATTERNS: RegExp[] = [
   /\bwage determination\b/i,
 ];
 
-export type WageRiskResult = { concern: boolean; explanation: string | null };
+export type WageRiskResult = { concern: boolean; explanation: string | null; matched: string | null };
 
 export function assessWageRisk(bidText: string): WageRiskResult {
   for (const pattern of WAGE_TRIGGER_PATTERNS) {
@@ -25,9 +25,10 @@ export function assessWageRisk(bidText: string): WageRiskResult {
     if (match) {
       return {
         concern: true,
+        matched: match[0],
         explanation: `The bid text references "${match[0]}" — this bid may require prevailing/living wage rates. Confirm the actual wage determination before pricing labor. Do not bid standard market rates without checking.`,
       };
     }
   }
-  return { concern: false, explanation: null };
+  return { concern: false, explanation: null, matched: null };
 }

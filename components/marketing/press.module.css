@@ -1032,3 +1032,218 @@
 .prose .panel p {
   color: rgb(var(--color-on-surface));
 }
+
+/* ---- hero bid read (components/marketing/BidRead.tsx): a drop tray on the
+   workbench grid, then the result as a raised sheet in the sample's style ---- */
+.read {
+  width: 100%;
+  max-width: 820px;
+  text-align: left;
+}
+.drop {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+  padding: 40px 24px 28px;
+  background-color: rgb(var(--color-surface-container));
+  background-image: linear-gradient(rgb(var(--color-outline-variant) / 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--color-outline-variant) / 0.35) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 1.5px dashed rgb(var(--color-primary) / 0.45);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.dropOn {
+  border-color: rgb(var(--color-primary));
+  border-style: solid;
+  background-color: rgb(var(--color-primary) / 0.06);
+}
+.readCap {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgb(var(--color-primary));
+  color: rgb(var(--color-on-primary));
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+.dropTitle {
+  font-size: clamp(1.4rem, 1.1rem + 1.2vw, 1.9rem);
+  line-height: 1.15;
+  margin: 0;
+  text-wrap: balance;
+}
+.drop > p {
+  margin: 0;
+  max-width: 34em;
+}
+.private {
+  font-size: 13px;
+  color: rgb(var(--color-on-surface-variant));
+}
+.private::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: rgb(var(--color-secondary));
+  vertical-align: 1px;
+}
+.reading {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  padding: 12px 0 8px;
+}
+.reading p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.reading .serif {
+  font-size: 20px;
+}
+.meter {
+  width: 100%;
+  height: 4px;
+  background: rgb(var(--color-outline-variant) / 0.6);
+}
+.meter span {
+  display: block;
+  height: 100%;
+  background: rgb(var(--color-primary));
+  transition: width 120ms linear;
+}
+.readSheet {
+  position: relative;
+  background: rgb(var(--color-surface-container-lowest));
+  border: 1px solid rgb(var(--color-outline-variant));
+  box-shadow: 0 24px 40px -20px rgb(27 26 23 / 0.28), 0 6px 12px -6px rgb(27 26 23 / 0.18);
+  padding: 28px;
+  outline: none;
+  /* Focus moves here when a read finishes; clear the sticky header. */
+  scroll-margin-top: 96px;
+}
+@media (max-width: 559px) {
+  .readSheet {
+    padding: 20px 16px;
+  }
+}
+.readSheet .sheetTop h2 {
+  font-size: clamp(1.35rem, 1.1rem + 1vw, 1.75rem);
+  line-height: 1.2;
+  margin: 0;
+  font-weight: 400;
+  text-wrap: balance;
+}
+.readSheet .sheetTop > span {
+  overflow-wrap: anywhere;
+}
+.readAlert {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  font-size: 15px;
+  color: rgb(var(--color-on-error-container));
+  background: rgb(var(--color-error-container) / 0.55);
+  border-left: 3px solid rgb(var(--color-error));
+}
+.readGroup {
+  margin-top: 24px;
+}
+.readGroup h3 {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgb(var(--color-on-surface));
+}
+.readGroup ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.readGroup .row {
+  padding: 12px 0;
+}
+.readPage {
+  align-self: start;
+  font-size: 12px;
+  color: rgb(var(--color-primary));
+  white-space: nowrap;
+}
+.readWhy {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  color: rgb(var(--color-error));
+}
+.readGroup .src {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.readProblem {
+  margin: 16px 0 0;
+  font-size: 16px;
+  color: rgb(var(--color-on-surface-variant));
+}
+.readNext {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 2px solid rgb(var(--color-on-surface));
+}
+.readNext p {
+  margin: 0 0 6px;
+}
+.readNext .serif {
+  font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.6rem);
+  line-height: 1.2;
+}
+.readNext em {
+  color: rgb(var(--color-primary));
+}
+.readActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+@media (max-width: 480px) {
+  .readActions .btn {
+    flex: 1 1 100%;
+  }
+}
+.readFine {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: rgb(var(--color-on-surface-variant));
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .drop,
+  .meter span {
+    transition: none;
+  }
+}
+.heroAlt {
+  margin: 0;
+  font-size: 15px;
+  color: rgb(var(--color-on-surface-variant));
+}

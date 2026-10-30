@@ -35,7 +35,9 @@ function nearMandatory(siteVisitTerm: string, mandatoryTerm: string): RegExp {
   return new RegExp(`\\b${a}\\b[^.]{0,60}\\b${b}\\b|\\b${b}\\b[^.]{0,60}\\b${a}\\b`, "i");
 }
 
-export type MandatorySiteVisitResult = { flagged: boolean; explanation: string | null };
+// matched: the exact words that triggered the flag, so a caller can quote
+// the line they sit on (the homepage bid read does).
+export type MandatorySiteVisitResult = { flagged: boolean; explanation: string | null; matched: string | null };
 
 export function detectMandatorySiteVisit(bidText: string): MandatorySiteVisitResult {
   for (const siteTerm of SITE_VISIT_TERMS) {
@@ -44,10 +46,11 @@ export function detectMandatorySiteVisit(bidText: string): MandatorySiteVisitRes
       if (match) {
         return {
           flagged: true,
+          matched: match[0],
           explanation: `The bid text says "${match[0]}" — this looks like a mandatory pre-bid site visit or walkthrough. A proposal submitted without attending is typically rejected unopened as non-responsive. Confirm the requirement and make sure someone actually attends and signs in.`,
         };
       }
     }
   }
-  return { flagged: false, explanation: null };
+  return { flagged: false, explanation: null, matched: null };
 }

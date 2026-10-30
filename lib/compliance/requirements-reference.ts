@@ -14,8 +14,8 @@
 // this produces stays "NEEDS VERIFICATION" with a bracketed instruction to confirm against
 // the real RFP, same fabrication safeguard as the rest of buildDraft().
 
-import { assessWageRisk } from "./wage-risk";
-import { detectMandatorySiteVisit } from "./mandatory-site-visit";
+import { assessWageRisk } from "./wage-risk.ts";
+import { detectMandatorySiteVisit } from "./mandatory-site-visit.ts";
 
 export type RequirementCategory = "mandatory" | "conditional" | "trade_specific";
 
