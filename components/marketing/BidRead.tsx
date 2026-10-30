@@ -7,6 +7,7 @@ import { readBid, GROUP_ORDER, type BidRead as Result, type ReadGroup } from "@/
 import { readBidFields } from "@/lib/bid-read/fields";
 import { saveCarriedBid } from "@/lib/bid-read/carry";
 import { ownerFor, summarise } from "@/lib/bid-read/owners";
+import { GoNoGo } from "./GoNoGo";
 import { SAMPLE_BID_NAME, SAMPLE_BID_PAGES } from "@/lib/bid-read/sample-bid";
 import s from "./press.module.css";
 
@@ -317,6 +318,8 @@ function ReadResult({
           })}
         </>
       )}
+
+      {items.length > 0 && <GoNoGo items={items} />}
 
       <div className={s.readNext}>
         <p className={s.serif}>

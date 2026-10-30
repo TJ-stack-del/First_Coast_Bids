@@ -1360,3 +1360,132 @@
   border-radius: 1px;
   background: linear-gradient(225deg, rgb(var(--color-surface-container-lowest)) 4px, currentColor 4px 5.5px, transparent 5.5px);
 }
+
+/* ---- "Should you bid this one?" (components/marketing/GoNoGo.tsx) ---- */
+.gng {
+  margin-top: 28px;
+  padding: 22px;
+  border-radius: 14px;
+  background: rgb(var(--color-primary) / 0.05);
+  border: 1px solid rgb(var(--color-primary) / 0.18);
+}
+.gngHead h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+.gngHead p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: rgb(var(--color-on-surface-variant));
+}
+.gngQs {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+.gngQs li {
+  display: grid;
+  gap: 10px;
+  padding: 14px 0;
+  border-top: 1px solid rgb(var(--color-outline-variant));
+}
+@media (min-width: 720px) {
+  .gngQs li {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 20px;
+  }
+}
+.gngAsk {
+  font-size: 15px;
+  line-height: 1.45;
+}
+.gngPage {
+  font-size: 12px;
+  color: rgb(var(--color-primary));
+  white-space: nowrap;
+}
+.gngChoices {
+  display: inline-flex;
+  border: 1px solid rgb(var(--color-outline-variant));
+  border-radius: 999px;
+  padding: 3px;
+  background: rgb(var(--color-surface-container-lowest));
+  justify-self: start;
+}
+.gngChoices button {
+  font: inherit;
+  font-size: 14px;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--color-on-surface-variant));
+  cursor: pointer;
+  min-height: 36px;
+}
+.gngChoices button[aria-checked="true"][data-v="yes"] {
+  background: rgb(var(--color-secondary));
+  color: #fff;
+}
+.gngChoices button[aria-checked="true"][data-v="unsure"] {
+  background: rgb(193 147 73);
+  color: #1d150b;
+}
+.gngChoices button[aria-checked="true"][data-v="no"] {
+  background: rgb(var(--color-error));
+  color: #fff;
+}
+.gngChoices button:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+}
+.gngVerdict {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgb(var(--color-surface-container-lowest));
+  border: 1px solid rgb(var(--color-outline-variant));
+  border-left-width: 1px;
+}
+.gngVerdict strong {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+}
+.gngVerdict p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: rgb(var(--color-on-surface-variant));
+}
+.gngVerdict ul {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+}
+.gngVerdict[data-kind="go"] {
+  background: rgb(var(--color-secondary) / 0.08);
+  border-color: rgb(var(--color-secondary) / 0.4);
+}
+.gngVerdict[data-kind="go"] strong {
+  color: rgb(var(--color-secondary));
+}
+.gngVerdict[data-kind="lineup"] {
+  background: rgb(193 147 73 / 0.12);
+  border-color: rgb(193 147 73 / 0.55);
+}
+.gngVerdict[data-kind="hold"],
+.gngVerdict[data-kind="closed"] {
+  background: rgb(var(--color-error-container) / 0.45);
+  border-color: rgb(var(--color-error) / 0.35);
+}
+.gngVerdict[data-kind="hold"] strong,
+.gngVerdict[data-kind="closed"] strong {
+  color: rgb(var(--color-error));
+}
+.gngNext {
+  margin-top: 10px !important;
+}
