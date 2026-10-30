@@ -16,6 +16,9 @@ import { RETAINER_PLACEHOLDER_AGENCY, type FitCheckResult } from "@/lib/submissi
 import { computeProfileCompleteness } from "@/lib/compliance/profile-completeness";
 import { uploadRfpDocument } from "@/lib/storage";
 import { loadCarriedBid, clearCarriedBid, type CarriedBid } from "@/lib/bid-read/carry";
+import { buildBidReceipt } from "@/lib/dashboard/bid-receipt";
+import type { CompletenessField } from "@/lib/compliance/profile-completeness";
+import { BidReceipt } from "./BidReceipt";
 
 // NAICS codes, small business status, and set-asides used to be collected
 // here too — moved to Company Profile (app/dashboard/profile) instead, so a
@@ -114,6 +117,10 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
   // here (see BUILD-ORDER-BIDPULSE.md item #7). Fetched client-side once the
   // submission locks, same trigger point as the fit-check fetch above.
   const [completenessPercent, setCompletenessPercent] = useState<number | null>(null);
+  // For the bid receipt (app/intake/BidReceipt.tsx): when "Send it to us"
+  // landed, and which profile fields are still empty.
+  const [receivedAt, setReceivedAt] = useState<Date | null>(null);
+  const [missingProfile, setMissingProfile] = useState<CompletenessField[]>([]);
   const [form, setForm] = useState<FormState>({
     companyName: "",
     contactName: "",
@@ -710,6 +717,27 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
     setStep(2);
   }
 
+  if (submitted && packageParam !== "retainer" && receivedAt) {
+    return (
+      <BidReceipt
+        receipt={buildBidReceipt({
+          receivedAt,
+          dueDate: form.dueDate || null,
+          readItems: carried?.items ?? [],
+          missingProfile,
+        })}
+        agency={form.agency}
+        solicitationNumber={form.solicitationNumber}
+        dueDate={form.dueDate}
+        siteVisitWarning={
+          fitCheck?.mandatorySiteVisitConcern && !carried?.items.some((i) => i.key === "deal:site-visit")
+            ? fitCheck.mandatorySiteVisitExplanation
+            : null
+        }
+      />
+    );
+  }
+
   if (submitted) {
     return (
       <div className="text-center py-8">
@@ -1133,6 +1161,7 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
               if (ok) clearCarriedBid();
             }}
             onSubmitted={() => {
+              setReceivedAt(new Date());
               setSubmitted(true);
               setFitCheckLoading(true);
               // Fire-and-forget, same as the fit-check fetch — clientId is
@@ -1154,8 +1183,7 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
                     .eq("client_id", clientId),
                 ]);
                 if (clientRow) {
-                  setCompletenessPercent(
-                    computeProfileCompleteness({
+                  const completeness = computeProfileCompleteness({
                       naicsCodes: clientRow.naics_codes,
                       licenseNumber: clientRow.license_number,
                       businessRegistrationNumber: clientRow.business_registration_number,
@@ -1165,8 +1193,9 @@ export function IntakeWizard({ offeredNaics }: { offeredNaics: NaicsOption[] }) 
                       businessAddress: clientRow.business_address,
                       businessPhone: clientRow.business_phone,
                       hasCertification: (certCount ?? 0) > 0,
-                    }).percent
-                  );
+                    });
+                  setCompletenessPercent(completeness.percent);
+                  setMissingProfile(completeness.missing);
                 }
               })().catch(() => {});
             }}
