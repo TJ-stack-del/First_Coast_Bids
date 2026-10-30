@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PricingSpec } from "@/components/marketing/PricingSpec";
-import s from "@/components/marketing/press.module.css";
-import { pilotPriceLine } from "@/lib/pilot-offer";
+import s from "@/components/marketing/pricing.module.css";
+import { PlanFinder } from "@/components/marketing/PlanFinder";
+import { sourceSerif, publicSans } from "@/components/marketing/story-fonts";
+import { pilotPriceLine, PILOT_FREE_COHORT_OPEN } from "@/lib/pilot-offer";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -106,30 +107,60 @@ const PACKAGES = [
 // 2026-09-23: same spec-table pricing as the landing page (PricingSpec),
 // so a visitor clicking through sees the identical treatment of the same
 // three tiers. See DESIGN.md, "Marketing theme".
+// 2026-10-30 (round 12): the homepage's look, three plan cards, and "Which
+// plan fits you?" (lib/marketing/plan-finder.ts) in place of "Not sure which
+// one fits? Just start the bid form."
 export default function PricingPage() {
   return (
-    <>
-      <header className={s.pageHead}>
-        <h1 className={s.pageTitle}>Pricing</h1>
+    <div className={`${s.page} ${sourceSerif.variable} ${publicSans.variable}`}>
+      <header className={s.head}>
+        <p className={s.kicker}>Pricing</p>
+        <h1 className={`${s.serif} ${s.title}`}>Plain prices, agreed before any work starts.</h1>
         <p className={s.lede}>
-          Starting prices below. We confirm the exact number with you directly before any work starts. No card
-          required today.
+          Starting prices for each plan. We confirm your exact price with you before we begin, and nothing gets added
+          without your say-so. No card required today.
         </p>
       </header>
 
-      <section>
-        <PricingSpec tiers={PACKAGES} />
+      <section className={s.plans} aria-label="Plans">
+        {PACKAGES.map((p) => (
+          <article key={p.type} className={`${s.plan} ${p.highlight ? s.hot : ""}`}>
+            {p.badgeLabel && <span className={s.tag}>{p.badgeLabel}</span>}
+            <h2 className={s.serif}>{p.name}</h2>
+            <div className={s.price}>
+              {p.priceLine.startsWith("Starting at")
+                ? p.priceLine.replace(/^Starting at /, "")
+                : PILOT_FREE_COHORT_OPEN
+                  ? "On us"
+                  : "Priced with you"}
+              <small>{p.priceLine.startsWith("Starting at") ? "Starting price" : p.priceLine}</small>
+            </div>
+            <p className={s.tagline}>{p.tagline}</p>
+            <ul>
+              {p.features.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+            <Link href={p.cta.href} className={s.btn}>
+              {p.cta.label}
+            </Link>
+          </article>
+        ))}
       </section>
+      <p className={s.always} style={{ marginTop: -48 }}>
+        Every plan: every page of the bid read, every rule cited with its page, nothing made up, and you submit it
+        yourself.
+      </p>
 
-      <section className={s.ctaLine}>
-        <div>
-          <h2>Not sure which one fits?</h2>
-          <p className={s.muted}>Just start the bid form. We&apos;ll figure out the right plan together.</p>
+      <section className={s.finderWrap} aria-labelledby="finder-title">
+        <div className={s.head}>
+          <h2 id="finder-title" className={`${s.serif} ${s.h2}`}>
+            Which plan fits you?
+          </h2>
+          <p className={s.lede}>Three quick answers. The math is right there, from the prices above.</p>
         </div>
-        <Link href="/intake" className={`${s.btn} ${s.btnQuiet}`}>
-          Get started
-        </Link>
+        <PlanFinder />
       </section>
-    </>
+    </div>
   );
 }
