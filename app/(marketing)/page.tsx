@@ -5,8 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 import { assertNoMissingTradeCards } from "@/lib/compliance/known-trades";
 import Image from "next/image";
 import { BidRead } from "@/components/marketing/BidRead";
-import f from "@/components/marketing/field.module.css";
-import { interTight } from "@/components/marketing/field-font";
+import st from "@/components/marketing/story.module.css";
+import { sourceSerif, publicSans } from "@/components/marketing/story-fonts";
+import { ProductScreen } from "@/components/marketing/ProductScreen";
+import { BidJourney } from "@/components/marketing/BidJourney";
 import { pilotFaqPhrase, pilotPriceLine } from "@/lib/pilot-offer";
 
 export const metadata: Metadata = {
@@ -181,332 +183,182 @@ const FAQ_PREVIEW = [
   },
 ];
 
-// Four things every bid gets (after the Voltix shot's "Four things every
-// job gets, no exceptions"): each one a real, checkable rule of the service.
-const FOUR = [
+// A bid's loose ends, handled in the order a bid brings them. Each `was` is a
+// worry the opening's moving picture (BidJourney) shows on the RFP.
+const HANDLED = [
   {
-    title: "A page and a quote for every rule",
-    body: "Every requirement in your compliance matrix shows the page it's on and the bid's own words. Check any line in seconds.",
+    when: "The day it arrives",
+    was: "Page 47 of 112…",
+    title: "Every page, read for you",
+    body: "Send the bid file, addenda and all. We read every page, so you don't lose an evening to page 47.",
   },
   {
-    title: "Blanks stay blank",
-    body: "If you haven't told us a fact, it stays a bracketed blank. Nothing gets guessed, and the package can't be downloaded until every blank is filled.",
+    when: "The same day",
+    was: "Site visit, Nov 4, 9:00 a.m.",
+    title: "The dates you can't miss, pulled out",
+    body: "Site visits, the questions deadline and the due date, each with the page it came from. No surprises the week of.",
   },
   {
-    title: "The price agreed before the work",
-    body: "We confirm the exact price with you before we start. No card to get going, and every document is free to preview first.",
+    when: "Day 1",
+    was: "Sworn statement unsigned",
+    title: "Forms filled in, ready to sign",
+    body: "The agency's forms and sworn statements, filled in from your company file. You read them and sign.",
   },
   {
+    when: "Day 1",
+    was: "Addendum 2 not acknowledged",
+    title: "Every addendum acknowledged",
+    body: "Each addendum checked for what it changes, and acknowledged the way the bid asks.",
+  },
+  {
+    when: "Day 1",
+    was: "Bid bond 5%: need a surety",
+    title: "What only you can do, on day one",
+    body: "Bonds, insurance certificates, licenses, a site visit: listed for you up front, not the night before it's due.",
+  },
+  {
+    when: "Day 2",
+    was: "Capability statement?",
+    title: "Your package, ready to preview",
+    body: "Capability statement, compliance matrix and technical narrative, checked against the agency's rules. Preview real pages before anything's due.",
+  },
+  {
+    when: "Before the deadline",
+    was: "Due Nov 18, 2:00 p.m.",
     title: "You hit submit",
-    body: "You send it in through your own agency portal account. We never ask for your login and never submit on your behalf.",
+    body: "You send it in through your own agency portal account. We never ask for your login and never submit for you.",
   },
 ];
 
-const WE_DO = [
-  "Read every page of the bid, addenda included",
-  "Write your capability statement, compliance matrix and technical narrative",
-  "Fill in the agency's forms for you to sign",
-  "Track the deadline and check wage rules and set-asides",
-];
-
-const YOU_DO = [
-  "Send us the bid file",
-  "Send proof only you have: insurance certificates, licenses",
-  "Show up to any mandatory site visit",
-  "Review, sign and send it in yourself",
-];
-
-const DOCS = [
-  {
-    title: "Capability statement",
-    body: "One page on your company, your crew and your past work, written for this agency.",
-    src: "/sample-packet/capability-statement.webp",
-  },
-  {
-    title: "Compliance matrix",
-    body: "Every requirement in the bid, the page it's on, and how you meet it, line by line.",
-    src: "/sample-packet/compliance-matrix.webp",
-  },
-  {
-    title: "Technical narrative",
-    body: "How you'll do the work: staffing, schedule, quality checks, in plain words the evaluators score.",
-    src: "/sample-packet/technical-narrative.webp",
-  },
-];
-
-// 2026-10-30 (round 6): the combined look. Light, photo-framed opening and
-// "four things, no exceptions" after the Voltix electrical-contractor shot;
-// one person, not a call centre, after the local roofer; the typed fact
-// strip after the industrial-construction shot; the we / you split from
-// services sold to tradespeople, so the site reads as a paperwork service
-// for contractors rather than a contractor. Kept from round 5: the bid
-// read as the working tool, trade photos, the dark price card, questions.
-// Every figure on the page is true today; no reviews, ratings or counts
-// (PRODUCT.md).
+// 2026-10-30 (round 7): the homepage as one story, after counterlineops.com's
+// flow -- the story in one moving picture (RFP in, "in the running" out), the product
+// (your whole bid on one screen), the payoff (the same loose ends handled in
+// order), then every price, the questions and one next step. Replaces the
+// round 5/6 section-by-section layout. No reviews, ratings or counts
+// (PRODUCT.md); every sample is labelled as one.
 function Home() {
   return (
-    <div className={`${f.page} ${interTight.variable}`}>
-      {/* ---------- Opening ---------- */}
-      <section className={`${f.open} ${f.bleed}`}>
-        <div className={`${f.inner} ${f.openGrid}`}>
-          <div className={f.openText}>
-            <p className={f.kicker} style={{ margin: 0 }}>
-              For small trade businesses · Northeast Florida
+    <div className={`${st.page} ${sourceSerif.variable} ${publicSans.variable}`}>
+      {/* ---------- 1. The story in one picture: RFP in, in the running out ---------- */}
+      <section className={`${st.hero} ${st.bleed}`}>
+        <div className={`${st.inner} ${st.heroGrid}`}>
+          <div className={st.heroText}>
+            <p className={st.heroKicker}>For small trade businesses · Northeast Florida</p>
+            <h1 className={`${st.serif} ${st.heroTitle}`}>Government bids, without the paperwork pile.</h1>
+            <p className={st.heroLede}>
+              Send us the RFP. We read every page, write the package, and tell you the few things only you can do.
+              You sign it, send it in, and your bid gets scored on your price and your work.
             </p>
-            <h1 className={f.display}>
-              Bid paperwork, done right. <span className={f.navyText}>You stay in charge.</span>
-            </h1>
-            <p className={f.lede}>
-              Send us a government bid. We write the capability statement, compliance matrix and technical narrative.
-              You check it, sign it and send it in yourself.
-            </p>
-            <div className={f.heroCtas}>
-              <a href="#read" className={`${f.btn} ${f.btnNavy} ${f.arrow}`}>
+            <div className={st.ctas}>
+              <a href="#read" className={`${st.btn} ${st.btnLight}`}>
                 Read my bid free
               </a>
-              <Link href="/intake?package=pilot" className={`${f.btn} ${f.btnLine}`}>
+              <Link href="/intake?package=pilot" className={`${st.btn} ${st.btnGhost}`}>
                 Start a pilot bid
               </Link>
             </div>
-            <p className={f.human}>One person reads your bid and writes your package. No call center, no hand-offs.</p>
           </div>
-          <div className={f.frame}>
-            <Image
-              src="/gallery/hvac.jpg"
-              alt="A technician with gauges connected to a rooftop air-conditioning unit"
-              fill
-              priority
-              sizes="(min-width: 1024px) 560px, 100vw"
-            />
-            <div className={`${f.chip} ${f.chipNavy}`}>
-              <strong>No card to start</strong>
-              Price agreed with you before any work begins.
-            </div>
-            <div className={`${f.chip} ${f.chipQuote}`}>
-              <strong>Every rule cites its page</strong>
-              <span className={f.mono}>p. 14</span> · <q>Contractor shall maintain general liability of not less than $2,000,000.</q>
-            </div>
-          </div>
+          <BidJourney />
         </div>
       </section>
 
-      {/* ---------- Typed facts: true today, nothing counted that isn't real ---------- */}
-      <section className={`${f.strip} ${f.bleed}`} aria-label="The service in four numbers">
-        <div className={`${f.inner} ${f.stripGrid}`}>
-          <div>
-            <b className={f.mono}>48 hrs</b>
-            <span>Our aim, bid file to draft</span>
-          </div>
-          <div>
-            <b className={f.mono}>3 docs</b>
-            <span>One package, your signature</span>
-          </div>
-          <div>
-            <b className={f.mono}>0</b>
-            <span>Made-up facts. Blanks stay blank</span>
-          </div>
-          <div>
-            <b className={f.mono}>1 person</b>
-            <span>On your file, start to finish</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- We / you ---------- */}
-      <section className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
-        <div className={f.inner}>
-          <div className={`${f.head} ${f.headRow}`}>
-            <h2 className={f.h2}>We do the paperwork. You do the work.</h2>
-            <p className={f.lede}>
-              We&apos;re not contractors and we don&apos;t bid against you. We prepare the paperwork that wins or loses
-              a bid before anyone looks at your price.
+      {/* ---------- 2. The product ---------- */}
+      <section className={`${st.screenSec} ${st.bleed}`}>
+        <div className={st.inner}>
+          <div className={st.screenHead}>
+            <div>
+              <p className={st.eyebrow}>One bid, one screen</p>
+              <h2 className={`${st.serif} ${st.h2}`}>Your whole bid, on one screen.</h2>
+            </div>
+            <p className={st.lede}>
+              When it&apos;s due, what we&apos;re handling, the few things only you can do, and how far along your
+              package is. Every line points to its page in the bid.
             </p>
           </div>
-          <div className={f.duo}>
-            <div className={`${f.side} ${f.sideWe}`}>
-              <span className={f.whoLabel}>What we do</span>
-              <h3>The reading and the writing.</h3>
-              <ul>
-                {WE_DO.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-            <div className={`${f.side} ${f.sideYou}`}>
-              <span className={f.whoLabel}>What only you can do</span>
-              <h3>The proof and the signature.</h3>
-              <ul>
-                {YOU_DO.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <p className={f.duoNote}>We never submit for you and never ask for your portal login.</p>
+          <ProductScreen />
+          <p className={st.screenNote}>A sample with made-up details. Yours shows your real bid.</p>
         </div>
       </section>
 
-      {/* ---------- The bid read: the page's working tool ---------- */}
-      <section id="read" className={`${f.section} ${f.bleed}`} style={{ scrollMarginTop: 72 }}>
-        <div className={`${f.inner} ${f.split}`}>
-          <div className={f.stick}>
-            <p className={f.kicker}>Try it on your bid</p>
-            <h2 className={f.h2}>See what the bid is asking for.</h2>
-            <ol className={f.steps}>
-              <li>
-                <b>1</b>
-                <div>
-                  Drop in the bid file
-                  <span>PDF, Word or text. It&apos;s read on your computer and never uploaded.</span>
-                </div>
-              </li>
-              <li>
-                <b>2</b>
-                <div>
-                  Get the list in seconds
-                  <span>Deadline, site visits, bonds, forms, insurance, each with its page.</span>
-                </div>
-              </li>
-              <li>
-                <b>3</b>
-                <div>
-                  Hand it to us, or keep the list
-                  <span>Start a bid with it, or download it as a draft compliance matrix.</span>
-                </div>
-              </li>
-            </ol>
-          </div>
-          <div className={`${f.tool} ${f.tool}`}>
-            <BidRead look={{ drop: f.toolDrop, title: f.toolTitle, cap: f.toolCap, primary: f.toolPrimary, quiet: f.toolQuiet }} />
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- Four things, no exceptions ---------- */}
-      <section className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
-        <div className={f.inner}>
-          <div className={`${f.head} ${f.headRow}`}>
-            <h2 className={f.h2}>Four things every bid gets. No exceptions.</h2>
-            <p className={f.lede}>Whatever the trade, whatever the agency, this is what you can hold us to.</p>
-          </div>
-          <div className={f.four}>
-            <div className={f.fourPhoto}>
-              <Image src="/gallery/landscaping.jpg" alt="A mower cutting a lawn in low evening sun" fill sizes="(min-width: 1024px) 520px, 100vw" />
+      {/* ---------- 3. The payoff: the same loose ends, handled ---------- */}
+      <section id="how" className={`${st.handled} ${st.bleed}`}>
+        <div className={`${st.inner} ${st.handledGrid}`}>
+          <div className={st.sticky}>
+            <p className={st.eyebrow}>How it works</p>
+            <h2 className={`${st.serif} ${st.h2}`}>Every loose end, handled.</h2>
+            <p className={st.lede} style={{ marginTop: 20 }}>
+              The worries a bid brings, in the order it brings them. We aim to have your package
+              ready within 48 hours of getting the file.
+            </p>
+            <div className={st.ctas} style={{ marginTop: 28 }}>
+              <Link href="/intake?package=pilot" className={`${st.btn} ${st.btnNavy}`}>
+                Start a pilot bid
+              </Link>
             </div>
-            <div className={f.fourGrid}>
-              {FOUR.map((thing, i) => (
-                <article key={thing.title} className={f.thing}>
-                  <span className={f.mono}>{String(i + 1).padStart(2, "0")}</span>
-                  <h3>{thing.title}</h3>
-                  <p>{thing.body}</p>
-                </article>
+          </div>
+          <div>
+            <ol className={st.timeline}>
+              {HANDLED.map((step) => (
+                <li key={step.title}>
+                  <span className={st.when}>{step.when}</span>
+                  <div>
+                    <span className={st.was}>{step.was}</span>
+                  </div>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </li>
               ))}
+            </ol>
+            <div id="read" className={st.tryIt} style={{ scrollMarginTop: 88 }}>
+              <p className={st.eyebrow}>Try it on your own bid</p>
+              <div className={`${st.tool} ${st.tool}`}>
+                <BidRead
+                  look={{ drop: st.toolDrop, title: st.toolTitle, cap: st.toolCap, primary: st.toolPrimary, quiet: st.toolQuiet }}
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ---------- Trades ---------- */}
-      <section id="trades" className={`${f.section} ${f.bleed}`}>
-        <div className={f.inner}>
-          <div className={`${f.head} ${f.headRow}`}>
-            <h2 className={f.h2}>The trades we know inside out.</h2>
-            <p className={f.lede}>
-              Five trades, and the public contracts small crews in them actually bid on: schools, city buildings,
-              parks and offices.
-            </p>
-          </div>
-          <ul className={f.trades} role="list">
-            {TRADES.map((trade) => (
-              <li key={trade.id} className={f.trade}>
-                <Image src={trade.photo} alt={trade.alt} fill sizes="(min-width: 1280px) 250px, (min-width: 768px) 33vw, 100vw" />
-                <div className={f.tradeBody}>
-                  <h3>{trade.title}</h3>
-                  <p>{trade.body}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-          {/* A trade outside these five is a heads-up, not a rejection --
-              see lib/compliance/known-trades.ts. */}
-          <p className={f.tradeNote}>
-            In a related trade? <Link href="/intake" className={f.link}>Start a bid anyway</Link>. If it&apos;s outside
-            what we know well, you&apos;ll hear that up front, before you&apos;ve paid anything.
+      {/* ---------- 4. Every price ---------- */}
+      <section id="pricing" className={`${st.prices} ${st.bleed}`}>
+        <div className={st.inner}>
+          <p className={st.eyebrow}>Prices</p>
+          <h2 className={`${st.serif} ${st.h2}`}>Start with one bid, on us.</h2>
+          <p className={st.lede} style={{ marginTop: 18 }}>
+            Every starting price is on this page. We confirm yours before any work begins, and nothing gets added
+            without your say-so.
           </p>
-        </div>
-      </section>
-
-      {/* ---------- What you get back ---------- */}
-      <section className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
-        <div className={f.inner}>
-          <div className={`${f.head} ${f.headRow}`}>
-            <h2 className={f.h2}>Three documents, one package, your signature.</h2>
-            <p className={f.lede}>
-              Bound as one PDF and checked against the agency&apos;s rules. Preview real pages from your own bid before
-              anything is due.
-            </p>
-          </div>
-          <div className={f.docs}>
-            {DOCS.map((doc, i) => (
-              <article key={doc.title} className={f.doc}>
-                <div className={f.docShot}>
-                  <Image src={doc.src} alt={`A sample ${doc.title.toLowerCase()} page`} fill sizes="(min-width: 1024px) 400px, 100vw" />
-                </div>
-                <div className={f.docBody}>
-                  <span className={`${f.mono} ${f.docLabel}`}>Doc {String(i + 1).padStart(2, "0")}</span>
-                  <h3>{doc.title}</h3>
-                  <p>{doc.body}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-          <p className={f.docFoot}>
-            Pages shown are from a synthetic sample, not a real client.{" "}
-            <Link href="/gallery" className={f.link}>
-              See sample write-ups by trade
-            </Link>
-          </p>
-        </div>
-      </section>
-
-      {/* ---------- Prices ---------- */}
-      <section id="pricing" className={`${f.section} ${f.bleed}`}>
-        <div className={f.inner}>
-          <div className={`${f.head} ${f.headRow}`}>
-            <h2 className={f.h2}>Know the cost before you send a thing.</h2>
-            <p className={f.lede}>Starting prices, confirmed with you before any work begins.</p>
-          </div>
-          <div className={f.prices}>
+          <div className={st.priceGrid}>
             {PRICING_PREVIEW.map((tier) => (
-              <div key={tier.name} className={f.price}>
-                <div className={f.priceName}>
-                  {tier.name}
-                  {tier.badgeLabel && <span className={f.tag}>{tier.badgeLabel}</span>}
-                </div>
-                <div className={f.priceWhat}>
-                  {tier.tagline} {tier.features.join(". ")}.
-                </div>
-                <div className={f.priceAmt}>
+              <article key={tier.name} className={`${st.plan} ${tier.highlight ? st.planHot : ""}`}>
+                {tier.badgeLabel && <span className={st.planTag}>{tier.badgeLabel}</span>}
+                <h3>{tier.name}</h3>
+                <div className={st.planPrice}>
                   {tier.priceLine.replace(/^Starting at /, "")}
                   <small>{tier.priceLine.startsWith("Starting at") ? `Starting price · ${tier.terms}` : tier.terms}</small>
                 </div>
-                <Link href={tier.cta.href} className={`${f.btn} ${tier.highlight ? f.btnGold : f.btnLine}`}>
+                <ul>
+                  {tier.features.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <Link href={tier.cta.href} className={`${st.btn} ${tier.highlight ? st.btnLight : st.btnLine}`}>
                   {tier.cta.label}
                 </Link>
-              </div>
+              </article>
             ))}
           </div>
-          <p className={f.priceNote}>
-            No card required to get started.{" "}
-            <Link href="/pricing" className={f.link}>
-              See full pricing
-            </Link>
+          <p className={st.guarantee}>
+            No card to start. We never promise a win; we promise a complete package, checked line by line against
+            what the agency asked for. <Link href="/pricing" className={st.link}>Full pricing</Link>
           </p>
         </div>
       </section>
 
-      {/* ---------- Questions ---------- */}
-      <section id="faq" className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
+      {/* ---------- 5. Questions ---------- */}
+      <section id="faq" className={`${st.qs} ${st.bleed}`}>
         {/* FAQPage structured data for search and answer engines: the exact
             questions and answers rendered below, nothing added. */}
         <script
@@ -523,59 +375,55 @@ function Home() {
             }).replace(/</g, "\\u003c"),
           }}
         />
-        <div className={`${f.inner} ${f.split}`}>
-          <div className={f.stick}>
-            <h2 className={f.h2}>Good to know first.</h2>
-            <p className={f.lede} style={{ marginTop: 18 }}>
-              The questions contractors ask before they send us a bid.
+        <div className={`${st.inner} ${st.qsGrid}`}>
+          <div>
+            <h2 className={`${st.serif} ${st.h2}`}>Before you send a bid.</h2>
+            <p className={st.lede} style={{ marginTop: 18 }}>
+              Anything else? <Link href="/faq" className={st.link}>Read the full FAQ</Link> or{" "}
+              <Link href="/contact" className={st.link}>ask us</Link>.
             </p>
           </div>
-          <div>
-            <div className={f.faq}>
-              {FAQ_PREVIEW.map((item) => (
-                <details key={item.q}>
-                  <summary>{item.q}</summary>
-                  <p>{item.a}</p>
-                </details>
-              ))}
-            </div>
-            <p className={f.faqMore}>
-              <Link href="/faq" className={f.link}>
-                Read the full FAQ
-              </Link>
-            </p>
+          <div className={st.faq}>
+            {FAQ_PREVIEW.map((item) => (
+              <details key={item.q}>
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ---------- Closing: one person, not a call center ---------- */}
-      <section className={`${f.closing} ${f.bleed}`} aria-labelledby="final-cta">
-        <div className={f.heroPhoto} aria-hidden="true">
-          <Image src="/gallery/electrical.jpg" alt="" fill sizes="100vw" />
-        </div>
-        <div className={`${f.inner}`}>
-          <div className={f.person}>
-            <p className={f.kicker} style={{ color: "rgb(255 255 255 / 0.7)", margin: 0 }}>
-              Northeast Florida
-            </p>
-            <h2 id="final-cta" className={f.h2}>
-              No call center. <span className={f.gold}>No hand-offs.</span>
+      {/* ---------- 6. One next step ---------- */}
+      <section className={`${st.close} ${st.bleed}`} aria-labelledby="final-cta">
+        <div className={`${st.inner} ${st.closeGrid}`}>
+          <div>
+            <h2 id="final-cta" className={`${st.serif} ${st.h2}`}>
+              Got a bid on your desk?
             </h2>
-            <p className={f.lede}>
-              The person who reads your bid is the person who writes your package and answers your messages. Send it
-              over and you&apos;ll know the price before any work starts.
+            <p className={st.lede}>
+              Send it over. You&apos;ll know the price before any work starts, and what only you need to do by the end
+              of the day.
             </p>
-            <div className={f.heroCtas}>
-              <Link href="/intake?package=pilot" className={`${f.btn} ${f.btnGold} ${f.arrow}`}>
+            <div className={st.ctas}>
+              <Link href="/intake?package=pilot" className={`${st.btn} ${st.btnLight}`}>
                 Start a pilot bid
               </Link>
-              <a href="#read" className={`${f.btn} ${f.btnGhost}`}>
+              <a href="#read" className={`${st.btn} ${st.btnGhost}`}>
                 Read my bid first
               </a>
             </div>
-            <p className={f.closingFine}>
+            <p className={st.closeFine}>
               No card required. New to government bids? <Link href="/guide">Start here</Link>.
             </p>
+          </div>
+          <div className={st.closePhoto}>
+            <Image
+              src="/gallery/it-computer-support.jpg"
+              alt="A technician running network cable in a server rack"
+              fill
+              sizes="(min-width: 1024px) 480px, 100vw"
+            />
           </div>
         </div>
       </section>

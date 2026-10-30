@@ -1,0 +1,450 @@
+/* The opening's moving picture (components/marketing/BidJourney.tsx): five
+   scenes cross-fading on one stage, opacity and transform only. */
+
+.journey {
+  --paper: 250 248 243;
+  --navy: 12 45 82;
+  --gold: 193 147 73;
+  --green: 0 108 74;
+  --muted: 96 90 80;
+  display: grid;
+  gap: 16px;
+}
+.stage {
+  position: relative;
+  aspect-ratio: 5 / 4;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  overflow: hidden;
+}
+@media (max-width: 479px) {
+  .stage {
+    aspect-ratio: 4 / 4.4;
+  }
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  opacity: 0;
+  transform: translateY(12px) scale(0.985);
+  transition: opacity 500ms ease, transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.scene.on {
+  opacity: 1;
+  transform: none;
+}
+
+/* shared paper bits */
+.line {
+  display: block;
+  height: 7px;
+  border-radius: 4px;
+  background: rgb(14 22 34 / 0.12);
+  margin: 9px 0;
+}
+.mark {
+  background: rgb(var(--gold) / 0.55);
+}
+
+/* 1. the RFP */
+.doc {
+  width: min(78%, 360px);
+  background: rgb(var(--paper));
+  border-radius: 10px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 30px 60px -24px rgb(0 0 0 / 0.6);
+  transform: rotate(-2deg);
+}
+.docHead {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+  border-bottom: 2px solid rgb(14 22 34);
+  color: rgb(14 22 34);
+}
+.docHead b {
+  font-family: var(--font-source-serif), Georgia, serif;
+  font-size: 20px;
+}
+.docHead span {
+  font-size: 11px;
+  color: rgb(var(--muted));
+}
+.pops {
+  position: absolute;
+  inset: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pops li {
+  position: absolute;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  background: rgb(186 26 26 / 0.92);
+  box-shadow: 0 10px 24px -10px rgb(0 0 0 / 0.6);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 300ms ease, transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+.on .pops li {
+  opacity: 1;
+  transform: none;
+}
+.pops li:nth-child(1) {
+  top: 12%;
+  left: 8%;
+}
+.pops li:nth-child(2) {
+  top: 22%;
+  right: 6%;
+}
+.pops li:nth-child(3) {
+  top: 52%;
+  left: 4%;
+}
+.pops li:nth-child(4) {
+  bottom: 22%;
+  right: 8%;
+}
+.pops li:nth-child(5) {
+  bottom: 9%;
+  left: 18%;
+}
+
+/* 2. sorted */
+.sort {
+  width: 100%;
+  max-width: 460px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.col {
+  background: rgb(var(--paper));
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  color: rgb(14 22 34);
+}
+.col p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  padding-top: 8px;
+  border-top: 1px solid rgb(14 22 34 / 0.1);
+}
+.col em {
+  font-style: normal;
+  font-size: 11px;
+  color: rgb(var(--navy));
+  white-space: nowrap;
+}
+.weTag,
+.youTag {
+  justify-self: start;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.weTag {
+  background: rgb(var(--navy));
+  color: #fff;
+}
+.youTag {
+  border: 1px solid rgb(var(--navy));
+  color: rgb(var(--navy));
+}
+@media (max-width: 479px) {
+  .sort {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 3. the package */
+.pack {
+  position: relative;
+  width: min(84%, 420px);
+  height: 70%;
+}
+.sheet {
+  position: absolute;
+  top: 0;
+  width: 46%;
+  height: 100%;
+  background: rgb(var(--paper));
+  border-radius: 10px;
+  padding: 18px 16px;
+  box-shadow: 0 24px 50px -20px rgb(0 0 0 / 0.6);
+  display: flex;
+  flex-direction: column;
+  color: rgb(14 22 34);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 400ms ease, transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.on .sheet {
+  opacity: 1;
+  transform: none;
+}
+.sheet:nth-child(1) {
+  left: 0;
+  rotate: -6deg;
+}
+.sheet:nth-child(2) {
+  left: 27%;
+  rotate: 0deg;
+  z-index: 1;
+}
+.sheet:nth-child(3) {
+  left: 54%;
+  rotate: 6deg;
+  z-index: 2;
+}
+.sheet b {
+  order: -1;
+  max-width: 7.5em;
+  margin-bottom: 10px;
+  font-family: var(--font-source-serif), Georgia, serif;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.tick {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: rgb(var(--green));
+}
+
+/* 4. the portal */
+.portal {
+  width: min(84%, 380px);
+  background: rgb(var(--paper));
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px -24px rgb(0 0 0 / 0.6);
+  color: rgb(14 22 34);
+}
+.portalBar {
+  font-size: 12px;
+  padding: 10px 14px;
+  background: rgb(14 22 34 / 0.08);
+  color: rgb(var(--muted));
+}
+.portalBody {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 28px 18px 26px;
+  text-align: center;
+}
+.portalBody b {
+  font-family: var(--font-source-serif), Georgia, serif;
+  font-size: 26px;
+}
+.portalBody span:not(.sent) {
+  font-size: 14px;
+}
+.portalBody em {
+  font-style: normal;
+  font-size: 13px;
+  color: rgb(var(--green));
+  font-weight: 600;
+}
+.sent {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  color: #fff;
+  background: rgb(var(--green));
+  margin-bottom: 8px;
+  transform: scale(0.6);
+  transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms;
+}
+.on .sent {
+  transform: none;
+}
+
+/* 5. in the running */
+.result {
+  position: relative;
+  width: min(86%, 400px);
+  background: rgb(var(--paper));
+  border-radius: 12px;
+  padding: 22px;
+  color: rgb(14 22 34);
+  box-shadow: 0 30px 60px -24px rgb(0 0 0 / 0.6);
+}
+.result > b {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--muted));
+}
+.result ul {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.result li {
+  display: flex;
+  gap: 10px;
+  font-size: 15px;
+}
+.result li::before {
+  content: "✓";
+  color: rgb(var(--green));
+  font-weight: 700;
+}
+.result p {
+  margin: 16px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgb(var(--muted));
+}
+.stamp {
+  position: absolute;
+  right: -10px;
+  top: -18px;
+  padding: 8px 12px;
+  border: 3px solid rgb(var(--green));
+  border-radius: 8px;
+  background: rgb(var(--paper));
+  color: rgb(var(--green));
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  rotate: -8deg;
+  opacity: 0;
+  transform: scale(1.6);
+  transition: opacity 250ms ease 450ms, transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1) 450ms;
+}
+.on .stamp {
+  opacity: 1;
+  transform: none;
+}
+
+/* step bar */
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.steps button {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  padding: 4px 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  color: rgb(255 255 255 / 0.55);
+  cursor: pointer;
+}
+.steps button[aria-current="step"] {
+  color: #fff;
+  font-weight: 600;
+}
+.steps button:focus-visible {
+  outline: 2px solid rgb(var(--gold));
+  outline-offset: 3px;
+}
+.bar {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.16);
+  overflow: hidden;
+}
+.bar span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: rgb(var(--gold));
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.bar .full {
+  transform: scaleX(1);
+}
+[aria-current="step"] .bar span {
+  transform: scaleX(1);
+}
+.bar .fill {
+  animation: fill 3400ms linear forwards;
+}
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.note {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgb(255 255 255 / 0.5);
+}
+@media (max-width: 559px) {
+  .steps button {
+    font-size: 0;
+    gap: 0;
+  }
+  .steps button[aria-current="step"] {
+    font-size: 12.5px;
+    gap: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene,
+  .pops li,
+  .sheet,
+  .sent,
+  .stamp {
+    transition: none;
+  }
+  .bar .fill {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
