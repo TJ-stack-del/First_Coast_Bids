@@ -1,5 +1,6 @@
-export const TAGLINE =
-  "Integrated proposal engine for public work, regional contractors & compliant bids";
+// Plain words for what the business does (2026-10-30); the old "Integrated
+// proposal engine for public work..." line read as machine-written.
+export const TAGLINE = "Government bid paperwork for small trade businesses in Northeast Florida";
 
 // Shared verbatim so the client badge (CertificationsSection.tsx) and the
 // admin badge/toggle (ClientCertifications.tsx) can't drift from each

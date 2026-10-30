@@ -181,31 +181,39 @@ const FAQ_PREVIEW = [
   },
 ];
 
-const PROMISES = [
+// Four things every bid gets (after the Voltix shot's "Four things every
+// job gets, no exceptions"): each one a real, checkable rule of the service.
+const FOUR = [
   {
-    title: "We never submit for you.",
-    body: "You send the bid through your own agency portal account. We never ask for your login and never touch the agency relationship.",
+    title: "A page and a quote for every rule",
+    body: "Every requirement in your compliance matrix shows the page it's on and the bid's own words. Check any line in seconds.",
   },
   {
-    title: "Nothing made up.",
-    body: "If you haven't told us a fact, it stays a visible blank in brackets. You can't download the package until every blank is filled.",
+    title: "Blanks stay blank",
+    body: "If you haven't told us a fact, it stays a bracketed blank. Nothing gets guessed, and the package can't be downloaded until every blank is filled.",
   },
   {
-    title: "Your price, before the work.",
+    title: "The price agreed before the work",
     body: "We confirm the exact price with you before we start. No card to get going, and every document is free to preview first.",
   },
   {
-    title: "Every rule traced to its page.",
-    body: "Each requirement in your compliance matrix shows the page it came from and the bid's own words, so you can check it in seconds.",
+    title: "You hit submit",
+    body: "You send it in through your own agency portal account. We never ask for your login and never submit on your behalf.",
   },
-  {
-    title: "Ready in about 48 hours.",
-    body: "That's our aim from the moment we have your bid file. If a deadline is tighter than that, we tell you straight away.",
-  },
-  {
-    title: "No promise of a win.",
-    body: "Nobody can promise an award. We promise a complete, correct package, checked line by line against what the agency asked for.",
-  },
+];
+
+const WE_DO = [
+  "Read every page of the bid, addenda included",
+  "Write your capability statement, compliance matrix and technical narrative",
+  "Fill in the agency's forms for you to sign",
+  "Track the deadline and check wage rules and set-asides",
+];
+
+const YOU_DO = [
+  "Send us the bid file",
+  "Send proof only you have: insurance certificates, licenses",
+  "Show up to any mandatory site visit",
+  "Review, sign and send it in yourself",
 ];
 
 const DOCS = [
@@ -226,52 +234,115 @@ const DOCS = [
   },
 ];
 
-// 2026-10-30 (round 5): the field look, after the Liftline home-services
-// template -- a dark photographic opening, the bid read as the page's
-// working tool, real photos of the trades, promises and prices stated
-// plainly. Replaces the 2026-09-22 Braun + Press landing, whose serif-and-
-// italic headlines and spec-sheet labels read as machine-made. No reviews,
-// ratings or counts: there aren't any yet, and none get invented
+// 2026-10-30 (round 6): the combined look. Light, photo-framed opening and
+// "four things, no exceptions" after the Voltix electrical-contractor shot;
+// one person, not a call centre, after the local roofer; the typed fact
+// strip after the industrial-construction shot; the we / you split from
+// services sold to tradespeople, so the site reads as a paperwork service
+// for contractors rather than a contractor. Kept from round 5: the bid
+// read as the working tool, trade photos, the dark price card, questions.
+// Every figure on the page is true today; no reviews, ratings or counts
 // (PRODUCT.md).
 function Home() {
   return (
     <div className={`${f.page} ${interTight.variable}`}>
       {/* ---------- Opening ---------- */}
-      <section className={`${f.hero} ${f.bleed}`}>
-        <div className={f.heroPhoto} aria-hidden="true">
-          <Image src="/gallery/hvac.jpg" alt="" fill priority sizes="100vw" />
+      <section className={`${f.open} ${f.bleed}`}>
+        <div className={`${f.inner} ${f.openGrid}`}>
+          <div className={f.openText}>
+            <p className={f.kicker} style={{ margin: 0 }}>
+              For small trade businesses · Northeast Florida
+            </p>
+            <h1 className={f.display}>
+              Bid paperwork, done right. <span className={f.navyText}>You stay in charge.</span>
+            </h1>
+            <p className={f.lede}>
+              Send us a government bid. We write the capability statement, compliance matrix and technical narrative.
+              You check it, sign it and send it in yourself.
+            </p>
+            <div className={f.heroCtas}>
+              <a href="#read" className={`${f.btn} ${f.btnNavy} ${f.arrow}`}>
+                Read my bid free
+              </a>
+              <Link href="/intake?package=pilot" className={`${f.btn} ${f.btnLine}`}>
+                Start a pilot bid
+              </Link>
+            </div>
+            <p className={f.human}>One person reads your bid and writes your package. No call center, no hand-offs.</p>
+          </div>
+          <div className={f.frame}>
+            <Image
+              src="/gallery/hvac.jpg"
+              alt="A technician with gauges connected to a rooftop air-conditioning unit"
+              fill
+              priority
+              sizes="(min-width: 1024px) 560px, 100vw"
+            />
+            <div className={`${f.chip} ${f.chipNavy}`}>
+              <strong>No card to start</strong>
+              Price agreed with you before any work begins.
+            </div>
+            <div className={`${f.chip} ${f.chipQuote}`}>
+              <strong>Every rule cites its page</strong>
+              <span className={f.mono}>p. 14</span> · <q>Contractor shall maintain general liability of not less than $2,000,000.</q>
+            </div>
+          </div>
         </div>
-        <div className={`${f.inner} ${f.heroBody}`}>
-          <p className={f.kicker}>Government bid paperwork for small trade businesses · Northeast Florida</p>
-          <h1 className={f.display}>
-            Your bid, <span className={f.gold}>ready to sign.</span> Your price, known first.
-          </h1>
-          <p className={f.lede}>
-            Send us the bid. We write the capability statement, compliance matrix and technical narrative. You check
-            it, sign it and send it in yourself.
-          </p>
-          <div className={f.heroCtas}>
-            <a href="#read" className={`${f.btn} ${f.btnGold} ${f.arrow}`}>
-              Read my bid free
-            </a>
-            <Link href="/intake?package=pilot" className={`${f.btn} ${f.btnGhost}`}>
-              Start a pilot bid
-            </Link>
+      </section>
+
+      {/* ---------- Typed facts: true today, nothing counted that isn't real ---------- */}
+      <section className={`${f.strip} ${f.bleed}`} aria-label="The service in four numbers">
+        <div className={`${f.inner} ${f.stripGrid}`}>
+          <div>
+            <b className={f.mono}>48 hrs</b>
+            <span>Our aim, bid file to draft</span>
           </div>
-          <div className={f.facts}>
-            <div>
-              <strong>Every rule has its page</strong>
-              <span>Checked against the bid itself</span>
+          <div>
+            <b className={f.mono}>3 docs</b>
+            <span>One package, your signature</span>
+          </div>
+          <div>
+            <b className={f.mono}>0</b>
+            <span>Made-up facts. Blanks stay blank</span>
+          </div>
+          <div>
+            <b className={f.mono}>1 person</b>
+            <span>On your file, start to finish</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- We / you ---------- */}
+      <section className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
+        <div className={f.inner}>
+          <div className={`${f.head} ${f.headRow}`}>
+            <h2 className={f.h2}>We do the paperwork. You do the work.</h2>
+            <p className={f.lede}>
+              We&apos;re not contractors and we don&apos;t bid against you. We prepare the paperwork that wins or loses
+              a bid before anyone looks at your price.
+            </p>
+          </div>
+          <div className={f.duo}>
+            <div className={`${f.side} ${f.sideWe}`}>
+              <span className={f.whoLabel}>What we do</span>
+              <h3>The reading and the writing.</h3>
+              <ul>
+                {WE_DO.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
             </div>
-            <div>
-              <strong>Price agreed before work</strong>
-              <span>No card to get started</span>
-            </div>
-            <div>
-              <strong>You hit submit</strong>
-              <span>We never touch your login</span>
+            <div className={`${f.side} ${f.sideYou}`}>
+              <span className={f.whoLabel}>What only you can do</span>
+              <h3>The proof and the signature.</h3>
+              <ul>
+                {YOU_DO.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
             </div>
           </div>
+          <p className={f.duoNote}>We never submit for you and never ask for your portal login.</p>
         </div>
       </section>
 
@@ -305,12 +376,38 @@ function Home() {
               </li>
             </ol>
           </div>
-          <BidRead look={{ drop: f.toolDrop, title: f.toolTitle, cap: f.toolCap, primary: f.toolPrimary, quiet: f.toolQuiet }} />
+          <div className={`${f.tool} ${f.tool}`}>
+            <BidRead look={{ drop: f.toolDrop, title: f.toolTitle, cap: f.toolCap, primary: f.toolPrimary, quiet: f.toolQuiet }} />
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Four things, no exceptions ---------- */}
+      <section className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
+        <div className={f.inner}>
+          <div className={`${f.head} ${f.headRow}`}>
+            <h2 className={f.h2}>Four things every bid gets. No exceptions.</h2>
+            <p className={f.lede}>Whatever the trade, whatever the agency, this is what you can hold us to.</p>
+          </div>
+          <div className={f.four}>
+            <div className={f.fourPhoto}>
+              <Image src="/gallery/landscaping.jpg" alt="A mower cutting a lawn in low evening sun" fill sizes="(min-width: 1024px) 520px, 100vw" />
+            </div>
+            <div className={f.fourGrid}>
+              {FOUR.map((thing, i) => (
+                <article key={thing.title} className={f.thing}>
+                  <span className={f.mono}>{String(i + 1).padStart(2, "0")}</span>
+                  <h3>{thing.title}</h3>
+                  <p>{thing.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ---------- Trades ---------- */}
-      <section id="trades" className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
+      <section id="trades" className={`${f.section} ${f.bleed}`}>
         <div className={f.inner}>
           <div className={`${f.head} ${f.headRow}`}>
             <h2 className={f.h2}>The trades we know inside out.</h2>
@@ -340,7 +437,7 @@ function Home() {
       </section>
 
       {/* ---------- What you get back ---------- */}
-      <section className={`${f.section} ${f.bleed}`}>
+      <section className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
         <div className={f.inner}>
           <div className={`${f.head} ${f.headRow}`}>
             <h2 className={f.h2}>Three documents, one package, your signature.</h2>
@@ -350,12 +447,13 @@ function Home() {
             </p>
           </div>
           <div className={f.docs}>
-            {DOCS.map((doc) => (
+            {DOCS.map((doc, i) => (
               <article key={doc.title} className={f.doc}>
                 <div className={f.docShot}>
                   <Image src={doc.src} alt={`A sample ${doc.title.toLowerCase()} page`} fill sizes="(min-width: 1024px) 400px, 100vw" />
                 </div>
                 <div className={f.docBody}>
+                  <span className={`${f.mono} ${f.docLabel}`}>Doc {String(i + 1).padStart(2, "0")}</span>
                   <h3>{doc.title}</h3>
                   <p>{doc.body}</p>
                 </div>
@@ -372,7 +470,7 @@ function Home() {
       </section>
 
       {/* ---------- Prices ---------- */}
-      <section id="pricing" className={`${f.section} ${f.sectionWhite} ${f.bleed}`}>
+      <section id="pricing" className={`${f.section} ${f.bleed}`}>
         <div className={f.inner}>
           <div className={`${f.head} ${f.headRow}`}>
             <h2 className={f.h2}>Know the cost before you send a thing.</h2>
@@ -404,25 +502,6 @@ function Home() {
               See full pricing
             </Link>
           </p>
-        </div>
-      </section>
-
-      {/* ---------- Promises ---------- */}
-      <section className={`${f.section} ${f.bleed}`}>
-        <div className={f.inner}>
-          <div className={`${f.head} ${f.headRow}`}>
-            <h2 className={f.h2}>Promises we put in writing.</h2>
-            <p className={f.lede}>What you can hold us to on every bid, and what nobody honest would promise.</p>
-          </div>
-          <div className={f.promises}>
-            {PROMISES.map((promise, i) => (
-              <article key={promise.title} className={f.promise}>
-                <b>{String(i + 1).padStart(2, "0")}</b>
-                <h3>{promise.title}</h3>
-                <p>{promise.body}</p>
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -469,27 +548,35 @@ function Home() {
         </div>
       </section>
 
-      {/* ---------- Closing ---------- */}
+      {/* ---------- Closing: one person, not a call center ---------- */}
       <section className={`${f.closing} ${f.bleed}`} aria-labelledby="final-cta">
         <div className={f.heroPhoto} aria-hidden="true">
           <Image src="/gallery/electrical.jpg" alt="" fill sizes="100vw" />
         </div>
-        <div className={`${f.inner} ${f.closingBody}`}>
-          <h2 id="final-cta" className={f.h2}>
-            Got a bid on your desk? <span className={f.gold}>Send it over.</span>
-          </h2>
-          <p className={f.lede}>Tell us about it in a few minutes. We&apos;ll take the paperwork from there.</p>
-          <div className={f.heroCtas}>
-            <Link href="/intake?package=pilot" className={`${f.btn} ${f.btnGold} ${f.arrow}`}>
-              Start a pilot bid
-            </Link>
-            <a href="#read" className={`${f.btn} ${f.btnGhost}`}>
-              Read my bid first
-            </a>
+        <div className={`${f.inner}`}>
+          <div className={f.person}>
+            <p className={f.kicker} style={{ color: "rgb(255 255 255 / 0.7)", margin: 0 }}>
+              Northeast Florida
+            </p>
+            <h2 id="final-cta" className={f.h2}>
+              No call center. <span className={f.gold}>No hand-offs.</span>
+            </h2>
+            <p className={f.lede}>
+              The person who reads your bid is the person who writes your package and answers your messages. Send it
+              over and you&apos;ll know the price before any work starts.
+            </p>
+            <div className={f.heroCtas}>
+              <Link href="/intake?package=pilot" className={`${f.btn} ${f.btnGold} ${f.arrow}`}>
+                Start a pilot bid
+              </Link>
+              <a href="#read" className={`${f.btn} ${f.btnGhost}`}>
+                Read my bid first
+              </a>
+            </div>
+            <p className={f.closingFine}>
+              No card required. New to government bids? <Link href="/guide">Start here</Link>.
+            </p>
           </div>
-          <p className={f.closingFine}>
-            No card required. New to government bids? <Link href="/guide">Start here</Link>.
-          </p>
         </div>
       </section>
     </div>

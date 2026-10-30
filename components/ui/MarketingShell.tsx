@@ -55,7 +55,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-background">
-      <header className="sticky top-0 z-50 bg-surface border-b border-outline-variant relative">
+      <header className="sticky top-0 z-50 bg-surface-container-lowest/95 backdrop-blur border-b border-outline-variant/70 relative">
         <div className="flex items-center justify-between w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
           <Link href="/" onClick={() => setMenuOpen(false)} className="flex flex-col justify-center">
             <Logo priority />
@@ -68,9 +68,9 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-label-md uppercase tracking-wider px-1 py-1 transition ${
+                className={`text-[15px] font-medium px-1 py-1 transition ${
                   activePath === link.href
-                    ? "text-primary font-bold border-b-2 border-primary"
+                    ? "text-primary underline decoration-2 underline-offset-[6px]"
                     : "text-on-surface-variant hover:text-primary"
                 }`}
               >
@@ -81,13 +81,13 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
           <div className="hidden lg:flex items-center gap-4">
             <Link
               href="/login"
-              className="text-label-md uppercase tracking-wider text-on-surface-variant hover:text-primary transition"
+              className="text-[15px] font-medium text-on-surface-variant hover:text-primary transition"
             >
               Log in
             </Link>
             <Link
               href="/intake?package=pilot"
-              className="whitespace-nowrap px-4 py-2 bg-primary-container text-on-primary-container rounded text-label-md uppercase tracking-wider font-bold hover:opacity-90 transition active:scale-[0.97]"
+              className="whitespace-nowrap px-5 py-2.5 bg-primary text-on-primary rounded-full text-[15px] font-semibold hover:opacity-90 transition active:scale-[0.97]"
             >
               Start a pilot bid
             </Link>
@@ -130,7 +130,7 @@ export function MarketingShell({ children }: { children: React.ReactNode }) {
               <Link
                 href="/intake?package=pilot"
                 onClick={() => setMenuOpen(false)}
-                className="px-4 py-3 bg-primary-container text-on-primary-container rounded text-label-md text-center active:scale-[0.97]"
+                className="px-4 py-3 bg-primary text-on-primary rounded-full text-[15px] font-semibold text-center active:scale-[0.97]"
               >
                 Start a pilot bid
               </Link>

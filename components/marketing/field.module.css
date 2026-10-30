@@ -663,3 +663,335 @@
     transition: none;
   }
 }
+
+/* ======== Round 6 (2026-10-30): the combined look ========
+   Voltix's light, photo-framed opening and "four things, no exceptions";
+   the local roofer's one-person promise; the industrial site's typed fact
+   strip; the services-for-trades "we / you" split. */
+
+.mono {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0;
+}
+
+/* ---- light opening ---- */
+.open {
+  background: rgb(var(--paper));
+  padding: 64px 0 72px;
+}
+.openGrid {
+  display: grid;
+  gap: 48px;
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  .openGrid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 64px;
+  }
+  .open {
+    padding: 80px 0 96px;
+  }
+}
+.openText {
+  display: grid;
+  gap: 24px;
+  justify-items: start;
+}
+.openText .display {
+  color: rgb(var(--ink));
+  max-width: 12ch;
+}
+.navyText {
+  color: rgb(var(--navy));
+}
+.openText .heroCtas {
+  margin-top: 4px;
+}
+.human {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 15px;
+  color: rgb(var(--muted));
+  max-width: 30em;
+}
+.human::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(0 108 74);
+  box-shadow: 0 0 0 4px rgb(0 108 74 / 0.15);
+}
+.frame {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 28px;
+  overflow: hidden;
+  background: rgb(var(--ink));
+}
+@media (max-width: 1023px) {
+  .frame {
+    aspect-ratio: 4 / 3;
+  }
+}
+.frame img {
+  object-fit: cover;
+}
+.chip {
+  position: absolute;
+  max-width: 290px;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 20px 40px -18px rgb(12 20 33 / 0.55);
+}
+.chip strong {
+  display: block;
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.chipQuote {
+  left: 16px;
+  bottom: 16px;
+  background: #fff;
+  color: rgb(var(--ink));
+}
+.chipQuote q {
+  color: rgb(var(--muted));
+}
+.chipNavy {
+  right: 16px;
+  top: 16px;
+  background: rgb(var(--navy));
+  color: #fff;
+}
+@media (max-width: 479px) {
+  .chip {
+    max-width: calc(100% - 32px);
+  }
+  .chipNavy {
+    display: none;
+  }
+}
+
+/* ---- typed fact strip ---- */
+.strip {
+  background: rgb(var(--ink));
+  color: #fff;
+}
+.stripGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.stripGrid > div {
+  padding: 30px 24px 30px 0;
+  display: grid;
+  gap: 6px;
+}
+.stripGrid > div + div {
+  border-left: 1px solid rgb(255 255 255 / 0.14);
+  padding-left: 24px;
+}
+.stripGrid b {
+  font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.3rem);
+  font-weight: 600;
+  color: rgb(var(--gold));
+}
+.stripGrid span {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(255 255 255 / 0.72);
+}
+@media (max-width: 899px) {
+  .stripGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stripGrid > div:nth-child(3) {
+    border-left: 0;
+    padding-left: 0;
+  }
+  .stripGrid > div:nth-child(n + 3) {
+    border-top: 1px solid rgb(255 255 255 / 0.14);
+  }
+}
+
+/* ---- we / you ---- */
+.duo {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 900px) {
+  .duo {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.side {
+  border-radius: 24px;
+  padding: 32px;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+@media (max-width: 559px) {
+  .side {
+    padding: 24px;
+  }
+}
+.sideWe {
+  background: rgb(var(--navy));
+  color: #fff;
+}
+.sideYou {
+  background: #fff;
+  border: 1px solid rgb(var(--line));
+}
+.side h3 {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.side ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.side li {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.side li::before {
+  content: "✓";
+  font-weight: 700;
+}
+.sideWe li::before {
+  color: rgb(var(--gold));
+}
+.sideYou li::before {
+  color: rgb(var(--navy));
+}
+.sideWe .whoLabel {
+  color: rgb(255 255 255 / 0.65);
+}
+.whoLabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--muted));
+}
+.duoNote {
+  margin-top: 18px;
+  font-size: 15px;
+  color: rgb(var(--muted));
+}
+
+/* ---- four things, no exceptions ---- */
+.four {
+  display: grid;
+  gap: 24px;
+  align-items: stretch;
+}
+@media (min-width: 1024px) {
+  .four {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 40px;
+  }
+}
+.fourPhoto {
+  position: relative;
+  min-height: 340px;
+  border-radius: 24px;
+  overflow: hidden;
+}
+.fourPhoto img {
+  object-fit: cover;
+}
+.fourGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.thing {
+  background: #fff;
+  border: 1px solid rgb(var(--line));
+  border-radius: 20px;
+  padding: 24px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.thing .mono {
+  font-size: 12px;
+  color: rgb(var(--navy));
+}
+.thing h3 {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.thing p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgb(var(--muted));
+}
+
+/* ---- documents: typed captions ---- */
+.docLabel {
+  font-size: 12px;
+  color: rgb(var(--navy));
+  text-transform: uppercase;
+}
+
+/* ---- the bid read's result sheet in this look (press.module.css
+   elements, overridden by element so the hashed class names don't matter) ---- */
+.tool.tool h2,
+.tool.tool h3 {
+  font-family: var(--font-inter-tight), var(--font-archivo), sans-serif;
+  letter-spacing: -0.02em;
+}
+.tool.tool h2 {
+  font-weight: 700;
+}
+.tool.tool p,
+.tool.tool li,
+.tool.tool span,
+.tool.tool q {
+  font-family: var(--font-archivo), sans-serif;
+}
+.tool.tool h3 {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+.tool.tool [aria-labelledby="bid-read-title"] {
+  border-radius: 20px;
+  background: #fff;
+}
+
+/* ---- closing: one person, not a call centre ---- */
+.person {
+  display: grid;
+  gap: 22px;
+  justify-items: start;
+  max-width: 44rem;
+  position: relative;
+}
+.person .h2 {
+  max-width: 14ch;
+}
