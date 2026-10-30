@@ -60,7 +60,7 @@ export function BidReceipt({
       {/* The receipt: a slip, not a card -- heavy rule on top, mono figures. */}
       <section
         aria-label="Receipt"
-        className="bg-surface-container-lowest border border-outline-variant border-t-2 border-t-on-surface rounded p-space-base"
+        className="bg-surface-container-lowest border border-outline-variant border-t-2 border-t-on-surface p-space-base"
       >
         <dl className="flex flex-col divide-y divide-outline-variant">
           <Row label="Bid">

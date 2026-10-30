@@ -1269,7 +1269,7 @@ function CarriedBidCard({
   return (
     <section
       aria-label="Your bid"
-      className="bg-surface-container-lowest border border-outline-variant border-t-2 border-t-on-surface rounded p-space-base flex flex-col gap-space-sm"
+      className="bg-surface-container-lowest border border-outline-variant border-t-2 border-t-on-surface p-space-base flex flex-col gap-space-sm"
     >
       <div className="flex items-start justify-between gap-space-sm">
         <div className="min-w-0">
