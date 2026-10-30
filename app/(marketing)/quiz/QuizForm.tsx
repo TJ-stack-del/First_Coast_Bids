@@ -2,22 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import s from "@/components/marketing/press.module.css";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { nextSteps } from "@/lib/guide/next-steps";
-import { getArticle } from "@/lib/guide/articles";
+import { roadmap } from "@/lib/guide/roadmap";
 import type { Answers } from "@/lib/guide/types";
-import { PILOT_CTA, pilotPriceLine } from "@/lib/pilot-offer";
+import s from "./quiz.module.css";
 
-// "Where do I start?" (docs/superpowers/specs/2026-09-26-newcomer-guide-design.md):
-// four yes/no questions, then one to three next steps from nextSteps() --
-// guide articles, or the Pilot when a bid is in hand. For newcomers and
-// people already bidding alike. Nothing here is stored or sent.
-const QUESTIONS: { key: keyof Answers; text: string }[] = [
-  { key: "bidBefore", text: "Have you bid on a government job before?" },
-  { key: "registered", text: "Are you registered in SAM.gov or on a local bid site?" },
-  { key: "licensed", text: "Do you have your business license and insurance?" },
-  { key: "bidInHand", text: "Do you have a bid (an RFP or ITB) in hand right now?" },
+// "Where do I start?": four yes-or-no questions, then the road to a first
+// bid with each station marked done / next / later (lib/guide/roadmap.ts),
+// the next one carrying its one action. Nothing here is stored or sent.
+const QUESTIONS: { key: keyof Answers; text: string; hint: string }[] = [
+  { key: "bidBefore", text: "Have you bid on a government job before?", hint: "Any city, county, school district, state or federal job." },
+  { key: "licensed", text: "Do you have your business license and insurance?", hint: "General liability, and workers' comp if you have employees." },
+  { key: "registered", text: "Are you registered as a vendor?", hint: "On SAM.gov, or on a local agency's bid site." },
+  { key: "bidInHand", text: "Do you have a bid in hand right now?", hint: "An RFP, ITB or RFQ you'd like to go after." },
 ];
 
 export function QuizForm() {
@@ -26,68 +23,75 @@ export function QuizForm() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const prefersReducedMotion = useReducedMotion();
-  // After the last answer the Yes/No buttons disappear: move focus to the
-  // result so keyboard and screen-reader users land on it (final review 13).
+  const reduceMotion = mounted && prefersReducedMotion;
+  // After the last answer the buttons disappear: move focus to the result so
+  // keyboard and screen-reader users land on it.
   const resultRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (step >= QUESTIONS.length) resultRef.current?.focus();
   }, [step]);
-  const reduceMotion = mounted && prefersReducedMotion;
 
   function answer(value: boolean) {
     const key = QUESTIONS[step].key;
     setAnswers((a) => ({ ...a, [key]: value }));
-    setStep((s) => s + 1);
+    setStep((n) => n + 1);
   }
 
   if (step >= QUESTIONS.length) {
-    const steps = nextSteps(answers as Answers);
+    const r = roadmap(answers as Answers);
     return (
-      <div className={`${s.formSheet} grid gap-6`}>
-        <h2 ref={resultRef} tabIndex={-1} className={`${s.rowTitle} outline-none`}>Here&apos;s where to start.</h2>
-        <ol className="grid gap-5 list-decimal pl-6">
-          {steps.map((st) => {
-            if (st.target === "pilot")
-              return (
-                <li key="pilot">
-                  <p>{st.why}</p>
-                  <Link href={PILOT_CTA.href} className={`${s.btn} ${s.btnPrimary} mt-2 inline-flex`}>
-                    {PILOT_CTA.label}
+      <div className={s.result}>
+        <h2 ref={resultRef} tabIndex={-1} className={s.resultTitle}>
+          {r.headline}
+        </h2>
+        <ol className={s.road}>
+          {r.stations.map((st, i) => (
+            <li key={st.id} className={s[st.status]} aria-current={st.status === "next" ? "step" : undefined}>
+              <span className={s.dot} aria-hidden="true">
+                {st.status === "done" ? "✓" : i + 1}
+              </span>
+              <div className={s.stop}>
+                <span className={s.state}>{st.status === "done" ? "Done" : st.status === "next" ? "Your next step" : "Later"}</span>
+                <h3>{st.title}</h3>
+                {st.status !== "later" && <p>{st.why}</p>}
+                {st.status === "next" && st.action && (
+                  <Link href={st.action.href} className={s.go}>
+                    {st.action.label}
                   </Link>
-                  <p className={`${s.muted} mt-1`}>Pilot: {pilotPriceLine()}.</p>
-                </li>
-              );
-            const article = getArticle(st.target);
-            return (
-              <li key={st.target}>
-                <Link href={`/guide/${st.target}`} className={s.inlineLink}>{article?.title ?? st.target}</Link>
-                <p className={s.muted}>{st.why}</p>
-              </li>
-            );
-          })}
+                )}
+                {st.status === "later" && st.action && (
+                  <Link href={st.action.href} className={s.peek}>
+                    {st.action.label}
+                  </Link>
+                )}
+              </div>
+            </li>
+          ))}
         </ol>
-        <p className="flex flex-wrap gap-4 items-center">
-          <button type="button" onClick={() => { setStep(0); setAnswers({}); }} className={`${s.btn} ${s.btnQuiet}`}>
+        <p className={s.again}>
+          <button
+            type="button"
+            onClick={() => {
+              setStep(0);
+              setAnswers({});
+            }}
+          >
             Start over
           </button>
-          <Link href="/guide" className={s.inlineLink}>Browse the whole guide</Link>
+          <Link href="/guide">Browse the whole guide</Link>
         </p>
       </div>
     );
   }
 
+  const q = QUESTIONS[step];
   return (
-    <div className={`${s.formSheet} grid gap-8`}>
-      <div className={s.progress} role="progressbar" aria-label="Progress" aria-valuetext={`Question ${step + 1} of ${QUESTIONS.length}`} aria-valuemin={1} aria-valuemax={QUESTIONS.length} aria-valuenow={step + 1}>
-        <div className={s.progressFill} style={{ transform: `scaleX(${(step + 1) / QUESTIONS.length})` }} />
+    <div className={s.card}>
+      <div className={s.bar} aria-hidden="true">
+        {QUESTIONS.map((_, i) => (
+          <span key={i} className={i <= step ? s.barOn : ""} />
+        ))}
       </div>
-
-      {/* A state transition, not decoration: each question is a distinct
-          step, so it gets its own directional slide (next question enters
-          from the right, matching the progress bar's forward motion)
-          instead of abruptly swapping text. Keyed by step so
-          AnimatePresence treats each question as a new element to
-          cross-fade between. */}
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={step}
@@ -96,21 +100,28 @@ export function QuizForm() {
           exit={reduceMotion ? undefined : { opacity: 0, x: -16, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className={`${s.meta} mb-2`}>
-            Question <span className={s.mono}>{step + 1}</span> of <span className={s.mono}>{QUESTIONS.length}</span>
-          </span>
-          <h2 className={s.rowTitle} aria-live="polite">{QUESTIONS[step].text}</h2>
+          <p className={s.count}>
+            Question {step + 1} of {QUESTIONS.length}
+          </p>
+          <h2 className={s.question} aria-live="polite">
+            {q.text}
+          </h2>
+          <p className={s.hint}>{q.hint}</p>
         </motion.div>
       </AnimatePresence>
-
-      <div className="flex gap-3">
-        <button type="button" onClick={() => answer(true)} className={`${s.btn} ${s.btnPrimary} flex-1`}>
+      <div className={s.answers}>
+        <button type="button" onClick={() => answer(true)} className={s.yes}>
           Yes
         </button>
-        <button type="button" onClick={() => answer(false)} className={`${s.btn} ${s.btnQuiet} flex-1`}>
+        <button type="button" onClick={() => answer(false)} className={s.no}>
           No
         </button>
       </div>
+      {step > 0 && (
+        <button type="button" className={s.back} onClick={() => setStep((n) => n - 1)}>
+          ← Back
+        </button>
+      )}
     </div>
   );
 }
