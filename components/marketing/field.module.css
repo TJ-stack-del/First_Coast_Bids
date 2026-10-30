@@ -1,0 +1,665 @@
+/* The homepage's "field" look (2026-10-30, round 5): after the Liftline
+   home-services template -- a dark photographic opening, a heavy tight
+   grotesk, real photos of the trades, plain promises and prices -- in the
+   brand's navy and gold. Replaces the Braun + Press serif/italic landing
+   only; inner pages keep press.module.css. Full-bleed sections break out
+   of MarketingShell's centred <main>. */
+
+.page {
+  --ink: 12 20 33; /* #0C1421, near-black navy */
+  --navy: 12 45 82; /* #0C2D52 brand navy */
+  --gold: 193 147 73; /* #C19349 brand gold, fills and large type only */
+  --paper: 244 241 234; /* #F4F1EA */
+  --card: 255 255 255;
+  --line: 214 207 192;
+  --muted: 92 88 78;
+  /* Cancels MarketingShell main's py-section-gap (64px) so the hero meets the header. */
+  margin: -64px 0;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  color: rgb(var(--ink));
+}
+
+.bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+@media (min-width: 768px) {
+  .inner {
+    padding: 0 40px;
+  }
+}
+
+.display,
+.h2 {
+  font-family: var(--font-inter-tight), var(--font-archivo), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  margin: 0;
+  text-wrap: balance;
+}
+.display {
+  font-size: clamp(2.6rem, 1.4rem + 5.2vw, 5.4rem);
+  max-width: 13ch;
+}
+.h2 {
+  font-size: clamp(2rem, 1.3rem + 2.6vw, 3.4rem);
+  max-width: 16ch;
+}
+.gold {
+  color: rgb(var(--gold));
+}
+.kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--muted));
+  margin: 0 0 18px;
+}
+.lede {
+  font-size: 18px;
+  line-height: 1.55;
+  color: rgb(var(--muted));
+  max-width: 34em;
+  margin: 0;
+}
+
+/* ---- buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  white-space: nowrap;
+}
+.btn:focus-visible {
+  outline: 2px solid rgb(var(--gold));
+  outline-offset: 3px;
+}
+.btnGold {
+  background: rgb(var(--gold));
+  color: #1d150b;
+}
+.btnGold:hover {
+  background: rgb(214 170 97);
+}
+.btnGhost {
+  border-color: rgb(255 255 255 / 0.35);
+  color: #fff;
+}
+.btnGhost:hover {
+  border-color: #fff;
+}
+.btnNavy {
+  background: rgb(var(--navy));
+  color: #fff;
+}
+.btnNavy:hover {
+  background: rgb(var(--ink));
+}
+.btnLine {
+  border-color: rgb(var(--line));
+  color: rgb(var(--navy));
+  background: transparent;
+}
+.btnLine:hover {
+  border-color: rgb(var(--navy));
+}
+.arrow::after {
+  content: "→";
+  font-weight: 500;
+}
+
+/* ---- hero: dark, photo on the right fading into ink ---- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--ink));
+  color: #fff;
+}
+.heroPhoto {
+  position: absolute;
+  inset: 0;
+}
+.heroPhoto img {
+  object-fit: cover;
+  object-position: 70% 40%;
+}
+.heroPhoto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(var(--ink)) 0%, rgb(var(--ink) / 0.92) 38%, rgb(var(--ink) / 0.55) 70%, rgb(var(--ink) / 0.35) 100%),
+    linear-gradient(0deg, rgb(var(--ink)) 0%, transparent 35%);
+}
+@media (max-width: 767px) {
+  .heroPhoto::after {
+    background: linear-gradient(0deg, rgb(var(--ink)) 25%, rgb(var(--ink) / 0.82) 60%, rgb(var(--ink) / 0.55) 100%);
+  }
+}
+.heroBody {
+  position: relative;
+  display: grid;
+  gap: 28px;
+  padding-top: 88px;
+  padding-bottom: 40px;
+}
+@media (min-width: 1024px) {
+  .heroBody {
+    padding-top: 120px;
+  }
+}
+.hero .kicker {
+  color: rgb(255 255 255 / 0.7);
+  margin: 0;
+}
+.hero .lede {
+  color: rgb(255 255 255 / 0.78);
+}
+.heroCtas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@media (max-width: 479px) {
+  .heroCtas .btn {
+    flex: 1 1 100%;
+  }
+}
+.facts {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid rgb(255 255 255 / 0.16);
+  margin-top: 24px;
+}
+.facts > div {
+  padding: 20px 20px 28px 0;
+}
+.facts > div + div {
+  padding-left: 20px;
+  border-left: 1px solid rgb(255 255 255 / 0.16);
+}
+.facts strong {
+  display: block;
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.facts span {
+  font-size: 14px;
+  color: rgb(255 255 255 / 0.66);
+}
+@media (max-width: 767px) {
+  .facts {
+    grid-template-columns: 1fr;
+  }
+  .facts > div,
+  .facts > div + div {
+    padding: 14px 0;
+    border-left: 0;
+  }
+  .facts > div + div {
+    border-top: 1px solid rgb(255 255 255 / 0.16);
+  }
+}
+
+/* ---- light sections ---- */
+.section {
+  background: rgb(var(--paper));
+  padding: 96px 0;
+}
+.sectionWhite {
+  background: #fff;
+}
+.split {
+  display: grid;
+  gap: 40px;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .split {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 64px;
+  }
+  .stick {
+    position: sticky;
+    top: 112px;
+  }
+}
+.head {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 48px;
+}
+@media (min-width: 1024px) {
+  .headRow {
+    grid-template-columns: 1fr minmax(0, 28em);
+    align-items: end;
+  }
+}
+.steps {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.steps li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 12px;
+  font-size: 16px;
+  color: rgb(var(--ink));
+}
+.steps b {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  background: rgb(var(--navy));
+  color: #fff;
+  font-size: 13px;
+}
+.steps span {
+  color: rgb(var(--muted));
+  display: block;
+  font-size: 14px;
+}
+
+/* ---- trades: photo cards ---- */
+.trades {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+@media (min-width: 1100px) {
+  .trades {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+.trade {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 380px;
+  border-radius: 16px;
+  overflow: hidden;
+  color: #fff;
+  background: rgb(var(--ink));
+  isolation: isolate;
+}
+.trade img {
+  object-fit: cover;
+  z-index: -2;
+  transition: transform 400ms ease;
+}
+.trade::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(0deg, rgb(var(--ink) / 0.95) 0%, rgb(var(--ink) / 0.55) 45%, rgb(var(--ink) / 0.05) 75%);
+}
+@media (hover: hover) and (pointer: fine) {
+  .trade:hover img {
+    transform: scale(1.04);
+  }
+}
+.tradeBody {
+  padding: 22px;
+  display: grid;
+  gap: 8px;
+}
+.tradeBody h3 {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.tradeBody p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgb(255 255 255 / 0.8);
+}
+.tradeNote {
+  margin-top: 20px;
+  font-size: 15px;
+  color: rgb(var(--muted));
+}
+
+/* ---- what you get back ---- */
+.docs {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.doc {
+  background: #fff;
+  border: 1px solid rgb(var(--line));
+  border-radius: 16px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+.docShot {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: rgb(var(--paper));
+  overflow: hidden;
+  border-bottom: 1px solid rgb(var(--line));
+}
+.docShot img {
+  object-fit: cover;
+  object-position: top;
+  transform: translateY(18px) scale(0.86);
+  box-shadow: 0 18px 30px -12px rgb(12 20 33 / 0.35);
+}
+.docBody {
+  padding: 22px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.docBody h3 {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.docBody p {
+  margin: 0;
+  color: rgb(var(--muted));
+  font-size: 15px;
+  line-height: 1.5;
+}
+.docFoot {
+  margin-top: 20px;
+  font-size: 14px;
+  color: rgb(var(--muted));
+}
+
+/* ---- prices: a dark price card ---- */
+.prices {
+  background: rgb(var(--ink));
+  color: #fff;
+  border-radius: 20px;
+  padding: 8px 28px;
+}
+@media (max-width: 559px) {
+  .prices {
+    padding: 4px 18px;
+  }
+}
+.price {
+  display: grid;
+  gap: 8px 24px;
+  padding: 26px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  align-items: center;
+}
+.price:last-child {
+  border-bottom: 0;
+}
+@media (min-width: 800px) {
+  .price {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr) minmax(0, 1fr) auto;
+  }
+}
+.priceName {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tag {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgb(var(--gold));
+  color: #1d150b;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.priceWhat {
+  font-size: 15px;
+  color: rgb(255 255 255 / 0.72);
+  line-height: 1.5;
+}
+.priceAmt {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.priceAmt small {
+  display: block;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgb(255 255 255 / 0.6);
+}
+.prices .btnLine {
+  color: #fff;
+  border-color: rgb(255 255 255 / 0.3);
+}
+.prices .btnLine:hover {
+  border-color: #fff;
+}
+.priceNote {
+  margin-top: 18px;
+  font-size: 14px;
+  color: rgb(var(--muted));
+}
+
+/* ---- promises ---- */
+.promises {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+@media (min-width: 960px) {
+  .promises {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.promise {
+  background: #fff;
+  border: 1px solid rgb(var(--line));
+  border-radius: 16px;
+  padding: 26px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.promise b {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgb(var(--navy));
+  letter-spacing: 0.02em;
+}
+.promise h3 {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.15;
+}
+.promise p {
+  margin: 0;
+  color: rgb(var(--muted));
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---- questions ---- */
+.faq {
+  border-top: 1px solid rgb(var(--line));
+}
+.faq details {
+  border-bottom: 1px solid rgb(var(--line));
+}
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 0;
+  font-family: var(--font-inter-tight), sans-serif;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary::after {
+  content: "+";
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1;
+  color: rgb(var(--navy));
+}
+.faq details[open] summary::after {
+  content: "–";
+}
+.faq summary:focus-visible {
+  outline: 2px solid rgb(var(--navy));
+  outline-offset: 4px;
+}
+.faq details p {
+  margin: 0 0 22px;
+  max-width: 46em;
+  color: rgb(var(--muted));
+  font-size: 16px;
+  line-height: 1.6;
+}
+.faqMore {
+  margin-top: 20px;
+}
+.link {
+  color: rgb(var(--navy));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* ---- closing ---- */
+.closing {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--ink));
+  color: #fff;
+  padding: 120px 0;
+}
+.closing .heroPhoto::after {
+  background: linear-gradient(90deg, rgb(var(--ink)) 0%, rgb(var(--ink) / 0.88) 45%, rgb(var(--ink) / 0.6) 100%);
+}
+.closingBody {
+  position: relative;
+  display: grid;
+  gap: 22px;
+  justify-items: start;
+}
+.closing .lede {
+  color: rgb(255 255 255 / 0.78);
+}
+.closingFine {
+  font-size: 14px;
+  color: rgb(255 255 255 / 0.6);
+  margin: 0;
+}
+.closingFine a {
+  color: #fff;
+}
+
+/* ---- the bid read tool in this look: classes doubled so they win over
+   press.module.css whatever order the two stylesheets load in ---- */
+.toolDrop.toolDrop {
+  background: #fff;
+  background-image: none;
+  border: 1.5px dashed rgb(var(--navy) / 0.35);
+  border-radius: 20px;
+  padding: 48px 28px 32px;
+  box-shadow: 0 30px 60px -40px rgb(12 20 33 / 0.45);
+}
+.toolCap.toolCap {
+  background: rgb(var(--ink));
+  font-family: var(--font-archivo), sans-serif;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+.toolTitle.toolTitle {
+  font-family: var(--font-inter-tight), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+}
+.toolPrimary.toolPrimary,
+.toolQuiet.toolQuiet {
+  border-radius: 999px;
+  font-family: var(--font-archivo), sans-serif;
+  font-weight: 600;
+  min-height: 50px;
+  padding: 0 22px;
+}
+.toolPrimary.toolPrimary {
+  background: rgb(var(--navy));
+  border-color: rgb(var(--navy));
+  color: #fff;
+}
+.toolPrimary.toolPrimary:hover {
+  background: rgb(var(--ink));
+}
+.toolQuiet.toolQuiet {
+  background: transparent;
+  border: 1.5px solid rgb(var(--line));
+  color: rgb(var(--navy));
+}
+.toolQuiet.toolQuiet:hover {
+  border-color: rgb(var(--navy));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .trade img {
+    transition: none;
+  }
+}

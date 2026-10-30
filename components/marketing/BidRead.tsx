@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { readBid, GROUP_ORDER, type BidRead as Result, type ReadGroup } from "@/lib/bid-read/read";
@@ -64,7 +64,21 @@ async function filePages(file: File, onPage: (done: number, total: number) => vo
   throw new Error("unsupported");
 }
 
-export function BidRead() {
+// Extra class names for a page with its own look (the homepage's field
+// look, components/marketing/field.module.css); empty means the press look.
+export type BidReadLook = { drop?: string; title?: string; cap?: string; primary?: string; quiet?: string };
+const LookContext = createContext<BidReadLook>({});
+
+export function BidRead({ look = {} }: { look?: BidReadLook }) {
+  return (
+    <LookContext.Provider value={look}>
+      <BidReadInner />
+    </LookContext.Provider>
+  );
+}
+
+function BidReadInner() {
+  const look = useContext(LookContext);
   const [state, setState] = useState<State>({ step: "idle" });
   const [dragging, setDragging] = useState(false);
   const input = useRef<HTMLInputElement>(null);
@@ -119,7 +133,7 @@ export function BidRead() {
     <div className={s.read}>
       {(state.step === "idle" || state.step === "reading") && (
         <div
-          className={`${s.drop} ${dragging ? s.dropOn : ""}`}
+          className={`${s.drop} ${dragging ? s.dropOn : ""} ${look.drop ?? ""}`}
           onDragOver={(e) => {
             e.preventDefault();
             setDragging(true);
@@ -132,7 +146,7 @@ export function BidRead() {
             if (file && state.step !== "reading") read(file);
           }}
         >
-          <span className={`${s.mono} ${s.readCap}`}>Free bid read · no sign-up</span>
+          <span className={`${s.mono} ${s.readCap} ${look.cap ?? ""}`}>Free bid read · no sign-up</span>
           {state.step === "reading" ? (
             <div className={s.reading} role="status" aria-live="polite">
               <p className={s.serif}>Reading {state.fileName}</p>
@@ -145,16 +159,16 @@ export function BidRead() {
             </div>
           ) : (
             <>
-              <p className={`${s.serif} ${s.dropTitle}`}>Drop your bid here. See what it asks for.</p>
+              <p className={`${s.serif} ${s.dropTitle} ${look.title ?? ""}`}>Drop your bid here. See what it asks for.</p>
               <p className={s.muted}>
                 The deadline, the forms to sign, bonds, insurance, site visits: every line with its page and the
                 bid&apos;s own words.
               </p>
               <div className={s.ctas}>
-                <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => input.current?.click()}>
+                <button type="button" className={`${s.btn} ${s.btnPrimary} ${look.primary ?? ""}`} onClick={() => input.current?.click()}>
                   Choose a bid file
                 </button>
-                <button type="button" className={`${s.btn} ${s.btnQuiet}`} onClick={trySample}>
+                <button type="button" className={`${s.btn} ${s.btnQuiet} ${look.quiet ?? ""}`} onClick={trySample}>
                   Try a sample bid
                 </button>
               </div>
@@ -342,6 +356,7 @@ function ReadActions({
   carry?: { file: File; pages: string[]; result: Result } | null;
 }) {
   const router = useRouter();
+  const look = useContext(LookContext);
   const [carrying, setCarrying] = useState(false);
 
   // A real file comes along to sign-up; the synthetic sample never does.
@@ -361,15 +376,15 @@ function ReadActions({
     <>
       <div className={s.readActions}>
         {carry ? (
-          <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={startWithThisBid} disabled={carrying}>
+          <button type="button" className={`${s.btn} ${s.btnPrimary} ${look.primary ?? ""}`} onClick={startWithThisBid} disabled={carrying}>
             {carrying ? "Bringing your bid…" : "Start a pilot bid with this bid"}
           </button>
         ) : (
-          <Link href="/intake?package=pilot" className={`${s.btn} ${s.btnPrimary}`}>
+          <Link href="/intake?package=pilot" className={`${s.btn} ${s.btnPrimary} ${look.primary ?? ""}`}>
             Start a pilot bid
           </Link>
         )}
-        <button type="button" className={`${s.btn} ${s.btnQuiet}`} onClick={onReset}>
+        <button type="button" className={`${s.btn} ${s.btnQuiet} ${look.quiet ?? ""}`} onClick={onReset}>
           Read another bid
         </button>
       </div>
