@@ -289,6 +289,18 @@ body {
 }
 /* The wordmark is part of the logo, not a heading: it keeps its own face
    (Chivo, loaded site-wide in app/layout.tsx) whatever theme it sits in. */
+/* Round 15 (2026-10-30): no italic accent clause in headings anywhere on
+   the site -- "Plain words. *Italic navy words.*" read as a template. The
+   clause keeps its navy colour, upright. Headings set at 600 to match the
+   homepage. */
+.theme-press :is(h1, h2, h3) em {
+  font-style: normal;
+}
+.theme-press :is(h1, h2) {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
 .theme-press [data-wordmark] {
   font-family: theme("fontFamily.headline");
   font-weight: 700;

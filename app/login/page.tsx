@@ -49,13 +49,12 @@ export default async function LoginPage({
               WCAG heading-hierarchy defect found via critique 2026-09-20.
               Font size is controlled by the className, not the tag, so
               this carries no visual change. */}
-          <h2 className="font-headline text-headline-lg text-primary font-bold">
-            You run the crew. We handle the paperwork.
+          <h2 className="font-headline text-headline-lg text-on-surface font-bold">
+            Every form a bid asks for. <em className="text-primary">Handled.</em>
           </h2>
           <p className="text-body-lg text-on-surface-variant">
-            Upload the RFP. We turn complex solicitations into a ready-to-submit capability
-            statement, compliance matrix, and technical narrative, ready for you to review
-            and send.
+            We read every page, prepare the package and fill in the forms. You sign it and send
+            it in yourself.
           </p>
         </div>
         <div className="relative flex flex-col gap-5 max-w-lg">
@@ -120,7 +119,7 @@ export default async function LoginPage({
                 exactly the device this trade-contractor audience most
                 plausibly logs in from. */}
             <p className="text-body-md text-on-surface-variant mt-2 md:hidden">
-              You run the crew. We handle the paperwork.
+              Every form a bid asks for. Handled.
             </p>
           </div>
 
