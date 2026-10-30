@@ -1,5 +1,6 @@
 import type { Block } from "@/lib/guide/types";
 import s from "@/components/marketing/press.module.css";
+import { headingId } from "@/lib/guide/reading";
 
 // Renders a guide article's structured blocks with the press styles, as
 // plain text (never HTML), inside the page's s.prose container.
@@ -7,7 +8,12 @@ export function GuideBlocks({ blocks }: { blocks: Block[] }) {
   return (
     <>
       {blocks.map((b, i) => {
-        if (b.kind === "h2") return <h2 key={i}>{b.text}</h2>;
+        if (b.kind === "h2")
+          return (
+            <h2 key={i} id={headingId(b.text)} className="scroll-mt-24">
+              {b.text}
+            </h2>
+          );
         if (b.kind === "p") return <p key={i}>{b.text}</p>;
         if (b.kind === "list") {
           // The press styles reset list markers; guide lists need them

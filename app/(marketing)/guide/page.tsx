@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import s from "@/components/marketing/press.module.css";
+import g from "@/components/marketing/guide.module.css";
+import { readingMinutes } from "@/lib/guide/reading";
 import { ARTICLES, STEP_LABELS } from "@/lib/guide/articles";
 import type { Step } from "@/lib/guide/types";
-import { NextStep } from "@/components/marketing/NextStep";
 
 export const metadata: Metadata = {
   title: "New to bidding?",
@@ -14,31 +14,61 @@ export const metadata: Metadata = {
 // Learn, Get ready, Start, with the articles under each step.
 const STEPS: Step[] = ["learn", "ready", "start"];
 
+// 2026-10-30 (round 17): the guide as a short course -- three numbered
+// tracks of article cards with reading times, a clear place to start, and
+// the four-question check for anyone unsure where they are.
 export default function GuidePage() {
+  const first = ARTICLES[0];
   return (
-    <>
-      <header className={s.pageHead}>
-        <h1 className={s.pageTitle}>New to bidding?</h1>
-        <p className={s.lede}>Government work for trade businesses, in plain English.</p>
+    <div className={g.wrap}>
+      <header className={g.head}>
+        <p className={g.kicker}>New to bidding?</p>
+        <h1 className={g.title}>Government work, in plain English.</h1>
+        <p className={g.lede}>
+          Seven short reads for trade businesses, in order: what a bid is, getting ready, and your first one. About
+          twenty minutes in all.
+        </p>
+        <div className={g.ctas}>
+          <Link href={`/guide/${first.slug}`} className={`${g.btn} ${g.btnDark}`}>
+            Start here: {first.title}
+          </Link>
+          <Link href="/quiz" className={g.btn}>
+            Where do I start?
+          </Link>
+        </div>
       </header>
-      <section className={s.narrow}>
+
+      <div className={g.tracks}>
         {STEPS.map((step, n) => (
-          <div key={step} className="mb-10">
-            <h2 className={s.rowTitle}>
-              <span className={s.mono}>{n + 1}.</span> {STEP_LABELS[step]}
+          <section key={step} className={g.track} aria-labelledby={`track-${step}`}>
+            <h2 id={`track-${step}`}>
+              <span className={g.num}>{n + 1}</span>
+              {STEP_LABELS[step]}
             </h2>
-            <div className={s.ledger}>
+            <ol className={g.cards}>
               {ARTICLES.filter((a) => a.step === step).map((a) => (
-                <article key={a.slug}>
-                  <Link href={`/guide/${a.slug}`} className={s.inlineLink}>{a.title}</Link>
-                  <p className={s.muted}>{a.summary}</p>
-                </article>
+                <li key={a.slug}>
+                  <Link href={`/guide/${a.slug}`} className={`${g.card} ${a.slug === first.slug ? g.start : ""}`}>
+                    <b>{a.title}</b>
+                    <span>{a.summary}</span>
+                    <small>{readingMinutes(a)} min read</small>
+                  </Link>
+                </li>
               ))}
-            </div>
-          </div>
+            </ol>
+          </section>
         ))}
-        <NextStep />
-      </section>
-    </>
+      </div>
+
+      <div className={g.check}>
+        <div>
+          <b>Not sure where you are?</b>
+          <p>Four yes-or-no questions show your road to a first bid, and the one thing to do next.</p>
+        </div>
+        <Link href="/quiz" className={g.btn}>
+          Take the 1-minute check
+        </Link>
+      </div>
+    </div>
   );
 }
