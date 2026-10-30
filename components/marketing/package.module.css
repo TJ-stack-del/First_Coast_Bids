@@ -1,0 +1,200 @@
+/* The Gallery's package viewer (components/marketing/PackageViewer.tsx). */
+.viewer {
+  --ink: 14 22 34;
+  --navy: 12 45 82;
+  --gold: 193 147 73;
+  --line: 222 214 199;
+  --muted: 96 90 80;
+  display: grid;
+  gap: 20px;
+  font-family: var(--font-public-sans), system-ui, sans-serif;
+}
+.trades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trades button {
+  font: inherit;
+  font-size: 15px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--ink) / 0.16);
+  background: #fff;
+  color: rgb(var(--ink) / 0.75);
+  cursor: pointer;
+}
+.trades button[aria-pressed="true"] {
+  background: rgb(var(--ink));
+  border-color: rgb(var(--ink));
+  color: #fff;
+  font-weight: 600;
+}
+.trades button:focus-visible,
+.pager button:focus-visible,
+.thumbs button:focus-visible {
+  outline: 2px solid rgb(var(--navy));
+  outline-offset: 2px;
+}
+.stage {
+  display: grid;
+  gap: 24px;
+  padding: 24px;
+  border-radius: 24px;
+  background: rgb(var(--navy));
+  background-image: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+@media (min-width: 960px) {
+  .stage {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    padding: 36px;
+    gap: 36px;
+  }
+}
+.main {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+.page {
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 210 / 297;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 40px 70px -30px rgb(0 0 0 / 0.65);
+}
+.loading {
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 210 / 297;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.8);
+  font-size: 15px;
+  text-align: center;
+  padding: 24px;
+}
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #fff;
+  font-size: 14px;
+}
+.pager button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  background: transparent;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+.pager button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.side {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+.thumbs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.thumbs button {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgb(255 255 255 / 0.7);
+  font: inherit;
+  font-size: 11.5px;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+.thumbs img {
+  width: 100%;
+  aspect-ratio: 210 / 297;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 3px;
+  background: #fff;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.thumbs button[aria-current="page"] {
+  color: #fff;
+  font-weight: 600;
+}
+.thumbs button[aria-current="page"] img {
+  outline-color: rgb(var(--gold));
+}
+.about {
+  background: rgb(255 255 255 / 0.96);
+  border-radius: 16px;
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  color: rgb(var(--ink));
+}
+.about p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgb(var(--muted));
+}
+.about b {
+  color: rgb(var(--ink));
+  font-family: var(--font-source-serif), Georgia, serif;
+  font-size: 19px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+}
+.btn:focus-visible {
+  outline: 2px solid rgb(var(--navy));
+  outline-offset: 3px;
+}
+.btnDark {
+  background: rgb(var(--ink));
+  color: #fff;
+}
+.btnDark:hover {
+  background: rgb(var(--navy));
+}
+.btnLine {
+  border-color: rgb(var(--line));
+  color: rgb(var(--navy));
+}
+.btnLine:hover {
+  border-color: rgb(var(--navy));
+}
