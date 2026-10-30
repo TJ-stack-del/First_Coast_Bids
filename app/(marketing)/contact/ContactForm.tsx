@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/Spinner";
 import s from "@/components/marketing/press.module.css";
 
@@ -11,6 +11,14 @@ export function ContactForm() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+
+  // A question from the FAQ's "Ask us anything" that had no written answer
+  // arrives as ?message=..., so the visitor doesn't type it twice. Read on
+  // mount (not useSearchParams) to keep the page static.
+  useEffect(() => {
+    const asked = new URLSearchParams(window.location.search).get("message");
+    if (asked) setMessage((m) => m || asked.slice(0, 2000));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
