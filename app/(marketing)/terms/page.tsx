@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 // Same disclaimer/discipline as app/(marketing)/privacy/page.tsx -- an
 // honest placeholder grounded in real, verified product facts (the real
-// pricing tiers from PRICING_PREVIEW in app/(marketing)/page.tsx, the
+// pricing tiers on app/(marketing)/pricing/page.tsx, the
 // real "you submit it yourself" model from the FAQ), not fabricated
 // enforceable legal language (no liability limitation, indemnification,
 // governing-law, or arbitration clauses -- those need real counsel).
