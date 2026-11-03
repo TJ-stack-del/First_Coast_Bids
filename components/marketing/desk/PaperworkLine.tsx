@@ -32,9 +32,11 @@ export function PaperworkLine() {
           <li key={t}>{t}</li>
         ))}
       </ul>
-      <div className={s.line__track} aria-hidden="true">
-        <Run copy={1} />
-        <Run copy={2} />
+      <div className={s.line__view} aria-hidden="true">
+        <div className={s.line__track}>
+          <Run copy={1} />
+          <Run copy={2} />
+        </div>
       </div>
     </section>
   );

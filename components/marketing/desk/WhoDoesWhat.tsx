@@ -38,8 +38,16 @@ export function WhoDoesWhat() {
   useEffect(() => setReady(true), []);
 
   const keyDown = (e: React.KeyboardEvent, i: number) => {
-    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-    const n = (i + (e.key === "ArrowRight" ? 1 : PANELS.length - 1)) % PANELS.length;
+    const last = PANELS.length - 1;
+    const to: Record<string, number> = {
+      ArrowRight: i === last ? 0 : i + 1,
+      ArrowLeft: i === 0 ? last : i - 1,
+      Home: 0,
+      End: last,
+    };
+    if (!(e.key in to)) return;
+    e.preventDefault();
+    const n = to[e.key];
     setOn(n);
     tabs.current[n]?.focus();
   };

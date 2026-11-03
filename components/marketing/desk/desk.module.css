@@ -74,7 +74,7 @@
 .fill { padding: 0 0.25em; border: 1px dashed var(--color-muted); border-radius: 3px; color: var(--color-muted); }
 
 /* controls */
-.btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 var(--space-lg); border: var(--rule-hair) solid var(--color-rule); border-radius: var(--radius-pill); background: var(--color-paper-2); color: var(--color-ink); font: 500 var(--text-md)/1 var(--font-body); white-space: nowrap; text-decoration: none; cursor: pointer; box-shadow: inset 0 1px 0 var(--color-sheet), 0 1px 1px var(--color-rule); transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+.btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 var(--space-lg); border: var(--rule-hair) solid var(--color-rule); border-radius: var(--radius-pill); background: var(--color-paper-2); color: var(--color-ink); font: 500 var(--text-md)/1 var(--font-body); white-space: nowrap; text-decoration: none; cursor: pointer; box-shadow: inset 0 1px 0 var(--color-sheet), 0 1px 1px var(--color-rule); transition: transform var(--dur-micro) var(--ease-out); }
 .btn:hover { background: var(--color-paper-3); }
 .btn:active { transform: translateY(1px); }
 .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
@@ -98,7 +98,7 @@
 .home .nav__links a:not(.btn):hover { color: var(--color-ink); text-decoration: underline; }
 
 /* the desk: a lamp-lit pile of bid pages you pick up, then hand over */
-.hero { position: relative; margin-top: -100px; padding-block: 132px 0; background: radial-gradient(60% 55% at 50% 58%, var(--color-lamp-glow), transparent 70%), linear-gradient(180deg, var(--color-night) 0%, var(--color-wall) 62%, var(--color-night) 100%); color: var(--color-on-night); overflow: hidden; }
+.hero { position: relative; margin-top: calc(-1 * (var(--space-3xl) + var(--space-xs))); padding-block: var(--space-4xl) 0; background: radial-gradient(60% 55% at 50% 58%, var(--color-lamp-glow), transparent 70%), linear-gradient(180deg, var(--color-night) 0%, var(--color-wall) 62%, var(--color-night) 100%); color: var(--color-on-night); overflow: hidden; }
 .hero__top { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-md); }
 .home .hero h1 { max-width: none; font-size: clamp(2.5rem, 3.6vw + 1rem, 4.25rem); color: var(--color-on-night); }
 .hero .lead { color: var(--color-on-night-2); max-width: 46ch; }
@@ -117,12 +117,12 @@
 .home[data-js] .page small { opacity: 0; transition: opacity var(--dur-short) var(--ease-out); }
 .home[data-js] .page[aria-pressed="true"] small, .home[data-js] .closed .page small { opacity: 1; }
 .page:hover { box-shadow: 0 1px 0 var(--color-paper-3), 10px 16px 24px var(--color-shadow); }
-.page:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.page:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .page:active { filter: brightness(0.98); }
 
 .folder { position: absolute; left: 690px; top: 230px; width: 236px; height: 300px; transform-style: preserve-3d; transform: translateZ(1px); }
 .folder__back { position: absolute; inset: 0; background: var(--color-manila-dark); border-radius: 3px 3px 4px 4px; box-shadow: 6px 10px 18px var(--color-shadow); }
-.folder__back::before { content: ""; position: absolute; left: 18px; top: -16px; width: 90px; height: 18px; background: var(--color-manila-dark); border-radius: 4px 4px 0 0; }
+.folder__back::before { content: ""; position: absolute; left: var(--space-md); top: calc(-1 * var(--space-md)); width: 90px; height: var(--space-md); background: var(--color-manila-dark); border-radius: 4px 4px 0 0; }
 .flap { position: absolute; inset: 0; background: var(--color-manila); border-radius: 3px; transform-origin: 100% 50%; transform: translateZ(2px) rotateY(-180deg); transition: transform 800ms var(--ease-out); display: flex; align-items: center; justify-content: center; }
 .flap span { font-family: var(--font-display); font-weight: 600; font-size: 1.375rem; border: 3px solid var(--color-green); color: var(--color-green); padding: var(--space-xs) var(--space-md); border-radius: 4px; transform: rotate(-8deg); transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out); }
 /* without JS the folder stays open, so the stamp shows on the open flap, turned to read the right way */
@@ -137,8 +137,9 @@
 @media (prefers-reduced-motion: reduce) { .page, .flap, .flap span { transition: none !important; } .closed .flap, .home[data-js] .closed .flap span { transition-delay: 0s; } }
 
 /* the paperwork line: one big line of type drifting left */
-.line { position: relative; overflow: hidden; padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-ink); background: var(--color-paper); color: var(--color-ink); }
-.line:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -4px; }
+.line { position: relative; padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-ink); background: var(--color-paper); color: var(--color-ink); }
+.line:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.line__view { overflow: hidden; }
 .line__track { display: flex; width: max-content; animation: line-drift 60s linear infinite; }
 .line:hover .line__track, .line:focus .line__track { animation-play-state: paused; }
 .line__run { display: flex; flex: none; }
@@ -157,7 +158,7 @@
 .split__grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--gap-columns); }
 .split__head { display: flex; flex-direction: column; gap: var(--space-lg); }
 .seg { display: inline-flex; padding: var(--space-2xs); gap: var(--space-2xs); background: var(--color-paper-3); border-radius: var(--radius-pill); align-self: flex-start; }
-.seg button { min-height: 44px; padding: 0 var(--space-md); border: 0; border-radius: 4px; background: transparent; color: var(--color-ink-2); font: 500 var(--text-md)/1 var(--font-body); cursor: pointer; transition: background-color var(--dur-short) var(--ease-out); }
+.seg button { min-height: 44px; padding: 0 var(--space-md); border: 0; border-radius: 4px; background: transparent; color: var(--color-ink-2); font: 500 var(--text-md)/1 var(--font-body); cursor: pointer; }
 .seg button[aria-selected="true"] { background: var(--color-ink); color: var(--color-paper-2); }
 .seg button:hover { color: var(--color-ink); }
 .seg button[aria-selected="true"]:hover { color: var(--color-paper-2); }

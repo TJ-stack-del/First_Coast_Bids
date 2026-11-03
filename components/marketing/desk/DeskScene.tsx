@@ -131,6 +131,7 @@ export function DeskScene() {
                   type="button"
                   aria-pressed={lifted === i}
                   tabIndex={gathered ? -1 : 0}
+                  aria-hidden={gathered || undefined}
                   style={
                     {
                       "--x": `${p.x}px`,
