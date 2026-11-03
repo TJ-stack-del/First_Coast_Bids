@@ -3,6 +3,8 @@ import { redHatDisplay, redHatMono, redHatText } from "./desk-fonts";
 import { DeskScene } from "./DeskScene";
 import { WhoDoesWhat } from "./WhoDoesWhat";
 import { DrawnCanvas } from "./DrawnCanvas";
+import { Mark } from "./Mark";
+import { PaperworkLine } from "./PaperworkLine";
 
 // The homepage: the approved Hallmark "Furrow" reference build
 // (design-drafts/2026-11-02-desk-home/, brief in its README) ported to
@@ -22,18 +24,6 @@ const NAV = [
   { href: "#where", label: "Where" },
   { href: "#price", label: "Price" },
 ];
-
-function Mark() {
-  return (
-    <svg viewBox="5 5 230 230" aria-hidden="true">
-      <circle cx="120" cy="120" r="108" fill="none" stroke="currentColor" strokeWidth="14" />
-      <path d="M120 58 L170 144 L70 144 Z" fill="none" stroke="currentColor" strokeWidth="13" />
-      <line x1="48" y1="118" x2="192" y2="118" stroke="var(--color-accent)" strokeWidth="11" />
-      <line x1="120" y1="40" x2="120" y2="160" stroke="var(--color-accent)" strokeWidth="11" />
-      <circle cx="120" cy="118" r="12" fill="currentColor" />
-    </svg>
-  );
-}
 
 export function DeskHome() {
   return (
@@ -71,12 +61,19 @@ export function DeskHome() {
             <p className={s.lead}>We do the paperwork for city, county and school bids.</p>
             <div className={s.hero__actions}>
               <a className={`${s.btn} ${s["btn--primary"]}`} href="#contact">
-                Send me your next bid
+                <span>Send me your next bid</span>
+                <span className={s.btn__arrow} aria-hidden="true">
+                  <svg viewBox="0 0 20 20" focusable="false">
+                    <path d="M3.5 10h12.5M11 4.5 16.5 10 11 15.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
               </a>
             </div>
           </div>
           <DeskScene />
         </section>
+
+        <PaperworkLine />
 
         <section className={s.split} id="split" aria-labelledby="split-h">
           <WhoDoesWhat />

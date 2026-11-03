@@ -84,11 +84,10 @@ function prepare(cv: HTMLCanvasElement, fixed?: { w: number; h: number }) {
   return { ctx, w, h };
 }
 
-export const DESK_W = 1040;
-export const DESK_H = 640;
-
+// The desk is 1040 x 640 wide and a portrait 620 x 900 on a phone; it is
+// drawn at its untransformed size (the tilt and scale are CSS).
 export function drawWood(cv: HTMLCanvasElement) {
-  const p = prepare(cv, { w: DESK_W, h: DESK_H });
+  const p = prepare(cv, { w: cv.offsetWidth || 1040, h: cv.offsetHeight || 640 });
   if (!p) return;
   const { ctx, w: W, h: H } = p;
   ctx.fillStyle = tok(cv, "--color-wood");
@@ -96,8 +95,9 @@ export function drawWood(cv: HTMLCanvasElement) {
   const r = rng(42), n = makeNoise(77);
   const dark = tok(cv, "--color-wood-dark"), light = tok(cv, "--color-wood-light");
   ctx.lineWidth = 1;
-  for (let k = 0; k < 160; k++) {
-    const y0 = (k / 160) * H;
+  const lines = Math.round(H / 4);
+  for (let k = 0; k < lines; k++) {
+    const y0 = (k / lines) * H;
     ctx.strokeStyle = k % 3 ? dark : light;
     ctx.globalAlpha = 0.18 + r() * 0.25;
     ctx.beginPath();
@@ -119,7 +119,7 @@ export function drawWood(cv: HTMLCanvasElement) {
   ctx.strokeStyle = tok(cv, "--color-night");
   ctx.globalAlpha = 0.5;
   ctx.lineWidth = 2;
-  [214, 428].forEach((y) => {
+  [Math.round(H / 3), Math.round((H * 2) / 3)].forEach((y) => {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(W, y);
@@ -227,10 +227,15 @@ export function drawLand(cv: HTMLCanvasElement) {
   const ink = tok(cv, "--color-ink"), acc = tok(cv, "--color-accent"), mut = tok(cv, "--color-muted");
   const font = `500 ${w < 520 ? 11 : 13}px ${tok(cv, "--font-body")}`;
   const small = w < 520 ? 11 : 13;
+  const narrow = w < 520;
   ctx.textBaseline = "middle";
   ctx.font = font;
   ctx.fillStyle = mut;
-  ([["Fernandina Beach", 0.8, 0.145], ["Jacksonville", 0.6, 0.43], ["Orange Park", 0.53, 0.57], ["St. Augustine", 0.78, 0.935]] as const).forEach(
+  // On a narrow map the City of Jacksonville tag sits under its pin, where
+  // the town's own name would be, so the town name is left off there.
+  const towns: [string, number, number][] = [["Fernandina Beach", 0.8, narrow ? 0.155 : 0.145], ["Orange Park", 0.53, 0.57], ["St. Augustine", 0.78, 0.935]];
+  if (!narrow) towns.push(["Jacksonville", 0.6, 0.43]);
+  towns.forEach(
     ([t, x, y]) => {
       ctx.textAlign = "center";
       ctx.fillText(t, x * w, y * h);
@@ -255,10 +260,12 @@ export function drawLand(cv: HTMLCanvasElement) {
     ctx.fill();
     ctx.stroke();
   };
-  const tag = (t: string, x: number, y: number, left: boolean) => {
+  const tag = (t: string, x: number, y: number, left: boolean, below = false) => {
     ctx.font = font;
     const tw = ctx.measureText(t).width, pw = tw + 16, ph = small + 10;
-    const bx = left ? x - 14 - pw : x + 14;
+    let bx = below ? x - pw / 2 : left ? x - 14 - pw : x + 14;
+    if (below) y += ph / 2 + 12;
+    bx = Math.max(4, Math.min(bx, w - pw - 4)); // never past the map's edge
     ctx.fillStyle = ink;
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(bx, y - ph / 2, pw, ph, 4);
@@ -270,7 +277,7 @@ export function drawLand(cv: HTMLCanvasElement) {
   };
   BUYERS.forEach((b) => {
     shape(b.kind, b.x * w, b.y * h);
-    tag(b.name, b.x * w, b.y * h, b.left);
+    tag(b.name, b.x * w, b.y * h, b.left, narrow && b.kind === "city");
   });
 
   // two fold creases
