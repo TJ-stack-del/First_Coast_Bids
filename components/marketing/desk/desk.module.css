@@ -14,7 +14,11 @@
  * scoped selectors; it still sits above every rule and nothing below it uses
  * a literal color. The reference's unused map-entry, packet-sheet and loose-
  * page rules were dropped. The desk's scale gets media-query steps so it fits
- * before JavaScript measures it. */
+ * before JavaScript measures it.
+ * 2026-11-03: added the paperwork line under the hero, the two-part primary
+ * button (arrow in an ink square), a portrait phone desk (pile above the
+ * folder), the stamp readable on the open flap without JS, and a plain wood
+ * fill under the canvas so the desk shows before or without the drawing. */
 .home {
   color-scheme: light;
   --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;

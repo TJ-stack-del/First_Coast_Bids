@@ -34,6 +34,8 @@ Page order:
    - Click a page: it lifts toward the viewer and shows who handles it.
    - "Hand it to us": pages slide into the folder, it closes and is stamped "Ready to sign".
    - Headline "Your bid, complete and in on time." + one line + "Send me your next bid".
+2b. A big line of the packet's paperwork drifting left (added 2026-11-03; pauses on hover
+   and focus, stands still and wraps with reduced motion).
 3. Who does what: a two-tab switch ("We do" / "You do"), four rows each.
 4. Where we work: a generated survey-style map of the First Coast (canvas, not a map tile)
    with five public buyers pinned: Nassau County, City of Jacksonville, Duval County Public
@@ -72,6 +74,8 @@ Page order:
 2. Fill the two placeholders once Mike provides them.
 3. ~~Phone layout of the desk scene: the open folder's right edge clips.~~ Done 2026-11-02:
    the scene now fits its full drawn width (desk plus open flap) and is nudged left to centre.
+   Recomposed 2026-11-03: at 40rem and below the desk is a portrait 620 x 900 with the
+   pile above the folder, bigger pages, and a picked-up page about 70% of the screen wide.
 4. Optional: replace the code-drawn desk with a real or generated photo of a desk behind the
    same interactive pages, for more depth.
 5. Optional: the logo mark is shown in ink and orange. Mike's chosen logo (Direction A,
