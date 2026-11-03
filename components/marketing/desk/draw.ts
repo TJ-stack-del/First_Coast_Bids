@@ -85,46 +85,128 @@ function prepare(cv: HTMLCanvasElement, fixed?: { w: number; h: number }) {
 }
 
 // The desk is 1040 x 640 wide and a portrait 620 x 900 on a phone; it is
-// drawn at its untransformed size (the tilt and scale are CSS).
+// drawn at its untransformed size (the tilt and scale are CSS). Three planks,
+// each its own tone, grain that bends around a few knots, bevelled seams, the
+// lamp's pool, a coffee ring, and the edges falling off into the dark.
 export function drawWood(cv: HTMLCanvasElement) {
   const p = prepare(cv, { w: cv.offsetWidth || 1040, h: cv.offsetHeight || 640 });
   if (!p) return;
   const { ctx, w: W, h: H } = p;
+  const portrait = H > W;
+  const dark = tok(cv, "--color-wood-dark"), light = tok(cv, "--color-wood-light"), night = tok(cv, "--color-night");
   ctx.fillStyle = tok(cv, "--color-wood");
   ctx.fillRect(0, 0, W, H);
+
+  const seams = [Math.round(H / 3), Math.round((H * 2) / 3)];
+  const planks = [0, ...seams, H];
+  // each plank a shade apart, as boards cut from different trees
+  [0.1, 0, 0.16].forEach((a, i) => {
+    ctx.globalAlpha = a;
+    ctx.fillStyle = i === 1 ? light : dark;
+    ctx.fillRect(0, planks[i], W, planks[i + 1] - planks[i]);
+  });
+  ctx.globalAlpha = 1;
+
+  // knots: a few per plank, the grain lines bend around them
   const r = rng(42), n = makeNoise(77);
-  const dark = tok(cv, "--color-wood-dark"), light = tok(cv, "--color-wood-light");
+  const knots: { x: number; y: number; a: number; sx: number; sy: number }[] = [];
+  for (let i = 0; i < 3; i++) {
+    const count = i === 1 ? 1 : 2;
+    for (let k = 0; k < count; k++)
+      knots.push({
+        x: W * (0.12 + r() * 0.76),
+        y: planks[i] + (planks[i + 1] - planks[i]) * (0.3 + r() * 0.4),
+        a: 10 + r() * 8,
+        sx: 50 + r() * 40,
+        sy: 18 + r() * 10,
+      });
+  }
+  const bend = (x: number, y: number) =>
+    knots.reduce((d, k) => {
+      const ex = Math.exp(-((x - k.x) ** 2) / (k.sx * k.sx)), ey = Math.exp(-((y - k.y) ** 2) / (k.sy * k.sy * 4));
+      return d + Math.sign(y - k.y || 1) * k.a * ex * ey;
+    }, 0);
+
   ctx.lineWidth = 1;
-  const lines = Math.round(H / 4);
+  const lines = Math.round(H / 3);
   for (let k = 0; k < lines; k++) {
     const y0 = (k / lines) * H;
     ctx.strokeStyle = k % 3 ? dark : light;
-    ctx.globalAlpha = 0.18 + r() * 0.25;
+    ctx.globalAlpha = 0.16 + r() * 0.26;
     ctx.beginPath();
-    for (let x = 0; x <= W; x += 8) {
-      const y = y0 + (n(x / 140, k / 6) - 0.5) * 22;
+    for (let x = 0; x <= W; x += 6) {
+      const y = y0 + (n(x / 140, k / 6) - 0.5) * 22 + bend(x, y0);
       if (x) ctx.lineTo(x, y);
       else ctx.moveTo(x, y);
     }
     ctx.stroke();
   }
+  knots.forEach((k) => {
+    ctx.strokeStyle = dark;
+    for (let ring = 0; ring < 5; ring++) {
+      ctx.globalAlpha = 0.5 - ring * 0.08;
+      ctx.lineWidth = ring ? 1 : 2.5;
+      ctx.beginPath();
+      ctx.ellipse(k.x, k.y, 4 + ring * 5, 2 + ring * 2.2, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.ellipse(k.x, k.y, 3.5, 1.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  });
   ctx.globalAlpha = 1;
+
+  // a coffee ring, left from some earlier late night
+  const ring = portrait ? { x: W * 0.86, y: H * 0.56, r: 30 } : { x: W * 0.9, y: H * 0.16, r: 34 };
+  ctx.strokeStyle = night;
+  ctx.globalAlpha = 0.28;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(ring.x, ring.y, ring.r, 0.3, Math.PI * 1.85);
+  ctx.stroke();
+  ctx.globalAlpha = 0.14;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(ring.x + 2, ring.y + 1, ring.r - 4, 1.2, Math.PI * 2.4);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
   // the lamp's pool of light
-  const g = ctx.createRadialGradient(W * 0.48, H * 0.45, 20, W * 0.48, H * 0.45, W * 0.5);
+  const lx = W * 0.48, ly = H * 0.45;
+  const g = ctx.createRadialGradient(lx, ly, 20, lx, ly, Math.max(W, H) * 0.5);
   g.addColorStop(0, tok(cv, "--color-lamp-pool"));
   g.addColorStop(1, "transparent");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
-  // plank seams
-  ctx.strokeStyle = tok(cv, "--color-night");
-  ctx.globalAlpha = 0.5;
-  ctx.lineWidth = 2;
-  [Math.round(H / 3), Math.round((H * 2) / 3)].forEach((y) => {
+
+  // plank seams: a dark gap with a lit lip on the board below it
+  seams.forEach((y) => {
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = night;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(W, y);
     ctx.stroke();
+    ctx.globalAlpha = 0.35;
+    ctx.strokeStyle = light;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, y + 2);
+    ctx.lineTo(W, y + 2);
+    ctx.stroke();
   });
+  ctx.globalAlpha = 1;
+
+  // the edges fall off into the dark, away from the lamp
+  const v = ctx.createRadialGradient(lx, ly, Math.min(W, H) * 0.35, lx, ly, Math.max(W, H) * 0.78);
+  v.addColorStop(0, "transparent");
+  v.addColorStop(1, night);
+  ctx.globalAlpha = 0.7;
+  ctx.fillStyle = v;
+  ctx.fillRect(0, 0, W, H);
   ctx.globalAlpha = 1;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import s from "./desk.module.css";
 import { drawWood } from "./draw";
 
@@ -32,6 +32,24 @@ const PHONE = "(max-width: 40rem)";
 const START_HINT = "Pick up a page to see who handles it.";
 
 type Page = (typeof PAGES)[number];
+
+// What each page looks like: a few generic form parts, no real form copied.
+// Drawn in CSS (desk.module.css, .form), hidden from screen readers since the
+// page's name already says what it is.
+type Part = "line" | "pair" | "box" | "check" | "table" | "sign" | "para";
+const FORMS: Record<string, Part[]> = {
+  "Bid form": ["pair", "table", "sign"],
+  "W-9": ["box", "pair", "pair", "check", "check", "sign"],
+  "Insurance certificate": ["pair", "box", "box", "pair", "line"],
+  "Addendum 2": ["para", "para", "check", "sign"],
+  "State forms": ["check", "check", "check", "pair", "line", "sign"],
+};
+
+// Where the lamp's pool sits on each desk (draw.ts lights the same spot);
+// pages further from it sit a little darker.
+const LAMP = { wide: { x: 499, y: 288 }, phone: { x: 298, y: 405 } };
+const dimAt = (x: number, y: number, lamp: { x: number; y: number }) =>
+  Math.min(0.3, Math.hypot(x + 100 - lamp.x, y + 130 - lamp.y) / 1400).toFixed(2);
 
 const base = (p: Page, i: number) => `translate3d(0, 0, ${3 + i * 2}px) rotateZ(${p.r}deg)`;
 
@@ -106,47 +124,77 @@ export function DeskScene() {
         <div className={s.stage}>
           <div className={`${s.desk} ${gathered ? s.closed : ""}`}>
             <canvas ref={woodRef} aria-hidden="true" />
+            <div className={s.desk__edge} aria-hidden="true" />
             <div className={s.folder} aria-hidden="true">
-              <div className={s.folder__back} />
+              <div className={s.folder__back}>
+                <span>Sample bid</span>
+              </div>
               <div className={s.flap}>
+                <i className={s.pocket} />
                 <span>Ready to sign</span>
               </div>
+            </div>
+            <div className={s.pen} aria-hidden="true">
+              <i />
             </div>
             {PAGES.map((p, i) => {
               const at = phone ? { x: p.px, y: p.py } : { x: p.x, y: p.y };
               let transform = base(p, i);
+              let shadow = `translate3d(0, 0, 1px) rotateZ(${p.r}deg)`;
+              let shadowOn = 1;
               let delay = "0ms";
               if (gathered) {
                 transform = `translate3d(${L.folder.x - at.x}px, ${L.folder.y - at.y}px, ${4 + i}px) rotateZ(${i % 2 ? 1.5 : -1.5}deg)`;
+                shadow = `translate3d(${L.folder.x - at.x}px, ${L.folder.y - at.y}px, 1px) rotateZ(0deg)`;
+                shadowOn = 0;
                 delay = `${i * 120}ms`;
               } else if (lifted === i) {
                 transform = `translate3d(${L.lift.x - at.x}px, ${L.lift.y - at.y}px, ${L.lift.z}px) rotateZ(0deg) rotateX(-50deg) scale(${L.lift.scale})`;
+                // the shadow stays on the desk, under and in front of the page, wider and fainter
+                shadow = `translate3d(${L.lift.x - at.x}px, ${L.lift.y - at.y + 60}px, 1px) rotateZ(0deg) scale(${(L.lift.scale * 0.95).toFixed(2)}, 0.7)`;
+                shadowOn = 0.55;
               } else if (move === "spread") {
                 delay = `${400 + i * 80}ms`;
               }
+              const vars = {
+                "--x": `${p.x}px`,
+                "--y": `${p.y}px`,
+                "--px": `${p.px}px`,
+                "--py": `${p.py}px`,
+              } as React.CSSProperties;
               return (
-                <button
-                  key={p.name}
-                  className={s.page}
-                  type="button"
-                  aria-pressed={lifted === i}
-                  tabIndex={gathered ? -1 : 0}
-                  aria-hidden={gathered || undefined}
-                  style={
-                    {
-                      "--x": `${p.x}px`,
-                      "--y": `${p.y}px`,
-                      "--px": `${p.px}px`,
-                      "--py": `${p.py}px`,
-                      transform,
-                      transitionDelay: delay,
-                    } as React.CSSProperties
-                  }
-                  onClick={() => pick(i)}
-                >
-                  {p.name}
-                  <small>{p.who}</small>
-                </button>
+                <Fragment key={p.name}>
+                  <span
+                    className={s["page-shadow"]}
+                    aria-hidden="true"
+                    style={{ ...vars, transform: shadow, opacity: shadowOn, transitionDelay: delay }}
+                  />
+                  <button
+                    className={s.page}
+                    type="button"
+                    aria-pressed={lifted === i}
+                    tabIndex={gathered ? -1 : 0}
+                    aria-hidden={gathered || undefined}
+                    data-clip={p.name === "W-9" ? "" : undefined}
+                    style={
+                      {
+                        ...vars,
+                        "--dim": lifted === i ? 0 : dimAt(at.x, at.y, phone ? LAMP.phone : LAMP.wide),
+                        transform,
+                        transitionDelay: delay,
+                      } as React.CSSProperties
+                    }
+                    onClick={() => pick(i)}
+                  >
+                    {p.name}
+                    <span className={s.form} aria-hidden="true">
+                      {FORMS[p.name].map((part, k) => (
+                        <i key={k} data-part={part} />
+                      ))}
+                    </span>
+                    <small>{p.who}</small>
+                  </button>
+                </Fragment>
               );
             })}
           </div>
